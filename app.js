@@ -1,6 +1,6 @@
 const WORKER_URL="https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
-const GITHUB_PAGES_BASE="https://dehghaniweb.github.io/moshkfam/images/";
-const RAW_GITHUB_BASE="https://raw.githubusercontent.com/dehghaniweb/moshkfam/main/images/";
+const GITHUB_IMAGES="https://dehghaniweb.github.io/moshkfam/images/";
+const RAW_IMAGES="https://raw.githubusercontent.com/dehghaniweb/moshkfam/main/images/";
 
 const tg=window.Telegram&&window.Telegram.WebApp?window.Telegram.WebApp:null;
 
@@ -12,8 +12,6 @@ let currentProduct=null;
 let telegramAuthData=null;
 let isAdmin=false;
 let selectedCustomer=null;
-let productsLoaded=false;
-let renderingProducts=false;
 
 if(tg){
   tg.ready();
@@ -21,17 +19,8 @@ if(tg){
 }
 
 document.addEventListener("DOMContentLoaded",async()=>{
-  const searchInput=document.getElementById("searchInput");
-  const customerSelect=document.getElementById("customerSelect");
-
-  if(searchInput){
-    searchInput.addEventListener("input",renderProducts);
-  }
-
-  if(customerSelect){
-    customerSelect.addEventListener("change",loadCustomerPrices);
-  }
-
+  document.getElementById("searchInput").addEventListener("input",renderProducts);
+  document.getElementById("customerSelect").addEventListener("change",loadCustomerPrices);
   await authenticateTelegram();
   await loadProducts();
 });
@@ -39,14 +28,11 @@ document.addEventListener("DOMContentLoaded",async()=>{
 async function post(path,data={}){
   const r=await fetch(WORKER_URL+path,{
     method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
+    headers:{"Content-Type":"application/json"},
     body:JSON.stringify(data)
   });
 
   const text=await r.text();
-
   let json;
 
   try{
@@ -56,478 +42,238 @@ async function post(path,data={}){
   }
 
   if(!r.ok||json.ok===false){
-    throw new Error(json.error||"خطا در ارتباط با سرور");
+    throw new Error(json.error||json.message||"خطا");
   }
 
   return json;
 }
 
 async function authenticateTelegram(){
-
   const initData=tg?.initData||"";
 
   if(!initData){
-
     document.getElementById("account").classList.remove("hidden");
-
     document.getElementById("accountName").textContent="کاربر";
-
-    document.getElementById("accountUser").textContent="";
-
     document.getElementById("accountInfo").textContent=
       "برای ورود کامل، سایت را از داخل ربات تلگرام باز کنید.";
-
     return;
   }
 
   try{
-
-    const data=await post(
-      "/api/telegram-auth",
-      {
-        initData:initData
-      }
-    );
+    const data=await post("/api/telegram-auth",{initData});
 
     telegramAuthData=data;
-
     isAdmin=!!data.is_admin;
 
-    const u={
-      id:data.telegram_user_id||data.user?.id||data.telegram_user?.id||"",
-      username:data.username||data.user?.username||data.telegram_user?.username||"",
-      first_name:data.first_name||data.user?.first_name||data.telegram_user?.first_name||"",
-      last_name:data.last_name||data.user?.last_name||data.telegram_user?.last_name||""
+    const u=data.telegram_user||data.user||{
+      id:data.telegram_user_id,
+      username:data.username,
+      first_name:data.first_name,
+      last_name:data.last_name
     };
 
-    const name=
-      [u.first_name,u.last_name]
+    const name=[u.first_name,u.last_name]
       .filter(Boolean)
-      .join(" ")||
-      "کاربر";
+      .join(" ")||"کاربر";
 
-    const username=
-      u.username?
-      "@"+u.username:
-      "";
+    const username=u.username?"@"+u.username:"";
 
     document.getElementById("account").classList.remove("hidden");
-
     document.getElementById("accountName").textContent=name;
-
     document.getElementById("accountUser").textContent=username;
 
     document.getElementById("accountInfo").innerHTML=
       "🆔 شناسه تلگرام: <b>"+
-      escapeHtml(String(u.id||"نامشخص"))+
+      escapeHtml(String(u.id||data.telegram_user_id||""))+
       "</b>"+
-      (
-        isAdmin
-        ?
-        "<br>👑 دسترسی مدیر فعال است"
-        :
-        "<br>👤 مشتری"
-      );
+      (isAdmin?
+        "<br>👑 دسترسی مدیر فعال است":
+        "<br>👤 مشتری");
 
-    const adminButton=
-      document.getElementById("adminButton");
-
-    if(adminButton){
-
-      if(isAdmin){
-
-        adminButton.classList.remove("hidden");
-
-        adminButton.onclick=openAdmin;
-
-      }else{
-
-        adminButton.classList.add("hidden");
-
-      }
+    if(isAdmin){
+      document.getElementById("adminButton").classList.remove("hidden");
+      document.getElementById("adminButton").onclick=openAdmin;
     }
 
   }catch(e){
-
-    console.error("Telegram authentication:",e);
-
-    showError(
-      "خطا در ورود تلگرام: "+
-      e.message
-    );
+    showError("خطا در ورود تلگرام: "+e.message);
   }
 }
 
 async function loadProducts(){
-
-  if(productsLoaded){
-    return;
-  }
-
   setLoading(true);
 
   try{
-
-    let url=
-      WORKER_URL+
-      "/api/products";
+    let url=WORKER_URL+"/api/products";
 
     if(tg?.initData){
-
-      url+=
-        "?initData="+
-        encodeURIComponent(
-          tg.initData
-        );
+      url+="?initData="+encodeURIComponent(tg.initData);
     }
 
     const r=await fetch(url);
-
     const text=await r.text();
-
     let data;
 
     try{
-
       data=JSON.parse(text);
-
     }catch{
-
-      throw new Error(
-        text||
-        "پاسخ نامعتبر از سرور"
-      );
+      throw new Error(text||"پاسخ نامعتبر از سرور");
     }
 
     if(!r.ok||data.ok===false){
-
-      throw new Error(
-        data.error||
-        "خطا در دریافت محصولات"
-      );
+      throw new Error(data.error||"خطا در دریافت محصولات");
     }
 
-    products=
-      Array.isArray(data.products)
-      ?
-      data.products
-      :
-      [];
-
-    productsLoaded=true;
+    products=data.products||data.data||[];
 
     buildCategories();
-
     renderProducts();
 
   }catch(e){
-
-    console.error(
-      "Load products:",
-      e
-    );
-
-    showError(
-      "خطا در دریافت محصولات: "+
-      e.message
-    );
-
+    showError("خطا در دریافت محصولات: "+e.message);
+    console.error(e);
   }finally{
-
     setLoading(false);
   }
 }
 
-function buildCategories(){
+function getProductName(p){
+  return p.name_fa||p.name_en||"بدون نام";
+}
 
-  const box=
-    document.getElementById(
-      "categories"
-    );
+function getImage(p){
+  const id=Number(p.id);
 
-  if(!box){
-    return;
+  if(Number.isFinite(id)&&id>=1&&id<=10){
+    return GITHUB_IMAGES+
+      "product-"+String(id).padStart(2,"0")+".jpg";
   }
+
+  return GITHUB_IMAGES+"logo.png";
+}
+
+function buildCategories(){
+  const box=document.getElementById("categories");
 
   const categories=[
     ...new Set(
       products
-        .map(
-          p=>String(
-            p.category||""
-          ).trim()
-        )
+        .map(p=>p.category)
         .filter(Boolean)
     )
   ];
 
   box.innerHTML=
     '<button class="active" data-cat="all">همه</button>'+
-    categories
-      .map(c=>
-        '<button data-cat="'+
-        escapeAttr(c)+
-        '">'+
-        escapeHtml(c)+
-        "</button>"
-      )
-      .join("");
+    categories.map(c=>
+      '<button data-cat="'+escapeAttr(c)+'">'+
+      escapeHtml(c)+
+      "</button>"
+    ).join("");
 
-  box
-    .querySelectorAll("button")
-    .forEach(button=>{
+  box.querySelectorAll("button").forEach(b=>{
+    b.onclick=()=>{
+      box.querySelectorAll("button")
+        .forEach(x=>x.classList.remove("active"));
 
-      button.onclick=()=>{
-
-        box
-          .querySelectorAll("button")
-          .forEach(x=>
-            x.classList.remove(
-              "active"
-            )
-          );
-
-        button.classList.add("active");
-
-        activeCategory=
-          button.dataset.cat||
-          "all";
-
-        renderProducts();
-      };
-    });
+      b.classList.add("active");
+      activeCategory=b.dataset.cat;
+      renderProducts();
+    };
+  });
 }
 
 function renderProducts(){
+  const search=(
+    document.getElementById("searchInput").value||""
+  ).trim().toLowerCase();
 
-  if(renderingProducts){
+  filteredProducts=products.filter(p=>{
+    const categoryOk=
+      activeCategory==="all"||
+      String(p.category||"")===activeCategory;
+
+    const text=[
+      p.name_fa,
+      p.name_en,
+      p.category,
+      p.package,
+      p.maker,
+      p.intro,
+      p.composition,
+      p.use_text,
+      p.warnings,
+      Array.isArray(p.benefits)?p.benefits.join(" "):p.benefits
+    ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+    return categoryOk&&(!search||text.includes(search));
+  });
+
+  document.getElementById("productCount").textContent=
+    filteredProducts.length+" محصول";
+
+  const grid=document.getElementById("productGrid");
+
+  if(!filteredProducts.length){
+    grid.innerHTML="";
+    document.getElementById("empty").classList.remove("hidden");
     return;
   }
 
-  renderingProducts=true;
+  document.getElementById("empty").classList.add("hidden");
 
-  try{
+  grid.innerHTML=filteredProducts.map(productCard).join("");
 
-    const input=
-      document.getElementById(
-        "searchInput"
-      );
-
-    const search=
-      (
-        input?.value||
-        ""
-      )
-      .trim()
-      .toLowerCase();
-
-    filteredProducts=
-      products.filter(p=>{
-
-        const categoryOk=
-          activeCategory==="all"||
-          String(
-            p.category||""
-          )===
-          activeCategory;
-
-        const benefits=
-          Array.isArray(p.benefits)
-          ?
-          p.benefits.join(" ")
-          :
-          String(p.benefits||"");
-
-        const text=[
-          p.name_fa,
-          p.name_en,
-          p.category,
-          p.package,
-          p.maker,
-          p.intro,
-          p.composition,
-          p.use_text,
-          p.warnings,
-          benefits
-        ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-        return(
-          categoryOk&&
-          (
-            !search||
-            text.includes(search)
-          )
-        );
-      });
-
-    const count=
-      document.getElementById(
-        "productCount"
-      );
-
-    if(count){
-
-      count.textContent=
-        filteredProducts.length+
-        " محصول";
-    }
-
-    const empty=
-      document.getElementById(
-        "empty"
-      );
-
-    const grid=
-      document.getElementById(
-        "productGrid"
-      );
-
-    if(!grid){
-      return;
-    }
-
-    if(!filteredProducts.length){
-
-      grid.innerHTML="";
-
-      if(empty){
-        empty.classList.remove(
-          "hidden"
-        );
-      }
-
-      return;
-    }
-
-    if(empty){
-      empty.classList.add(
-        "hidden"
-      );
-    }
-
-    grid.innerHTML=
-      filteredProducts
-        .map(productCard)
-        .join("");
-
-    grid
-      .querySelectorAll(
-        "[data-product]"
-      )
-      .forEach(el=>{
-
-        el.onclick=()=>{
-
-          openProduct(
-            el.dataset.product
-          );
-        };
-      });
-
-  }finally{
-
-    renderingProducts=false;
-  }
-}
-
-function getProductName(p){
-
-  return(
-    p.name_fa||
-    p.name_en||
-    "بدون نام"
-  );
-}
-
-function getProductBenefits(p){
-
-  if(!p.benefits){
-    return "";
-  }
-
-  if(Array.isArray(p.benefits)){
-
-    return p.benefits
-      .map(x=>String(x))
-      .join("، ");
-  }
-
-  return String(
-    p.benefits
-  );
+  grid.querySelectorAll("[data-product]").forEach(el=>{
+    el.onclick=()=>openProduct(el.dataset.product);
+  });
 }
 
 function productCard(p){
-
-  const image=
-    getImage(p);
-
-  const price=
-    getProductPrice(p);
+  const image=getImage(p);
+  const price=getProductPrice(p);
 
   return `
   <article class="product-card">
 
-    <div class="product-image-wrap">
-
-      <img
-        class="product-image"
-        src="${escapeAttr(image)}"
-        alt="${escapeAttr(getProductName(p))}"
-        loading="lazy"
-        decoding="async"
-        onerror="this.onerror=null;this.src='${escapeAttr(GITHUB_PAGES_BASE+"logo.png")}';">
-
-    </div>
+    <img
+      class="product-image"
+      src="${escapeAttr(image)}"
+      loading="lazy"
+      onerror="this.onerror=null;this.src='${GITHUB_IMAGES}logo.png'"
+    >
 
     <div class="product-body">
 
       <div class="product-category">
-        ${escapeHtml(
-          p.category||
-          "محصول کشاورزی"
-        )}
+        ${escapeHtml(p.category||"محصول کشاورزی")}
       </div>
 
       <div class="product-title">
-        ${escapeHtml(
-          getProductName(p)
-        )}
+        ${escapeHtml(getProductName(p))}
       </div>
 
-      <div class="${
-        price.private
-        ?
-        "price private-price"
-        :
-        "price"
-      }">
-        ${escapeHtml(
-          price.text
-        )}
+      <div class="${price.private?"price private-price":"price"}">
+        ${escapeHtml(price.text)}
       </div>
 
       <div class="card-buttons">
 
-        <button
-          data-product="${escapeAttr(String(p.id))}">
+        <button data-product="${escapeAttr(String(p.id))}">
           مشاهده
         </button>
 
         ${
           p.video_url
           ?
-          `
-          <button
+          `<button
             class="video"
-            data-video="${escapeAttr(p.video_url)}"
-            onclick="event.stopPropagation();openExternalUrl(this.dataset.video)">
+            onclick="event.stopPropagation();openExternalUrl('${escapeAttr(p.video_url)}')">
             ▶ ویدئو
-          </button>
-          `
+          </button>`
           :
           ""
         }
@@ -535,203 +281,179 @@ function productCard(p){
       </div>
 
     </div>
-
   </article>`;
 }
 
 function openProduct(id){
+  const p=products.find(
+    x=>String(x.id)===String(id)
+  );
 
-  const p=
-    products.find(
-      x=>String(x.id)===
-      String(id)
-    );
-
-  if(!p){
-    return;
-  }
+  if(!p)return;
 
   currentProduct=p;
 
-  const price=
-    getProductPrice(p);
+  const price=getProductPrice(p);
+  const image=getImage(p);
 
-  const image=
-    getImage(p);
+  let benefits="";
 
-  const benefits=
-    getProductBenefits(p);
-
-  let html=`
-
-    <div class="product-detail">
-
-      <img
-        class="detail-image"
-        src="${escapeAttr(image)}"
-        alt="${escapeAttr(getProductName(p))}"
-        onerror="this.onerror=null;this.src='${escapeAttr(GITHUB_PAGES_BASE+"logo.png")}';">
-
-      <div class="detail-title">
-        ${escapeHtml(
-          getProductName(p)
-        )}
-      </div>
-
-      <div class="detail-box">
-        <b>دسته‌بندی:</b>
-        ${escapeHtml(
-          p.category||
-          "-"
-        )}
-      </div>
-
-      <div class="detail-price">
-        ${escapeHtml(
-          price.text
-        )}
-      </div>
-
-  `;
-
-  if(p.package){
-
-    html+=`
-      <div class="detail-box">
-        <b>📦 بسته‌بندی:</b><br>
-        ${escapeHtml(p.package)}
-      </div>
-    `;
+  if(Array.isArray(p.benefits)){
+    benefits=p.benefits.join("، ");
+  }else{
+    benefits=p.benefits||"";
   }
 
-  if(p.maker){
+  document.getElementById("modalContent").innerHTML=`
 
-    html+=`
-      <div class="detail-box">
-        <b>🏭 تولیدکننده:</b><br>
-        ${escapeHtml(p.maker)}
-      </div>
-    `;
-  }
+    <img
+      class="detail-image"
+      src="${escapeAttr(image)}"
+      onerror="this.onerror=null;this.src='${GITHUB_IMAGES}logo.png'"
+    >
 
-  if(p.intro){
+    <div class="detail-title">
+      ${escapeHtml(getProductName(p))}
+    </div>
 
-    html+=`
-      <div class="detail-box">
-        <b>📝 معرفی محصول</b><br>
+    <div class="detail-box">
+      <b>دسته‌بندی:</b>
+      ${escapeHtml(p.category||"-")}
+    </div>
+
+    ${
+      p.package||p.maker
+      ?
+      `<div class="detail-box">
+        ${p.package?
+          "<b>بسته‌بندی:</b> "+
+          escapeHtml(p.package):
+          ""}
+        ${p.package&&p.maker?"<br>":""}
+        ${p.maker?
+          "<b>تولیدکننده:</b> "+
+          escapeHtml(p.maker):
+          ""}
+      </div>`
+      :
+      ""
+    }
+
+    <div class="detail-price">
+      ${escapeHtml(price.text)}
+    </div>
+
+    ${
+      p.intro
+      ?
+      `<div class="detail-box">
+        <b>📝 معرفی</b><br>
         ${escapeHtml(p.intro)}
-      </div>
-    `;
-  }
+      </div>`
+      :
+      ""
+    }
 
-  if(p.composition){
-
-    html+=`
-      <div class="detail-box">
-        <b>🧪 ترکیبات / آنالیز</b><br>
+    ${
+      p.composition
+      ?
+      `<div class="detail-box">
+        <b>🧪 آنالیز / ترکیبات</b><br>
         ${escapeHtml(p.composition)}
-      </div>
-    `;
-  }
+      </div>`
+      :
+      ""
+    }
 
-  if(benefits){
-
-    html+=`
-      <div class="detail-box">
-        <b>🌱 مزایا</b><br>
+    ${
+      benefits
+      ?
+      `<div class="detail-box">
+        <b>🌾 محصولات و مزایا</b><br>
         ${escapeHtml(benefits)}
-      </div>
-    `;
-  }
+      </div>`
+      :
+      ""
+    }
 
-  if(p.use_text){
-
-    html+=`
-      <div class="detail-box">
+    ${
+      p.use_text
+      ?
+      `<div class="detail-box">
         <b>📚 راهنمای مصرف</b><br>
         ${escapeHtml(p.use_text)}
-      </div>
-    `;
-  }
+      </div>`
+      :
+      ""
+    }
 
-  if(p.warnings){
-
-    html+=`
-      <div class="detail-box">
+    ${
+      p.warnings
+      ?
+      `<div class="detail-box">
         <b>⚠️ هشدار</b><br>
         ${escapeHtml(p.warnings)}
-      </div>
-    `;
-  }
+      </div>`
+      :
+      ""
+    }
 
-  if(p.video_url){
-
-    html+=`
-      <button
+    ${
+      p.video_url
+      ?
+      `<button
         class="video-button"
         onclick="openExternalUrl('${escapeAttr(p.video_url)}')">
         ▶ مشاهده ویدئوی محصول
-      </button>
-    `;
-  }
+      </button>`
+      :
+      ""
+    }
 
-  if(p.catalog_pdf_url){
-
-    html+=`
-      <button
+    ${
+      p.catalog_pdf_url
+      ?
+      `<button
         class="catalog-button"
         onclick="openExternalUrl('${escapeAttr(p.catalog_pdf_url)}')">
         📄 مشاهده کاتالوگ / PDF
-      </button>
-    `;
-  }
+      </button>`
+      :
+      ""
+    }
 
-  html+=`
-    </div>
   `;
 
-  document.getElementById(
-    "modalContent"
-  ).innerHTML=html;
-
-  document.getElementById(
-    "modal"
-  ).classList.remove("hidden");
+  document.getElementById("modal").classList.remove("hidden");
 }
 
 function getProductPrice(p){
-
   if(
     p.has_private_price&&
     p.customer_price!==null&&
     p.customer_price!==undefined
   ){
-
     return{
       private:true,
       text:
         "💎 قیمت اختصاصی: "+
         formatPrice(
           p.customer_price,
-          p.customer_currency||
-          "تومان"
+          p.customer_currency||"تومان"
         )
     };
   }
 
-  const value=
-    p.base_price;
+  const value=p.base_price;
 
   if(
     value===null||
     value===undefined||
     value===""
   ){
-
     return{
       private:false,
-      text:
-        "برای اطلاع از قیمت تماس بگیرید"
+      text:"برای اطلاع از قیمت تماس بگیرید"
     };
   }
 
@@ -741,203 +463,92 @@ function getProductPrice(p){
       "قیمت: "+
       formatPrice(
         value,
-        p.base_currency||
-        "تومان"
+        p.base_currency||"تومان"
       )
   };
 }
 
-function formatPrice(
-  value,
-  currency
-){
-
+function formatPrice(value,currency){
   const n=Number(value);
 
   if(!Number.isFinite(n)){
-
-    return(
-      String(value)+
-      " "+
-      currency
-    );
+    return String(value)+" "+currency;
   }
 
-  return(
-    n.toLocaleString("fa-IR")+
-    " "+
-    currency
-  );
-}
-
-function getImage(p){
-
-  const image=
-    p.image_url||
-    "";
-
-  if(!image){
-
-    return(
-      GITHUB_PAGES_BASE+
-      "logo.png"
-    );
-  }
-
-  if(
-    /^https?:\/\//i.test(image)
-  ){
-
-    return image;
-  }
-
-  return(
-    GITHUB_PAGES_BASE+
-    image.replace(/^\/+/,"")
-  );
+  return n.toLocaleString("fa-IR")+" "+currency;
 }
 
 function openExternalUrl(url){
-
-  if(!url){
-    return;
-  }
+  if(!url)return;
 
   if(tg?.openLink){
-
     tg.openLink(url);
-
   }else{
-
-    window.open(
-      url,
-      "_blank"
-    );
+    window.open(url,"_blank");
   }
 }
 
 function closeModal(){
-
-  document
-    .getElementById("modal")
-    .classList.add("hidden");
+  document.getElementById("modal").classList.add("hidden");
 }
 
 async function openAdmin(){
-
   if(!isAdmin){
-
-    alert(
-      "دسترسی مدیریت ندارید."
-    );
-
+    alert("دسترسی مدیریت ندارید.");
     return;
   }
 
-  document
-    .getElementById("adminModal")
-    .classList
-    .remove("hidden");
+  document.getElementById("adminModal")
+    .classList.remove("hidden");
 
-  document
-    .getElementById("adminLoading")
-    .classList
-    .remove("hidden");
+  document.getElementById("adminLoading")
+    .classList.remove("hidden");
 
-  document
-    .getElementById("adminProducts")
-    .innerHTML="";
+  document.getElementById("adminProducts").innerHTML="";
 
-  document
-    .getElementById("customerSelect")
-    .innerHTML=
-      '<option value="">در حال دریافت مشتریان...</option>';
+  document.getElementById("customerSelect").innerHTML=
+    '<option value="">در حال دریافت مشتریان...</option>';
 
   try{
-
     await Promise.all([
       loadAdminProducts(),
       loadCustomers()
     ]);
-
   }catch(e){
-
-    showAdminError(
-      e.message
-    );
-
+    showAdminError(e.message);
   }finally{
-
-    document
-      .getElementById("adminLoading")
-      .classList
-      .add("hidden");
+    document.getElementById("adminLoading")
+      .classList.add("hidden");
   }
 }
 
 function closeAdmin(){
-
-  document
-    .getElementById("adminModal")
-    .classList
-    .add("hidden");
+  document.getElementById("adminModal")
+    .classList.add("hidden");
 }
 
 async function loadAdminProducts(){
+  const data=await post(
+    "/api/admin/products",
+    {
+      initData:tg?.initData||""
+    }
+  );
 
-  const data=
-    await post(
-      "/api/admin/products",
-      {
-        initData:
-          tg?.initData||
-          ""
-      }
-    );
+  const list=data.products||[];
 
-  const list=
-    Array.isArray(data.products)
-    ?
-    data.products
-    :
-    [];
-
-  document
-    .getElementById(
-      "adminProducts"
-    )
-    .innerHTML=
-      list
-        .map(adminProduct)
-        .join("");
+  document.getElementById("adminProducts").innerHTML=
+    list.map(adminProduct).join("");
 }
 
 function adminProduct(p){
-
-  const video=
-    p.video_url||
-    "";
-
-  const image=
-    getImage(p);
+  const video=p.video_url||"";
 
   return `
   <div class="admin-product">
 
     <div class="admin-product-title">
-
-      <img
-        src="${escapeAttr(image)}"
-        alt=""
-        loading="lazy"
-        onerror="this.onerror=null;this.src='${escapeAttr(GITHUB_PAGES_BASE+"logo.png")}';">
-
-      <span>
-        🌿 ${escapeHtml(
-          getProductName(p)
-        )}
-      </span>
-
+      🌿 ${escapeHtml(getProductName(p))}
     </div>
 
     <div class="admin-row">
@@ -945,13 +556,10 @@ function adminProduct(p){
       <input
         id="price-${p.id}"
         type="number"
-        value="${escapeAttr(
-          p.base_price??""
-        )}"
+        value="${p.base_price??""}"
         placeholder="قیمت عمومی">
 
-      <button
-        onclick="savePublicPrice(${p.id})">
+      <button onclick="savePublicPrice(${p.id})">
         ذخیره قیمت
       </button>
 
@@ -965,8 +573,7 @@ function adminProduct(p){
         type="file"
         accept="video/*">
 
-      <button
-        onclick="uploadVideo(${p.id})">
+      <button onclick="uploadVideo(${p.id})">
         🎥 آپلود
       </button>
 
@@ -979,7 +586,6 @@ function adminProduct(p){
       <video
         class="video-preview"
         controls
-        preload="metadata"
         src="${escapeAttr(video)}">
       </video>
 
@@ -1004,359 +610,237 @@ function adminProduct(p){
     }
 
     <div class="admin-row">
-
-      <button
-        onclick="selectProductForCustomer(${p.id})">
+      <button onclick="selectProductForCustomer(${p.id})">
         👤 قیمت مشتری
       </button>
-
     </div>
 
   </div>`;
 }
 
-async function savePublicPrice(
-  productId
-){
+async function savePublicPrice(productId){
+  const input=document.getElementById("price-"+productId);
 
-  const input=
-    document.getElementById(
-      "price-"+productId
-    );
+  if(!input){
+    alert("فیلد قیمت پیدا نشد.");
+    return;
+  }
+
+  const value=input.value.trim();
+
+  if(value===""){
+    alert("لطفاً قیمت را وارد کنید.");
+    return;
+  }
 
   try{
-
     await post(
       "/api/admin/update-price",
       {
-        initData:
-          tg?.initData||
-          "",
-        product_id:
-          productId,
-        base_price:
-          input?.value||
-          "",
-        base_currency:
-          "تومان"
+        initData:tg?.initData||"",
+        product_id:Number(productId),
+        price:Number(value),
+        currency:"تومان"
       }
     );
 
-    alert(
-      "قیمت عمومی ذخیره شد."
-    );
-
-    productsLoaded=false;
+    alert("قیمت عمومی ذخیره شد.");
 
     await loadProducts();
-
     await loadAdminProducts();
 
   }catch(e){
-
     alert(e.message);
   }
 }
 
 async function loadCustomers(){
+  const data=await post(
+    "/api/admin/customers",
+    {
+      initData:tg?.initData||""
+    }
+  );
 
-  const data=
-    await post(
-      "/api/admin/customers",
-      {
-        initData:
-          tg?.initData||
-          ""
-      }
-    );
+  customers=data.customers||[];
 
-  customers=
-    Array.isArray(data.customers)
-    ?
-    data.customers
-    :
-    [];
-
-  const select=
-    document.getElementById(
-      "customerSelect"
-    );
+  const select=document.getElementById("customerSelect");
 
   select.innerHTML=
     '<option value="">انتخاب مشتری</option>'+
-    customers
-      .map(c=>{
+    customers.map(c=>{
 
-        const name=
-          [
-            c.first_name,
-            c.last_name
-          ]
-          .filter(Boolean)
-          .join(" ")||
-          "بدون نام";
+      const name=[
+        c.first_name,
+        c.last_name
+      ]
+      .filter(Boolean)
+      .join(" ")||"بدون نام";
 
-        const user=
-          c.username
-          ?
-          " @"+c.username
-          :
-          "";
+      const user=c.username?
+        " @"+c.username:
+        "";
 
-        const telegramId=
-          c.telegram_id||
-          c.telegram_user_id||
-          "";
+      const telegramId=
+        c.telegram_id||
+        c.telegram_user_id||
+        "";
 
-        return`
-        <option value="${escapeAttr(String(c.id))}">
-          ${escapeHtml(
-            name+
-            user+
-            " — "+
-            telegramId
-          )}
-        </option>`;
-      })
-      .join("");
+      return `
+      <option value="${escapeAttr(String(c.id))}">
+        ${escapeHtml(
+          name+
+          user+
+          " — "+
+          telegramId
+        )}
+      </option>`;
 
-  document
-    .getElementById(
-      "adminAccountInfo"
-    )
-    .innerHTML=
-      "تعداد مشتریان ثبت‌شده: <b>"+
-      customers.length+
-      "</b>";
+    }).join("");
+
+  document.getElementById("adminAccountInfo").innerHTML=
+    "تعداد مشتریان ثبت‌شده: <b>"+
+    customers.length+
+    "</b>";
 }
 
 async function loadCustomerPrices(){
-
-  const id=
-    document.getElementById(
-      "customerSelect"
-    ).value;
+  const id=document.getElementById("customerSelect").value;
 
   if(!id){
-
     selectedCustomer=null;
 
-    document
-      .getElementById(
-        "customerInfo"
-      )
-      .classList
-      .add("hidden");
+    document.getElementById("customerInfo")
+      .classList.add("hidden");
 
-    document
-      .getElementById(
-        "customerPrices"
-      )
+    document.getElementById("customerPrices")
       .innerHTML="";
 
     return;
   }
 
-  selectedCustomer=
-    customers.find(
-      c=>
-        String(c.id)===
-        String(id)
-    );
+  selectedCustomer=customers.find(
+    c=>String(c.id)===String(id)
+  );
 
   if(selectedCustomer){
 
-    const name=
-      [
-        selectedCustomer.first_name,
-        selectedCustomer.last_name
-      ]
-      .filter(Boolean)
-      .join(" ")||
-      "بدون نام";
+    const name=[
+      selectedCustomer.first_name,
+      selectedCustomer.last_name
+    ]
+    .filter(Boolean)
+    .join(" ")||"بدون نام";
 
     const telegramId=
       selectedCustomer.telegram_id||
       selectedCustomer.telegram_user_id||
       "-";
 
-    document
-      .getElementById(
-        "customerInfo"
-      )
-      .classList
-      .remove("hidden");
+    document.getElementById("customerInfo")
+      .classList.remove("hidden");
 
-    document
-      .getElementById(
-        "customerInfo"
-      )
-      .innerHTML=
-        "<b>نام:</b> "+
-        escapeHtml(name)+
-        "<br><b>Username:</b> "+
-        escapeHtml(
-          selectedCustomer.username
-          ?
-          "@"+
-          selectedCustomer.username
-          :
-          "-"
-        )+
-        "<br><b>Telegram ID:</b> "+
-        escapeHtml(
-          String(
-            telegramId
-          )
-        );
+    document.getElementById("customerInfo").innerHTML=
+      "<b>نام:</b> "+
+      escapeHtml(name)+
+      "<br><b>Username:</b> "+
+      escapeHtml(
+        selectedCustomer.username?
+        "@"+selectedCustomer.username:
+        "-"
+      )+
+      "<br><b>Telegram ID:</b> "+
+      escapeHtml(String(telegramId));
   }
 
   await renderCustomerPrices();
 }
 
 async function renderCustomerPrices(){
-
-  if(!selectedCustomer){
-    return;
-  }
+  if(!selectedCustomer)return;
 
   try{
-
-    const data=
-      await post(
-        "/api/admin/customer-prices",
-        {
-          initData:
-            tg?.initData||
-            "",
-          customer_id:
-            selectedCustomer.id
-        }
-      );
-
-    const prices=
-      Array.isArray(data.prices)
-      ?
-      data.prices
-      :
-      [];
-
-    const map={};
-
-    prices.forEach(
-      x=>{
-        map[
-          String(
-            x.product_id
-          )
-        ]=x;
+    const data=await post(
+      "/api/admin/customer-prices",
+      {
+        initData:tg?.initData||"",
+        customer_id:Number(selectedCustomer.id)
       }
     );
 
-    document
-      .getElementById(
-        "customerPrices"
-      )
-      .innerHTML=
-        products
-          .map(p=>{
+    const prices=data.prices||[];
+    const map={};
 
-            const cp=
-              map[
-                String(p.id)
-              ];
+    prices.forEach(x=>{
+      map[String(x.product_id)]=x;
+    });
 
-            return`
-            <div class="customer-price-row">
+    document.getElementById("customerPrices").innerHTML=
+      products.map(p=>{
 
-              <strong>
-                ${escapeHtml(
-                  getProductName(p)
-                )}
-              </strong>
+        const cp=map[String(p.id)];
 
-              <div class="admin-row">
+        return `
+        <div class="customer-price-row">
 
-                <input
-                  id="cp-${p.id}"
-                  type="number"
-                  value="${escapeAttr(
-                    cp?.price??""
-                  )}"
-                  placeholder="قیمت اختصاصی">
+          <strong>
+            ${escapeHtml(getProductName(p))}
+          </strong>
 
-                <button
-                  onclick="saveCustomerPrice(${p.id})">
-                  ذخیره
-                </button>
+          <div class="admin-row">
 
-                ${
-                  cp
-                  ?
-                  `
-                  <button
-                    class="danger"
-                    onclick="deleteCustomerPrice(${p.id})">
-                    حذف
-                  </button>
-                  `
-                  :
-                  ""
-                }
+            <input
+              id="cp-${p.id}"
+              type="number"
+              value="${cp?.price??""}"
+              placeholder="قیمت اختصاصی">
 
-              </div>
+            <button onclick="saveCustomerPrice(${p.id})">
+              ذخیره
+            </button>
 
-            </div>`;
-          })
-          .join("");
+            ${
+              cp
+              ?
+              `
+              <button
+                class="danger"
+                onclick="deleteCustomerPrice(${p.id})">
+                حذف
+              </button>
+              `
+              :
+              ""
+            }
+
+          </div>
+
+        </div>`;
+
+      }).join("");
 
   }catch(e){
-
-    showAdminError(
-      e.message
-    );
+    showAdminError(e.message);
   }
 }
 
-function selectProductForCustomer(
-  productId
-){
+function selectProductForCustomer(productId){
+  const select=document.getElementById("customerSelect");
 
-  const select=
-    document.getElementById(
-      "customerSelect"
-    );
-
-  const section=
-    document.getElementById(
-      "customerSection"
-    );
-
-  if(section){
-
-    section.scrollIntoView({
+  document.getElementById("customerSection")
+    .scrollIntoView({
       behavior:"smooth"
     });
-  }
 
   if(!select.value){
-
-    alert(
-      "ابتدا مشتری را انتخاب کنید."
-    );
-
+    alert("ابتدا مشتری را انتخاب کنید.");
     return;
   }
 
   setTimeout(()=>{
-
-    const input=
-      document.getElementById(
-        "cp-"+productId
-      );
+    const input=document.getElementById("cp-"+productId);
 
     if(input){
-
       input.focus();
 
       input.scrollIntoView({
@@ -1364,351 +848,195 @@ function selectProductForCustomer(
         block:"center"
       });
     }
-
   },300);
 }
 
-async function saveCustomerPrice(
-  productId
-){
-
+async function saveCustomerPrice(productId){
   if(!selectedCustomer){
-
-    alert(
-      "ابتدا مشتری را انتخاب کنید."
-    );
-
+    alert("ابتدا مشتری را انتخاب کنید.");
     return;
   }
 
-  const input=
-    document.getElementById(
-      "cp-"+productId
-    );
+  const input=document.getElementById("cp-"+productId);
+
+  if(!input){
+    alert("فیلد قیمت پیدا نشد.");
+    return;
+  }
+
+  const value=input.value.trim();
+
+  if(value===""){
+    alert("لطفاً قیمت را وارد کنید.");
+    return;
+  }
 
   try{
-
     await post(
       "/api/admin/set-customer-price",
       {
-        initData:
-          tg?.initData||
-          "",
-        customer_id:
-          selectedCustomer.id,
-        product_id:
-          productId,
-        price:
-          input?.value||
-          "",
-        currency:
-          "تومان"
+        initData:tg?.initData||"",
+        customer_id:Number(selectedCustomer.id),
+        product_id:Number(productId),
+        price:Number(value),
+        currency:"تومان"
       }
     );
 
-    alert(
-      "قیمت اختصاصی ذخیره شد."
-    );
-
-    productsLoaded=false;
+    alert("قیمت اختصاصی ذخیره شد.");
 
     await loadProducts();
-
     await renderCustomerPrices();
 
   }catch(e){
-
     alert(e.message);
   }
 }
 
-async function deleteCustomerPrice(
-  productId
-){
+async function deleteCustomerPrice(productId){
+  if(!selectedCustomer)return;
 
-  if(!selectedCustomer){
-    return;
-  }
-
-  if(!confirm(
-    "قیمت اختصاصی این مشتری حذف شود؟"
-  )){
+  if(!confirm("قیمت اختصاصی این مشتری حذف شود؟")){
     return;
   }
 
   try{
-
     await post(
       "/api/admin/set-customer-price",
       {
-        initData:
-          tg?.initData||
-          "",
-        customer_id:
-          selectedCustomer.id,
-        product_id:
-          productId,
+        initData:tg?.initData||"",
+        customer_id:Number(selectedCustomer.id),
+        product_id:Number(productId),
         price:null,
-        currency:
-          "تومان"
+        currency:"تومان"
       }
     );
 
-    productsLoaded=false;
-
     await loadProducts();
-
     await renderCustomerPrices();
 
   }catch(e){
-
     alert(e.message);
   }
 }
 
-async function uploadVideo(
-  productId
-){
-
-  const input=
-    document.getElementById(
-      "video-"+productId
-    );
-
-  const file=
-    input?.files?.[0];
+async function uploadVideo(productId){
+  const input=document.getElementById("video-"+productId);
+  const file=input?.files?.[0];
 
   if(!file){
-
-    alert(
-      "ابتدا فایل ویدئو را انتخاب کنید."
-    );
-
+    alert("ابتدا فایل ویدئو را انتخاب کنید.");
     return;
   }
 
-  if(
-    !file.type.startsWith(
-      "video/"
-    )
-  ){
-
-    alert(
-      "فقط فایل ویدئویی مجاز است."
-    );
-
+  if(!file.type.startsWith("video/")){
+    alert("فقط فایل ویدئویی مجاز است.");
     return;
   }
 
-  if(
-    file.size>
-    100*1024*1024
-  ){
-
-    alert(
-      "حداکثر حجم ویدئو 100 مگابایت است."
-    );
-
+  if(file.size>100*1024*1024){
+    alert("حداکثر حجم ویدئو 100 مگابایت است.");
     return;
   }
 
-  const fd=
-    new FormData();
+  const fd=new FormData();
 
-  fd.append(
-    "product_id",
-    String(productId)
-  );
-
-  fd.append(
-    "video",
-    file
-  );
+  fd.append("product_id",String(productId));
+  fd.append("video",file);
 
   try{
+    const r=await fetch(
+      WORKER_URL+"/api/admin/upload-video",
+      {
+        method:"POST",
+        headers:{
+          "X-Telegram-Init-Data":
+            tg?.initData||""
+        },
+        body:fd
+      }
+    );
 
-    const r=
-      await fetch(
-        WORKER_URL+
-        "/api/admin/upload-video",
-        {
-          method:"POST",
-          headers:{
-            "X-Telegram-Init-Data":
-              tg?.initData||
-              ""
-          },
-          body:fd
-        }
-      );
-
-    const text=
-      await r.text();
-
+    const text=await r.text();
     let data;
 
     try{
-
-      data=
-        JSON.parse(text);
-
+      data=JSON.parse(text);
     }catch{
-
       throw new Error(
-        text||
-        "پاسخ نامعتبر از سرور"
+        text||"پاسخ نامعتبر از سرور"
       );
     }
 
-    if(
-      !r.ok||
-      data.ok===false
-    ){
-
+    if(!r.ok||data.ok===false){
       throw new Error(
-        data.error||
-        "خطا در آپلود ویدئو"
+        data.error||"خطا در آپلود"
       );
     }
 
-    alert(
-      "ویدئو با موفقیت آپلود شد."
-    );
-
-    productsLoaded=false;
+    alert("ویدئو با موفقیت آپلود شد.");
 
     await loadProducts();
-
     await loadAdminProducts();
 
   }catch(e){
-
-    alert(
-      "خطا در آپلود ویدئو: "+
-      e.message
-    );
+    alert("خطا در آپلود ویدئو: "+e.message);
   }
 }
 
-async function removeVideo(
-  productId
-){
-
-  if(!confirm(
-    "ویدئوی این محصول حذف شود؟"
-  )){
+async function removeVideo(productId){
+  if(!confirm("ویدئوی این محصول حذف شود؟")){
     return;
   }
 
   try{
-
     await post(
       "/api/admin/remove-video",
       {
-        initData:
-          tg?.initData||
-          "",
-        product_id:
-          productId
+        initData:tg?.initData||"",
+        product_id:Number(productId)
       }
     );
 
-    alert(
-      "ویدئو حذف شد."
-    );
-
-    productsLoaded=false;
+    alert("ویدئو حذف شد.");
 
     await loadProducts();
-
     await loadAdminProducts();
 
   }catch(e){
-
     alert(e.message);
   }
 }
 
 function setLoading(v){
-
-  const el=
-    document.getElementById(
-      "loading"
-    );
-
-  if(el){
-
-    el.classList.toggle(
-      "hidden",
-      !v
-    );
-  }
+  document.getElementById("loading")
+    .classList
+    .toggle("hidden",!v);
 }
 
 function showError(msg){
-
-  const el=
-    document.getElementById(
-      "error"
-    );
-
-  if(!el){
-    return;
-  }
+  const el=document.getElementById("error");
 
   el.textContent=msg;
-
-  el.classList.remove(
-    "hidden"
-  );
+  el.classList.remove("hidden");
 }
 
 function showAdminError(msg){
-
-  const el=
-    document.getElementById(
-      "adminError"
-    );
-
-  if(!el){
-    return;
-  }
+  const el=document.getElementById("adminError");
 
   el.textContent=msg;
-
-  el.classList.remove(
-    "hidden"
-  );
+  el.classList.remove("hidden");
 }
 
 function escapeHtml(value){
-
-  return String(
-    value??""
-  )
-  .replace(
-    /&/g,
-    "&amp;"
-  )
-  .replace(
-    /</g,
-    "&lt;"
-  )
-  .replace(
-    />/g,
-    "&gt;"
-  )
-  .replace(
-    /"/g,
-    "&quot;"
-  )
-  .replace(
-    /'/g,
-    "&#039;"
-  );
+  return String(value??"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 }
 
 function escapeAttr(value){
-
   return escapeHtml(value);
 }

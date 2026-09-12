@@ -1,20 +1,63 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,viewport-fit=cover"
+>
+
+<meta
+  http-equiv="Cache-Control"
+  content="no-cache,no-store,must-revalidate"
+>
+
+<meta
+  http-equiv="Pragma"
+  content="no-cache"
+>
+
+<meta
+  http-equiv="Expires"
+  content="0"
+>
+
 <meta name="theme-color" content="#166534">
 
 <title>مشکفام فارس</title>
 
-<link rel="stylesheet" href="style.css?v=20260912-2">
+<!--
+  CSS و JavaScript به صورت داینامیک
+  با زمان فعلی بارگذاری می‌شوند تا در زمان تست
+  از نسخه کش‌شده استفاده نشود.
+-->
+
+<script>
+(function () {
+
+  const version = Date.now();
+
+  const css = document.createElement("link");
+
+  css.rel = "stylesheet";
+  css.href = "style.css?_nocache=" + version;
+
+  document.head.appendChild(css);
+
+})();
+</script>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
 </head>
+
 
 <body>
 
 <div class="app">
+
 
 <header class="header">
 
@@ -23,24 +66,41 @@
     <img
       src="images/logo.png"
       onerror="this.style.display='none'"
+      alt="مشکفام فارس"
     >
 
     <div>
+
       <h1>🌱 مشکفام فارس</h1>
-      <p>محصولات کشاورزی و کودهای تخصصی</p>
+
+      <p>
+        محصولات کشاورزی و کودهای تخصصی
+      </p>
+
     </div>
 
   </div>
 
-  <div id="account" class="account hidden">
+
+  <div
+    id="account"
+    class="account hidden"
+  >
 
     <div class="account-main">
 
-      <div class="avatar">👤</div>
+      <div class="avatar">
+        👤
+      </div>
 
       <div>
-        <strong id="accountName">کاربر</strong>
+
+        <strong id="accountName">
+          کاربر
+        </strong>
+
         <span id="accountUser"></span>
+
       </div>
 
     </div>
@@ -49,9 +109,11 @@
 
   </div>
 
+
   <button
     id="adminButton"
-    class="admin-button hidden">
+    class="admin-button hidden"
+  >
     ⚙️ پنل مدیریت
   </button>
 
@@ -60,9 +122,12 @@
 
 <main>
 
+
 <section class="welcome">
 
-  <h2>محصولات مشکفام فارس</h2>
+  <h2>
+    محصولات مشکفام فارس
+  </h2>
 
   <p>
     محصول موردنظر خود را جستجو و مشخصات، قیمت و اطلاعات آن را مشاهده کنید.
@@ -77,6 +142,7 @@
     id="searchInput"
     type="search"
     placeholder="🔎 جستجوی محصول..."
+    autocomplete="off"
   >
 
 </div>
@@ -84,13 +150,15 @@
 
 <div
   id="categories"
-  class="categories">
-</div>
+  class="categories"
+></div>
 
 
 <div class="products-head">
 
-  <strong>محصولات</strong>
+  <strong>
+    محصولات
+  </strong>
 
   <span id="productCount">
     0 محصول
@@ -101,35 +169,40 @@
 
 <div
   id="loading"
-  class="message">
+  class="message"
+>
   در حال دریافت محصولات...
 </div>
 
 
 <div
   id="error"
-  class="message error hidden">
-</div>
+  class="message error hidden"
+></div>
 
 
 <div
   id="empty"
-  class="message hidden">
+  class="message hidden"
+>
   محصولی پیدا نشد.
 </div>
 
 
 <div
   id="productGrid"
-  class="product-grid">
-</div>
+  class="product-grid"
+></div>
+
 
 </main>
 
 
 <footer>
 
-  <strong>🌱 مشکفام فارس</strong>
+  <strong>
+    🌱 مشکفام فارس
+  </strong>
 
   <span>
     تولید و عرضه محصولات تخصصی کشاورزی
@@ -137,25 +210,29 @@
 
 </footer>
 
+
 </div>
 
 
-<!-- Product Modal -->
+<!-- PRODUCT MODAL -->
 
 <div
   id="modal"
-  class="modal hidden">
+  class="modal hidden"
+>
 
   <div
     class="modal-backdrop"
-    onclick="closeModal()">
-  </div>
+    onclick="closeModal()"
+  ></div>
+
 
   <div class="modal-card">
 
     <button
       class="close"
-      onclick="closeModal()">
+      onclick="closeModal()"
+    >
       ×
     </button>
 
@@ -166,57 +243,67 @@
 </div>
 
 
-<!-- Admin Modal -->
+<!-- ADMIN MODAL -->
 
 <div
   id="adminModal"
-  class="modal hidden">
+  class="modal hidden"
+>
 
   <div
     class="modal-backdrop"
-    onclick="closeAdmin()">
-  </div>
+    onclick="closeAdmin()"
+  ></div>
+
 
   <div class="modal-card admin-card">
 
     <button
       class="close"
-      onclick="closeAdmin()">
+      onclick="closeAdmin()"
+    >
       ×
     </button>
 
 
-    <h2>⚙️ پنل مدیریت</h2>
+    <h2>
+      ⚙️ پنل مدیریت
+    </h2>
 
 
     <div
       id="adminError"
-      class="message error hidden">
-    </div>
+      class="message error hidden"
+    ></div>
 
 
     <div
       id="adminLoading"
-      class="message">
+      class="message"
+    >
       در حال دریافت اطلاعات...
     </div>
 
 
     <section class="admin-section">
 
-      <h3>👤 اطلاعات حساب</h3>
+      <h3>
+        👤 اطلاعات حساب
+      </h3>
 
       <div
         id="adminAccountInfo"
-        class="info-box">
-      </div>
+        class="info-box"
+      ></div>
 
     </section>
 
 
     <section class="admin-section">
 
-      <h3>📦 مدیریت محصولات</h3>
+      <h3>
+        📦 مدیریت محصولات
+      </h3>
 
       <div id="adminProducts"></div>
 
@@ -225,9 +312,12 @@
 
     <section
       id="customerSection"
-      class="admin-section">
+      class="admin-section"
+    >
 
-      <h3>👥 قیمت اختصاصی مشتری</h3>
+      <h3>
+        👥 قیمت اختصاصی مشتری
+      </h3>
 
 
       <select id="customerSelect">
@@ -241,25 +331,66 @@
 
       <div
         id="customerInfo"
-        class="customer-info hidden">
-      </div>
+        class="customer-info hidden"
+      ></div>
 
 
       <div
         id="customerPrices"
-        class="customer-prices">
-      </div>
+        class="customer-prices"
+      ></div>
 
     </section>
+
 
   </div>
 
 </div>
 
 
-<!-- مهم: نسخه جدید JavaScript -->
+<!--
+  JavaScript به صورت داینامیک و ضدکش بارگذاری می‌شود.
+-->
 
-<script src="app.js?v=20260912-3"></script>
+<script>
+
+(function () {
+
+  const version = Date.now();
+
+  const script = document.createElement("script");
+
+  script.src = "app.js?_nocache=" + version;
+
+  script.onload = function () {
+
+    console.log(
+      "MOSHKFAM APP LOADED:",
+      version
+    );
+
+  };
+
+  script.onerror = function () {
+
+    const loading =
+      document.getElementById("loading");
+
+    if (loading) {
+
+      loading.textContent =
+        "❌ خطا در بارگذاری برنامه";
+
+    }
+
+  };
+
+  document.body.appendChild(script);
+
+})();
+
+</script>
+
 
 </body>
 </html>

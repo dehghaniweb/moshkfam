@@ -1,2480 +1,2023 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-
-<meta charset="utf-8">
-
-<meta
-  name="viewport"
-  content="width=device-width,initial-scale=1,viewport-fit=cover"
->
-
-<meta
-  name="theme-color"
-  content="#123c25"
->
-
-<title>کاتالوگ محصولات مشکفام فارس</title>
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<style>
-
-:root{
-  --bg:#f4f7f3;
-  --card:#fff;
-  --ink:#172019;
-  --muted:#657066;
-  --green:#16834a;
-  --green2:#0d6337;
-  --gold:#d5a62a;
-  --line:#e2e9e3;
-  --shadow:0 8px 25px rgba(20,45,27,.08)
-}
-
-*{
-  box-sizing:border-box
-}
-
-html,
-body{
-  margin:0;
-  padding:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:Tahoma,Arial,sans-serif
-}
-
-body{
-  min-height:100vh
-}
-
-.app{
-  max-width:1100px;
-  margin:auto;
-  min-height:100vh
-}
-
-header{
-  background:
-    linear-gradient(
-      145deg,
-      #0c2417,
-      #123c25 55%,
-      #0d5d34
-    );
-
-  color:#fff;
-
-  padding:24px 18px 20px;
-
-  border-radius:
-    0 0 28px 28px;
-
-  box-shadow:
-    0 8px 28px rgba(0,0,0,.16)
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:13px
-}
-
-.logo{
-  width:54px;
-  height:54px;
-  border-radius:16px;
-  background:#fff;
-  display:grid;
-  place-items:center;
-  color:#177440;
-  font-size:29px;
-  font-weight:900;
-  box-shadow:0 4px 15px #0003
-}
-
-h1{
-  font-size:21px;
-  margin:0 0 4px
-}
-
-.subtitle{
-  font-size:12px;
-  color:#d9eadf
-}
-
-.account-bar{
-  margin:16px 0 0;
-  padding:11px 12px;
-
-  display:flex;
-  align-items:center;
-  gap:10px;
-
-  background:#ffffff1c;
-  border:1px solid #ffffff2b;
-  border-radius:16px
-}
-
-.account-bar.guest{
-  background:#ffffff12
-}
-
-.account-icon{
-  width:38px;
-  height:38px;
-  border-radius:12px;
-  background:#fff;
-
-  display:grid;
-  place-items:center;
-
-  color:#123c25
-}
-
-.account-text{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-
-  min-width:0;
-  flex:1
-}
-
-.account-text strong{
-  font-size:12px;
-
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis
-}
-
-.account-text span{
-  font-size:10px;
-  color:#d9eadf;
-  line-height:1.6
-}
-
-.profile-btn{
-  border:0;
-  border-radius:11px;
-
-  padding:8px 11px;
-
-  background:#fff;
-  color:#123c25;
-
-  font-weight:800;
-
-  cursor:pointer
-}
-
-.search{
-  margin-top:18px;
-  position:relative
-}
-
-.search input{
-  width:100%;
-
-  border:0;
-  border-radius:17px;
-
-  padding:
-    14px
-    48px
-    14px
-    15px;
-
-  outline:none;
-
-  background:#fff;
-  color:#172019;
-
-  box-shadow:
-    0 5px 18px #0002
-}
-
-.search span{
-  position:absolute;
-
-  right:17px;
-  top:50%;
-
-  transform:
-    translateY(-50%);
-
-  font-size:21px;
-
-  color:#718077
-}
-
-main{
-  padding:18px
-}
-
-.toolbar{
-  display:flex;
-  gap:8px;
-
-  overflow:auto;
-
-  padding:
-    2px 0 14px;
-
-  scrollbar-width:none
-}
-
-.toolbar::-webkit-scrollbar{
-  display:none
-}
-
-.chip{
-  white-space:nowrap;
-
-  border:1px solid var(--line);
-
-  background:#fff;
-
-  color:#536057;
-
-  border-radius:999px;
-
-  padding:9px 14px;
-
-  font-size:12px;
-
-  cursor:pointer
-}
-
-.chip.active{
-  background:var(--green);
-  border-color:var(--green);
-  color:#fff
-}
-
-.count{
-  font-size:12px;
-  color:var(--muted);
-
-  margin:
-    0
-    2px
-    14px
-}
-
-.grid{
-  display:grid;
-
-  grid-template-columns:
-    repeat(2,minmax(0,1fr));
-
-  gap:18px
-}
-
-.card{
-  background:var(--card);
-
-  border:1px solid var(--line);
-
-  border-radius:24px;
-
-  overflow:hidden;
-
-  box-shadow:
-    0 8px 28px rgba(20,45,27,.08);
-
-  transition:
-    transform .18s,
-    box-shadow .18s;
-
-  display:grid;
-
-  grid-template-columns:
-    minmax(165px,42%)
-    minmax(0,1fr);
-
-  min-height:230px;
-
-  cursor:pointer
-}
-
-.card:hover{
-  transform:translateY(-2px);
-
-  box-shadow:
-    0 12px 32px rgba(20,45,27,.12)
-}
-
-.card:active{
-  transform:scale(.985)
-}
-
-.pic{
-  min-height:230px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #fafcf9,
-      #eef4ef
-    );
-
-  display:flex;
-
-  align-items:center;
-  justify-content:center;
-
-  padding:16px;
-
-  border-left:
-    1px solid #edf1ed
-}
-
-.pic img{
-  width:100%;
-  height:100%;
-
-  max-height:215px;
-
-  object-fit:contain;
-
-  display:block
-}
-
-.info{
-  padding:22px 20px;
-
-  display:flex;
-
-  flex-direction:column;
-
-  justify-content:center;
-
-  min-width:0
-}
-
-.name{
-  font-size:18px;
-
-  font-weight:900;
-
-  margin:
-    0
-    0
-    6px;
-
-  line-height:1.6;
-
-  color:#172019;
-
-  overflow-wrap:anywhere
-}
-
-.en{
-  font-size:11px;
-
-  color:#7b857e;
-
-  direction:ltr;
-
-  text-align:right;
-
-  line-height:1.6;
-
-  white-space:normal;
-
-  overflow-wrap:anywhere;
-
-  margin-bottom:13px
-}
-
-.spec{
-  display:grid;
-  gap:7px;
-
-  font-size:12px;
-
-  line-height:1.7;
-
-  color:#59645c
-}
-
-.spec div{
-  background:#f5f8f5;
-
-  border-radius:10px;
-
-  padding:6px 9px
-}
-
-.spec b{
-  color:var(--green2);
-
-  font-weight:800
-}
-
-.empty{
-  background:#fff;
-
-  border:1px dashed #ccd8ce;
-
-  border-radius:16px;
-
-  padding:30px;
-
-  text-align:center;
-
-  color:#657066
-}
-
-.modal{
-  position:fixed;
-
-  inset:0;
-
-  background:
-    rgba(10,25,16,.68);
-
-  z-index:9999;
-
-  display:none;
-
-  align-items:flex-start;
-
-  justify-content:center;
-
-  padding:0;
-
-  overflow-y:auto
-}
-
-.modal.show{
-  display:flex
-}
-
-.sheet{
-  width:min(900px,100%);
-
-  min-height:100vh;
-
-  background:#fff;
-
-  box-shadow:
-    0 0 40px rgba(0,0,0,.25);
-
-  overflow:hidden
-}
-
-.sheet-head{
-  position:sticky;
-
-  top:0;
-
-  z-index:5;
-
-  display:flex;
-
-  align-items:center;
-
-  gap:12px;
-
-  padding:14px 18px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #0c2417,
-      #123c25 60%,
-      #0d5d34
-    );
-
-  color:#fff;
-
-  box-shadow:
-    0 3px 14px rgba(0,0,0,.14)
-}
-
-.sheet-head strong{
-  font-size:16px;
-
-  line-height:1.5;
-
-  flex:1
-}
-
-.close{
-  margin-right:auto;
-
-  border:0;
-
-  background:#fff;
-
-  color:#26352b;
-
-  width:38px;
-
-  height:38px;
-
-  border-radius:50%;
-
-  font-size:24px;
-
-  line-height:1;
-
-  cursor:pointer;
-
-  box-shadow:0 2px 8px #0002
-}
-
-.detail-top{
-  padding:22px;
-
-  display:grid;
-
-  grid-template-columns:
-    250px
-    minmax(0,1fr);
-
-  gap:24px
-}
-
-.detail-img{
-  background:#f2f6f2;
-
-  border-radius:18px;
-
-  min-height:300px;
-
-  display:grid;
-
-  place-items:center;
-
-  padding:14px;
-
-  border:1px solid #e3ebe4
-}
-
-.detail-img img{
-  width:100%;
-  height:100%;
-
-  max-height:380px;
-
-  object-fit:contain;
-
-  display:block
-}
-
-.cat{
-  color:var(--green);
-
-  font-size:12px;
-
-  margin-top:6px
-}
-
-.detail-title{
-  font-size:24px;
-
-  margin:8px 0;
-
-  line-height:1.6
-}
-
-.detail-en{
-  direction:ltr;
-
-  text-align:right;
-
-  color:#6d766f;
-
-  font-size:12px;
-
-  line-height:1.7;
-
-  overflow-wrap:anywhere
-}
-
-.badges{
-  display:flex;
-
-  gap:8px;
-
-  flex-wrap:wrap;
-
-  margin:16px 0
-}
-
-.badge{
-  padding:8px 11px;
-
-  background:#edf6ef;
-
-  border-radius:10px;
-
-  font-size:11px;
-
-  color:#31583e
-}
-
-.product-details{
-  margin:
-    0
-    22px
-    22px;
-
-  padding:18px;
-
-  background:#f8fbf8;
-
-  border:
-    1px solid
-    #e2e9e3;
-
-  border-radius:16px
-}
-
-.product-details h3{
-  margin:
-    0
-    0
-    9px;
-
-  font-size:16px;
-
-  color:#123c25
-}
-
-.product-details .intro{
-  font-size:12px;
-
-  line-height:2.05;
-
-  color:#39443d;
-
-  margin:
-    0
-    0
-    14px
-}
-
-.detail-block{
-  margin-top:14px
-}
-
-.detail-block h4{
-  margin:
-    0
-    0
-    7px;
-
-  font-size:12px;
-
-  color:#16834a
-}
-
-.detail-block ul{
-  margin:0;
-
-  padding:
-    0
-    18px
-}
-
-.detail-block li{
-  font-size:11px;
-
-  line-height:1.95;
-
-  color:#566158;
-
-  margin:2px 0
-}
-
-.detail-block p{
-  font-size:11px;
-
-  line-height:1.95;
-
-  color:#566158;
-
-  margin:0
-}
-
-.detail-use{
-  background:#edf6ef;
-
-  padding:10px 12px;
-
-  border-radius:11px
-}
-
-.warning{
-  background:#fff4e8;
-
-  padding:10px 12px;
-
-  border-radius:11px
-}
-
-.warning h4{
-  color:#a65b00!important
-}
-
-.media-actions{
-  padding:
-    0
-    22px
-    16px
-}
-
-.media-btn{
-  display:inline-block;
-
-  padding:10px 13px;
-
-  background:#edf6ef;
-
-  color:#0d6337;
-
-  border-radius:11px;
-
-  text-decoration:none;
-
-  font-size:11px;
-
-  font-weight:800
-}
-
-.video-wrap{
-  padding:
-    0
-    22px
-    24px
-}
-
-.video-wrap video{
-  width:100%;
-
-  border-radius:14px;
-
-  background:#111
-}
-
-.profile-card{
-  margin:22px;
-
-  padding:28px 20px;
-
-  text-align:center;
-
-  background:#f8fbf8;
-
-  border:
-    1px solid
-    #e2e9e3;
-
-  border-radius:18px
-}
-
-.profile-avatar{
-  width:72px;
-  height:72px;
-
-  border-radius:50%;
-
-  background:#edf6ef;
-
-  display:grid;
-
-  place-items:center;
-
-  font-size:32px;
-
-  margin:
-    0
-    auto
-    12px
-}
-
-.profile-card h2{
-  margin:
-    0
-    0
-    18px;
-
-  font-size:20px
-}
-
-.profile-card p{
-  text-align:right;
-
-  font-size:12px;
-
-  line-height:2;
-
-  margin:7px 0
-}
-
-.profile-note{
-  color:#657066;
-
-  background:#fff;
-
-  padding:10px;
-
-  border-radius:11px
-}
-
-@media(max-width:850px){
-
-  .grid{
-    grid-template-columns:1fr
-  }
-
-  .card{
-    grid-template-columns:
-      180px
-      minmax(0,1fr);
-
-    min-height:220px
-  }
-
-  .pic{
-    min-height:220px
-  }
-
-  .info{
-    padding:19px
-  }
-
-  .name{
-    font-size:17px
-  }
-
-}
-
-@media(max-width:520px){
-
-  main{
-    padding:13px
-  }
-
-  .grid{
-    gap:12px
-  }
-
-  .card{
-    grid-template-columns:
-      125px
-      minmax(0,1fr);
-
-    min-height:195px;
-
-    border-radius:20px
-  }
-
-  .pic{
-    min-height:195px;
-
-    padding:10px
-  }
-
-  .pic img{
-    max-height:180px
-  }
-
-  .info{
-    padding:
-      15px
-      13px
-  }
-
-  .name{
-    font-size:15px;
-
-    line-height:1.55
-  }
-
-  .en{
-    font-size:10px;
-
-    margin-bottom:10px
-  }
-
-  .spec{
-    font-size:10px;
-
-    gap:5px
-  }
-
-  .spec div{
-    padding:
-      5px
-      7px
-  }
-
-  .detail-top{
-    grid-template-columns:
-      125px
-      minmax(0,1fr);
-
-    gap:14px;
-
-    padding:14px
-  }
-
-  .detail-img{
-    min-height:175px;
-
-    padding:9px
-  }
-
-  .detail-img img{
-    max-height:220px
-  }
-
-  .detail-title{
-    font-size:18px;
-
-    margin:3px 0
-  }
-
-  .detail-en{
-    font-size:10px
-  }
-
-  .badges{
-    gap:6px;
-
-    margin:10px 0
-  }
-
-  .badge{
-    font-size:10px;
-
-    padding:
-      6px
-      8px
-  }
-
-  .product-details{
-    margin:
-      0
-      13px
-      18px;
-
-    padding:14px;
-
-    border-radius:14px
-  }
-
-  .product-details h3{
-    font-size:15px
-  }
-
-  .product-details .intro{
-    font-size:11px
-  }
-
-  .detail-block h4{
-    font-size:11px
-  }
-
-  .detail-block li,
-  .detail-block p{
-    font-size:10px
-  }
-
-  .media-actions{
-    padding:
-      0
-      13px
-      14px
-  }
-
-  .video-wrap{
-    padding:
-      0
-      13px
-      20px
-  }
-
-}
-
-@media(max-width:360px){
-
-  .card{
-    grid-template-columns:
-      105px
-      minmax(0,1fr)
-  }
-
-  .pic{
-    min-height:180px
-  }
-
-  .pic img{
-    max-height:165px
-  }
-
-  .info{
-    padding:
-      13px
-      10px
-  }
-
-  .name{
-    font-size:14px
-  }
-
-  .spec{
-    font-size:9px
-  }
-
-}
-
-</style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <title>مشکفام فارس</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family:
+        Tahoma,
+        Arial,
+        sans-serif;
+      background: #f5f7f6;
+      color: #1f2937;
+    }
+
+    button,
+    input {
+      font-family: inherit;
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: auto;
+      padding: 14px;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    .header {
+      background: linear-gradient(135deg, #126b3a, #219653);
+      color: white;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.08);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 23px;
+    }
+
+    .brand p {
+      margin: 7px 0 0;
+      opacity: .9;
+      font-size: 13px;
+    }
+
+    .telegram-user {
+      display: none;
+      background: rgba(255,255,255,.15);
+      padding: 10px 12px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 12px;
+      min-width: 130px;
+    }
+
+    .telegram-user strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    /* =========================
+       SEARCH
+    ========================= */
+
+    .search-box {
+      margin: 14px 0;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #d7ded9;
+      border-radius: 14px;
+      background: white;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .search-box input:focus {
+      border-color: #219653;
+      box-shadow: 0 0 0 3px rgba(33,150,83,.1);
+    }
+
+    /* =========================
+       CATEGORIES
+    ========================= */
+
+    .categories {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 0 10px;
+      scrollbar-width: none;
+    }
+
+    .categories::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-btn {
+      border: none;
+      background: white;
+      color: #374151;
+      padding: 9px 14px;
+      border-radius: 999px;
+      white-space: nowrap;
+      cursor: pointer;
+      border: 1px solid #e2e7e3;
+      font-size: 13px;
+    }
+
+    .category-btn.active {
+      background: #219653;
+      color: white;
+      border-color: #219653;
+    }
+
+    /* =========================
+       STATUS
+    ========================= */
+
+    .status {
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 12px;
+      background: white;
+      font-size: 13px;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.error {
+      color: #b42318;
+      background: #fff4f2;
+    }
+
+    .status.success {
+      color: #166534;
+      background: #f0fdf4;
+    }
+
+    /* =========================
+       PRODUCTS GRID
+    ========================= */
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 17px;
+      overflow: hidden;
+      border: 1px solid #e5e9e6;
+      box-shadow: 0 4px 14px rgba(0,0,0,.05);
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(0,0,0,.09);
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      background: #f7f8f7;
+      display: block;
+    }
+
+    .product-info {
+      padding: 12px;
+    }
+
+    .product-name {
+      font-weight: bold;
+      font-size: 15px;
+      line-height: 1.7;
+      margin-bottom: 4px;
+    }
+
+    .product-en {
+      direction: ltr;
+      text-align: right;
+      font-size: 11px;
+      color: #6b7280;
+      min-height: 18px;
+    }
+
+    .product-category {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 4px 8px;
+      background: #edf8f1;
+      color: #16703e;
+      border-radius: 7px;
+      font-size: 10px;
+    }
+
+    /* =========================
+       EMPTY
+    ========================= */
+
+    .empty {
+      background: white;
+      padding: 35px 15px;
+      border-radius: 16px;
+      text-align: center;
+      color: #6b7280;
+      display: none;
+    }
+
+    /* =========================
+       MODAL
+    ========================= */
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.58);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      width: min(700px, 100%);
+      max-height: 92vh;
+      overflow-y: auto;
+      background: white;
+      border-radius: 20px;
+      position: relative;
+      padding: 18px;
+    }
+
+    .modal-close {
+      position: sticky;
+      top: 0;
+      float: left;
+      border: none;
+      background: #f1f3f2;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 3;
+    }
+
+    .modal-image {
+      width: 100%;
+      max-height: 380px;
+      object-fit: contain;
+      background: #f7f8f7;
+      border-radius: 14px;
+      margin-bottom: 15px;
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .modal-en {
+      direction: ltr;
+      text-align: right;
+      color: #6b7280;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .detail-section {
+      margin-top: 15px;
+      border-top: 1px solid #edf0ee;
+      padding-top: 13px;
+    }
+
+    .detail-section h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      color: #126b3a;
+    }
+
+    .detail-section p {
+      margin: 0;
+      line-height: 2;
+      font-size: 13px;
+      white-space: pre-line;
+    }
+
+    .benefits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .benefit {
+      background: #edf8f1;
+      color: #166534;
+      padding: 7px 10px;
+      border-radius: 9px;
+      font-size: 12px;
+    }
+
+    .media-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .media-btn {
+      border: none;
+      border-radius: 11px;
+      padding: 11px 15px;
+      cursor: pointer;
+      text-decoration: none;
+      background: #219653;
+      color: white;
+      font-size: 13px;
+    }
+
+    .media-btn.secondary {
+      background: #eef2f0;
+      color: #166534;
+    }
+
+    /* =========================
+       PROFILE
+    ========================= */
+
+    .profile-box {
+      display: none;
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 15px;
+      border: 1px solid #e3e8e4;
+    }
+
+    .profile-title {
+      font-weight: bold;
+      color: #126b3a;
+      margin-bottom: 10px;
+    }
+
+    .profile-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid #f0f2f1;
+      font-size: 13px;
+    }
+
+    .profile-row:last-child {
+      border-bottom: none;
+    }
+
+    /* =========================
+       LOADING
+    ========================= */
+
+    .loading {
+      text-align: center;
+      padding: 45px 15px;
+      color: #6b7280;
+      background: white;
+      border-radius: 16px;
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid #dce8df;
+      border-top-color: #219653;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 900px) {
+      .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 650px) {
+      .app {
+        padding: 10px;
+      }
+
+      .header {
+        padding: 16px;
+      }
+
+      .header-top {
+        align-items: flex-start;
+      }
+
+      .brand h1 {
+        font-size: 20px;
+      }
+
+      .telegram-user {
+        min-width: 110px;
+        font-size: 10px;
+      }
+
+      .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .product-info {
+        padding: 9px;
+      }
+
+      .product-name {
+        font-size: 13px;
+      }
+
+      .modal-content {
+        padding: 14px;
+        border-radius: 17px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="app">
 
-<header>
+  <!-- =========================
+       HEADER
+  ========================= -->
 
-  <div class="brand">
+  <header class="header">
 
-    <div class="logo">
-      🌾
-    </div>
+    <div class="header-top">
 
-    <div>
+      <div class="brand">
+        <h1>🌱 مشکفام فارس</h1>
+        <p>سامانه محصولات و خدمات کشاورزی</p>
+      </div>
 
-      <h1>
-        کاتالوگ محصولات مشکفام فارس
-      </h1>
-
-      <div class="subtitle">
-        معرفی محصولات کودی و تغذیه گیاه
+      <div
+        id="telegramUser"
+        class="telegram-user"
+      >
+        <strong id="telegramName">کاربر</strong>
+        <span id="telegramUsername"></span>
       </div>
 
     </div>
 
-  </div>
+  </header>
+
+
+  <!-- =========================
+       PROFILE
+  ========================= -->
 
   <div
-    class="account-bar guest"
-    id="accountBar"
+    id="profileBox"
+    class="profile-box"
   >
 
-    <div class="account-icon">
-      👤
+    <div class="profile-title">
+      👤 پروفایل
     </div>
 
-    <div class="account-text">
-
-      <strong id="accountName">
-        ورود از تلگرام
-      </strong>
-
-      <span id="accountStatus">
-        برای شناسایی حساب، این صفحه را از ربات تلگرام باز کنید.
-      </span>
-
+    <div class="profile-row">
+      <span>نام</span>
+      <strong id="profileName">-</strong>
     </div>
 
-    <button
-      id="profileBtn"
-      class="profile-btn"
-      style="display:none"
-    >
-      پروفایل
-    </button>
+    <div class="profile-row">
+      <span>نام کاربری</span>
+      <strong id="profileUsername">-</strong>
+    </div>
+
+    <div class="profile-row">
+      <span>وضعیت حساب</span>
+      <strong id="profileStatus">فعال</strong>
+    </div>
 
   </div>
 
-  <div class="search">
 
-    <span>
-      ⌕
-    </span>
+  <!-- =========================
+       SEARCH
+  ========================= -->
+
+  <div class="search-box">
 
     <input
-      id="search"
+      id="searchInput"
       type="search"
-      placeholder="جستجوی نام محصول، فرمول یا گروه..."
+      placeholder="🔎 جستجوی محصول..."
       autocomplete="off"
     >
 
   </div>
 
-</header>
 
-<main>
+  <!-- =========================
+       CATEGORIES
+  ========================= -->
 
   <div
-    class="toolbar"
-    id="filters"
-  ></div>
+    id="categories"
+    class="categories"
+  >
+  </div>
 
-  <p
-    class="count"
-    id="count"
-  ></p>
 
-  <section
-    class="grid"
-    id="grid"
-  ></section>
+  <!-- =========================
+       STATUS
+  ========================= -->
 
-</main>
+  <div
+    id="status"
+    class="status"
+  >
+  </div>
+
+
+  <!-- =========================
+       PRODUCTS
+  ========================= -->
+
+  <div
+    id="loading"
+    class="loading"
+  >
+
+    <div class="spinner"></div>
+
+    در حال دریافت محصولات...
+
+  </div>
+
+
+  <div
+    id="productsGrid"
+    class="products-grid"
+  >
+  </div>
+
+
+  <div
+    id="empty"
+    class="empty"
+  >
+    محصولی پیدا نشد.
+  </div>
 
 </div>
 
+
+<!-- =========================
+     PRODUCT MODAL
+========================= -->
+
 <div
+  id="productModal"
   class="modal"
-  id="modal"
 >
 
-  <div
-    class="sheet"
-    role="dialog"
-    aria-modal="true"
-  >
+  <div class="modal-content">
 
-    <div class="sheet-head">
+    <button
+      id="modalClose"
+      class="modal-close"
+      type="button"
+    >
+      ×
+    </button>
 
-      <strong
-        id="modalHeading"
-      ></strong>
+    <img
+      id="modalImage"
+      class="modal-image"
+      alt=""
+    >
 
-      <button
-        class="close"
-        id="close"
-        aria-label="بستن"
-      >
-        ×
-      </button>
-
+    <div
+      id="modalTitle"
+      class="modal-title"
+    >
     </div>
 
     <div
-      id="detail"
-    ></div>
+      id="modalEn"
+      class="modal-en"
+    >
+    </div>
+
+
+    <div
+      id="modalIntroSection"
+      class="detail-section"
+    >
+
+      <h3>معرفی محصول</h3>
+
+      <p id="modalIntro"></p>
+
+    </div>
+
+
+    <div
+      id="modalBenefitsSection"
+      class="detail-section"
+    >
+
+      <h3>مزایا</h3>
+
+      <div
+        id="modalBenefits"
+        class="benefits"
+      >
+      </div>
+
+    </div>
+
+
+    <div
+      id="modalCompositionSection"
+      class="detail-section"
+    >
+
+      <h3>ترکیبات</h3>
+
+      <p id="modalComposition"></p>
+
+    </div>
+
+
+    <div
+      id="modalUseSection"
+      class="detail-section"
+    >
+
+      <h3>نحوه مصرف</h3>
+
+      <p id="modalUse"></p>
+
+    </div>
+
+
+    <div
+      id="modalWarningsSection"
+      class="detail-section"
+    >
+
+      <h3>هشدارها</h3>
+
+      <p id="modalWarnings"></p>
+
+    </div>
+
+
+    <div
+      id="modalPackageSection"
+      class="detail-section"
+    >
+
+      <h3>بسته‌بندی</h3>
+
+      <p id="modalPackage"></p>
+
+    </div>
+
+
+    <div
+      id="modalMakerSection"
+      class="detail-section"
+    >
+
+      <h3>تولیدکننده</h3>
+
+      <p id="modalMaker"></p>
+
+    </div>
+
+
+    <div class="media-buttons">
+
+      <a
+        id="catalogButton"
+        class="media-btn"
+        href="#"
+        target="_blank"
+        rel="noopener"
+      >
+        📖 مشاهده کاتالوگ
+      </a>
+
+      <a
+        id="videoButton"
+        class="media-btn secondary"
+        href="#"
+        target="_blank"
+        rel="noopener"
+      >
+        🎬 مشاهده ویدئو
+      </a>
+
+    </div>
 
   </div>
 
 </div>
 
+
 <script>
 
-/* =========================================================
-   CONFIG
-========================================================= */
+  /* =======================================================
+     CONFIG
+  ======================================================= */
 
-const API_BASE =
-  "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
+  const WORKER_URL =
+    "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
 
+  const GITHUB_BASE =
+    "https://dehghaniweb.github.io/moshkfam/";
 
-/* =========================================================
-   STATE
-========================================================= */
-
-let products = [];
-
-let activeCategory = "همه";
-
-let customer = null;
+  const IMAGES_BASE =
+    GITHUB_BASE + "Images/";
 
 
-/* =========================================================
-   ELEMENTS
-========================================================= */
+  /* =======================================================
+     TELEGRAM
+  ======================================================= */
 
-const searchEl =
-  document.getElementById("search");
-
-const gridEl =
-  document.getElementById("grid");
-
-const countEl =
-  document.getElementById("count");
-
-const filtersEl =
-  document.getElementById("filters");
-
-const modalEl =
-  document.getElementById("modal");
-
-const detailEl =
-  document.getElementById("detail");
-
-const accountBar =
-  document.getElementById("accountBar");
-
-const accountName =
-  document.getElementById("accountName");
-
-const accountStatus =
-  document.getElementById("accountStatus");
-
-const profileBtn =
-  document.getElementById("profileBtn");
-
-const modalHeading =
-  document.getElementById("modalHeading");
+  const tg =
+    window.Telegram &&
+    window.Telegram.WebApp
+      ? window.Telegram.WebApp
+      : null;
 
 
-/* =========================================================
-   IMAGE PATH
-   تصاویر واقعی داخل پوشه Images هستند.
-========================================================= */
+  if (tg) {
 
-function getProductImageUrl(imageUrl, productId) {
-
-  /*
-   * اگر آدرس از Supabase وجود داشته باشد،
-   * ولی مسیر آن assets باشد، آن را به Images تبدیل می‌کنیم.
-   */
-
-  if (imageUrl) {
-
-    let url =
-      String(imageUrl).trim();
-
-    /*
-     * حالت:
-     * .../assets/product-1.jpg
-     *
-     * تبدیل می‌شود به:
-     * .../Images/product-1.jpg
-     */
-
-    url =
-      url.replace(
-        /\/assets\//i,
-        "/Images/"
-      );
-
-    /*
-     * اگر قبلاً Images باشد همان را نگه می‌داریم.
-     */
-
-    if (
-      /\/Images\//i.test(url)
-    ) {
-
-      return url;
-
+    try {
+      tg.ready();
+      tg.expand();
+    }
+    catch (error) {
+      console.log("Telegram WebApp error:", error);
     }
 
-    /*
-     * اگر آدرس مستقیم GitHub Pages باشد
-     * ولی پوشه مشخصی نداشته باشد.
-     */
-
-    if (
-      url.includes(
-        "dehghaniweb.github.io/moshkfam/"
-      )
-    ) {
-
-      const filename =
-        url.split("/").pop();
-
-      return (
-        "https://dehghaniweb.github.io/moshkfam/Images/" +
-        filename
-      );
-
-    }
-
-    return url;
-
   }
 
 
-  /*
-   * حالت جایگزین:
-   * اگر image_url خالی بود،
-   * بر اساس شماره محصول تصویر ساخته می‌شود.
-   */
+  /* =======================================================
+     GLOBAL DATA
+  ======================================================= */
 
-  return (
-    "https://dehghaniweb.github.io/moshkfam/Images/product-" +
-    Number(productId) +
-    ".jpg"
-  );
+  let products = [];
 
-}
+  let activeCategory = "همه";
 
 
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
+  /* =======================================================
+     ELEMENTS
+  ======================================================= */
 
-function escapeHtml(value) {
+  const loading =
+    document.getElementById("loading");
 
-  return String(
-    value === null ||
-    value === undefined
-      ? ""
-      : value
-  )
-  .replace(
-    /[&<>"']/g,
-    function(character) {
+  const productsGrid =
+    document.getElementById("productsGrid");
 
-      if (character === "&") {
-        return "&amp;";
-      }
+  const empty =
+    document.getElementById("empty");
 
-      if (character === "<") {
-        return "&lt;";
-      }
+  const searchInput =
+    document.getElementById("searchInput");
 
-      if (character === ">") {
-        return "&gt;";
-      }
+  const categories =
+    document.getElementById("categories");
 
-      if (character === '"') {
-        return "&quot;";
-      }
+  const statusBox =
+    document.getElementById("status");
 
-      if (character === "'") {
-        return "&#039;";
-      }
 
-      return character;
+  /* =======================================================
+     STATUS MESSAGE
+  ======================================================= */
 
-    }
-  );
-
-}
-
-
-/* =========================================================
-   NORMALIZE SEARCH
-========================================================= */
-
-function normalize(value) {
-
-  return String(
-    value || ""
-  )
-  .toLocaleLowerCase("fa-IR")
-  .replace(/ي/g,"ی")
-  .replace(/ك/g,"ک")
-  .trim();
-
-}
-
-
-/* =========================================================
-   SEARCH MATCH
-========================================================= */
-
-function productMatches(
-  product,
-  query
-) {
-
-  if (!query) {
-    return true;
-  }
-
-  const benefits =
-    Array.isArray(
-      product.benefits
-    )
-      ? product.benefits.join(" ")
-      : "";
-
-  const searchable = [
-
-    product.name_fa,
-    product.name_en,
-    product.category,
-    product.package,
-    product.maker,
-    product.intro,
-    product.composition,
-    product.use_text,
-    product.warnings,
-    benefits
-
-  ]
-  .map(normalize)
-  .join(" ");
-
-  return searchable.includes(
-    normalize(query)
-  );
-
-}
-
-
-/* =========================================================
-   FILTERS
-========================================================= */
-
-function makeFilters() {
-
-  const categories = [
-    "همه"
-  ];
-
-  products.forEach(
-    function(product) {
-
-      const category =
-        product.category;
-
-      if (
-        category &&
-        !categories.includes(
-          category
-        )
-      ) {
-
-        categories.push(
-          category
-        );
-
-      }
-
-    }
-  );
-
-  filtersEl.innerHTML =
-    categories
-      .map(
-        function(category) {
-
-          const activeClass =
-            category === activeCategory
-              ? "active"
-              : "";
-
-          return (
-            '<button ' +
-            'class="chip ' +
-            activeClass +
-            '" ' +
-            'data-category="' +
-            escapeHtml(category) +
-            '">' +
-            escapeHtml(category) +
-            '</button>'
-          );
-
-        }
-      )
-      .join("");
-
-  const buttons =
-    filtersEl.querySelectorAll(
-      ".chip"
-    );
-
-  buttons.forEach(
-    function(button) {
-
-      button.addEventListener(
-        "click",
-        function() {
-
-          activeCategory =
-            button.getAttribute(
-              "data-category"
-            ) || "همه";
-
-          makeFilters();
-
-          renderProducts();
-
-        }
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   RENDER PRODUCTS
-========================================================= */
-
-function renderProducts() {
-
-  const query =
-    searchEl.value.trim();
-
-  const list =
-    products.filter(
-      function(product) {
-
-        const categoryOk =
-          activeCategory === "همه" ||
-          product.category ===
-            activeCategory;
-
-        const searchOk =
-          productMatches(
-            product,
-            query
-          );
-
-        return (
-          categoryOk &&
-          searchOk
-        );
-
-      }
-    );
-
-  countEl.textContent =
-    list.length +
-    " محصول";
-
-  if (!list.length) {
-
-    gridEl.innerHTML =
-      '<div class="empty" ' +
-      'style="grid-column:1/-1">' +
-      'محصولی با این جستجو پیدا نشد.' +
-      '</div>';
-
-    return;
-
-  }
-
-  gridEl.innerHTML =
-    list
-      .map(
-        function(product) {
-
-          const id =
-            Number(product.id);
-
-          /*
-           * مسیر جدید تصویر
-           */
-
-          const imageUrl =
-            getProductImageUrl(
-              product.image_url,
-              id
-            );
-
-          return (
-
-            '<article ' +
-            'class="card" ' +
-            'data-product-id="' +
-            id +
-            '">' +
-
-              '<div class="pic">' +
-
-                '<img ' +
-                'src="' +
-                escapeHtml(
-                  imageUrl
-                ) +
-                '" ' +
-                'alt="' +
-                escapeHtml(
-                  product.name_fa
-                ) +
-                '" ' +
-                'loading="lazy" ' +
-
-                /*
-                 * اگر تصویر پیدا نشد،
-                 * تصویر پیش‌فرض را امتحان می‌کند.
-                 */
-
-                'onerror="this.onerror=null;this.src=\'https://dehghaniweb.github.io/moshkfam/Images/product-' +
-                id +
-                '.jpg\'">' +
-
-              '</div>' +
-
-              '<div class="info">' +
-
-                '<h2 class="name">' +
-                  escapeHtml(
-                    product.name_fa
-                  ) +
-                '</h2>' +
-
-                '<div class="en">' +
-                  escapeHtml(
-                    product.name_en
-                  ) +
-                '</div>' +
-
-                '<div class="spec">' +
-
-                  '<div>' +
-                    '<b>گروه:</b> ' +
-                    escapeHtml(
-                      product.category
-                    ) +
-                  '</div>' +
-
-                  '<div>' +
-                    '<b>بسته‌بندی:</b> ' +
-                    escapeHtml(
-                      product.package
-                    ) +
-                  '</div>' +
-
-                  '<div>' +
-                    '<b>تولید:</b> ' +
-                    escapeHtml(
-                      product.maker
-                    ) +
-                  '</div>' +
-
-                '</div>' +
-
-              '</div>' +
-
-            '</article>'
-
-          );
-
-        }
-      )
-      .join("");
-
-  const cards =
-    gridEl.querySelectorAll(
-      ".card"
-    );
-
-  cards.forEach(
-    function(card) {
-
-      card.addEventListener(
-        "click",
-        function() {
-
-          const id =
-            Number(
-              card.getAttribute(
-                "data-product-id"
-              )
-            );
-
-          openProduct(id);
-
-        }
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   PRODUCT DETAILS
-========================================================= */
-
-function createProductDetails(
-  product
-) {
-
-  const benefits =
-    Array.isArray(
-      product.benefits
-    )
-      ? product.benefits
-      : [];
-
-  let html =
-    '<div class="product-details">';
-
-  html +=
-    '<h3>' +
-    'معرفی و جزئیات محصول' +
-    '</h3>';
-
-  if (product.intro) {
-
-    html +=
-      '<p class="intro">' +
-      escapeHtml(
-        product.intro
-      ) +
-      '</p>';
-
-  }
-
-  if (benefits.length) {
-
-    html +=
-      '<div class="detail-block">' +
-
-        '<h4>' +
-        'مزایا و کاربرد' +
-        '</h4>' +
-
-        '<ul>';
-
-    benefits.forEach(
-      function(item) {
-
-        html +=
-          '<li>' +
-          escapeHtml(item) +
-          '</li>';
-
-      }
-    );
-
-    html +=
-        '</ul>' +
-      '</div>';
-
-  }
-
-  if (product.composition) {
-
-    html +=
-      '<div class="detail-block">' +
-
-        '<h4>' +
-        'ترکیبات سازنده' +
-        '</h4>' +
-
-        '<p>' +
-        escapeHtml(
-          product.composition
-        ) +
-        '</p>' +
-
-      '</div>';
-
-  }
-
-  if (product.use_text) {
-
-    html +=
-      '<div class="detail-block detail-use">' +
-
-        '<h4>' +
-        'نحوه مصرف' +
-        '</h4>' +
-
-        '<p>' +
-        escapeHtml(
-          product.use_text
-        ) +
-        '</p>' +
-
-      '</div>';
-
-  }
-
-  if (product.warnings) {
-
-    html +=
-      '<div class="detail-block warning">' +
-
-        '<h4>' +
-        'هشدارها و نکات ایمنی' +
-        '</h4>' +
-
-        '<p>' +
-        escapeHtml(
-          product.warnings
-        ) +
-        '</p>' +
-
-      '</div>';
-
-  }
-
-  html +=
-    '</div>';
-
-  return html;
-
-}
-
-
-/* =========================================================
-   OPEN PRODUCT
-========================================================= */
-
-function openProduct(id) {
-
-  const product =
-    products.find(
-      function(item) {
-
-        return Number(item.id) ===
-          Number(id);
-
-      }
-    );
-
-  if (!product) {
-    return;
-  }
-
-  modalHeading.textContent =
-    product.name_fa ||
-    "جزئیات محصول";
-
-  /*
-   * مسیر تصویر محصول
-   */
-
-  const imageUrl =
-    getProductImageUrl(
-      product.image_url,
-      product.id
-    );
-
-  let mediaHtml = "";
-
-  if (
-    product.catalog_pdf_url
+  function showStatus(
+    message,
+    type
   ) {
 
-    mediaHtml +=
-      '<div class="media-actions">' +
+    statusBox.textContent =
+      message || "";
 
-        '<a ' +
-        'class="media-btn" ' +
-        'href="' +
-        escapeHtml(
-          product.catalog_pdf_url
-        ) +
-        '" ' +
-        'target="_blank" ' +
-        'rel="noopener">' +
-
-          '📄 مشاهده کاتالوگ' +
-
-        '</a>' +
-
-      '</div>';
+    statusBox.className =
+      "status show " +
+      (type || "");
 
   }
 
-  if (
-    product.video_url
-  ) {
 
-    mediaHtml +=
-      '<div class="video-wrap">' +
+  function hideStatus() {
 
-        '<video ' +
-        'controls ' +
-        'playsinline ' +
-        'preload="metadata" ' +
-        'src="' +
-        escapeHtml(
-          product.video_url
-        ) +
-        '">' +
+    statusBox.className =
+      "status";
 
-        '</video>' +
-
-      '</div>';
-
-  }
-
-  let html = "";
-
-  html +=
-    '<div class="detail-top">' +
-
-      '<div class="detail-img">' +
-
-        '<img ' +
-        'src="' +
-        escapeHtml(
-          imageUrl
-        ) +
-        '" ' +
-        'alt="' +
-        escapeHtml(
-          product.name_fa
-        ) +
-        '" ' +
-
-        'onerror="this.onerror=null;this.src=\'https://dehghaniweb.github.io/moshkfam/Images/product-' +
-        Number(product.id) +
-        '.jpg\'">' +
-
-      '</div>' +
-
-      '<div>' +
-
-        '<div class="cat">' +
-          escapeHtml(
-            product.category
-          ) +
-        '</div>' +
-
-        '<h2 class="detail-title">' +
-          escapeHtml(
-            product.name_fa
-          ) +
-        '</h2>' +
-
-        '<div class="detail-en">' +
-          escapeHtml(
-            product.name_en
-          ) +
-        '</div>' +
-
-        '<div class="badges">';
-
-  if (product.package) {
-
-    html +=
-      '<span class="badge">' +
-        'بسته‌بندی: ' +
-        escapeHtml(
-          product.package
-        ) +
-      '</span>';
-
-  }
-
-  if (product.maker) {
-
-    html +=
-      '<span class="badge">' +
-        'تولید: ' +
-        escapeHtml(
-          product.maker
-        ) +
-      '</span>';
-
-  }
-
-  html +=
-        '</div>' +
-
-      '</div>' +
-
-    '</div>';
-
-  html +=
-    createProductDetails(
-      product
-    );
-
-  html +=
-    mediaHtml;
-
-  detailEl.innerHTML =
-    html;
-
-  modalEl.classList.add(
-    "show"
-  );
-
-  document.body.style.overflow =
-    "hidden";
-
-}
-
-
-/* =========================================================
-   CLOSE MODAL
-========================================================= */
-
-function closeModal() {
-
-  modalEl.classList.remove(
-    "show"
-  );
-
-  document.body.style.overflow =
-    "";
-
-}
-
-
-/* =========================================================
-   PROFILE
-========================================================= */
-
-function showAccount(
-  customerData
-) {
-
-  customer =
-    customerData ||
-    null;
-
-  if (!customer) {
-
-    accountBar.classList.add(
-      "guest"
-    );
-
-    accountName.textContent =
-      "ورود از تلگرام";
-
-    accountStatus.textContent =
-      "برای شناسایی حساب، این صفحه را از ربات تلگرام باز کنید.";
-
-    profileBtn.style.display =
-      "none";
-
-    return;
-
-  }
-
-  accountBar.classList.remove(
-    "guest"
-  );
-
-  const fullName =
-    [
-      customer.first_name,
-      customer.last_name
-    ]
-    .filter(Boolean)
-    .join(" ");
-
-  accountName.textContent =
-    fullName ||
-    customer.username ||
-    "کاربر تلگرام";
-
-  if (customer.username) {
-
-    accountStatus.textContent =
-      "@" +
-      customer.username +
-      " • حساب فعال";
-
-  }
-  else {
-
-    accountStatus.textContent =
-      "حساب تلگرام فعال";
-
-  }
-
-  profileBtn.style.display =
-    "inline-flex";
-
-}
-
-
-/* =========================================================
-   OPEN PROFILE
-========================================================= */
-
-function openProfile() {
-
-  if (!customer) {
-    return;
-  }
-
-  const fullName =
-    [
-      customer.first_name,
-      customer.last_name
-    ]
-    .filter(Boolean)
-    .join(" ");
-
-  let html =
-    '<div class="profile-card">' +
-
-      '<div class="profile-avatar">' +
-        '👤' +
-      '</div>' +
-
-      '<h2>' +
-        escapeHtml(
-          fullName ||
-          "کاربر تلگرام"
-        ) +
-      '</h2>';
-
-  if (customer.username) {
-
-    html +=
-      '<p>' +
-        '<b>نام کاربری:</b> @' +
-        escapeHtml(
-          customer.username
-        ) +
-      '</p>';
-
-  }
-
-  const status =
-    customer.status ||
-    "active";
-
-  const role =
-    customer.role ||
-    "customer";
-
-  html +=
-      '<p>' +
-        '<b>وضعیت:</b> ' +
-        (
-          status === "active"
-            ? "فعال"
-            : escapeHtml(status)
-        ) +
-      '</p>' +
-
-      '<p>' +
-        '<b>نوع حساب:</b> ' +
-        (
-          role === "customer"
-            ? "مشتری"
-            : escapeHtml(role)
-        ) +
-      '</p>' +
-
-      '<p class="profile-note">' +
-        'این حساب با حساب تلگرام شما در سامانه مشکفام فارس شناسایی شده است.' +
-      '</p>' +
-
-    '</div>';
-
-  detailEl.innerHTML =
-    html;
-
-  modalHeading.textContent =
-    "پروفایل من";
-
-  modalEl.classList.add(
-    "show"
-  );
-
-  document.body.style.overflow =
-    "hidden";
-
-}
-
-
-/* =========================================================
-   TELEGRAM LOGIN
-========================================================= */
-
-async function telegramLogin() {
-
-  if (
-    !window.Telegram ||
-    !window.Telegram.WebApp
-  ) {
-
-    showAccount(
-      null
-    );
-
-    return;
-
-  }
-
-  const telegram =
-    window.Telegram.WebApp;
-
-  try {
-
-    telegram.ready();
-
-    if (
-      typeof telegram.expand ===
-      "function"
-    ) {
-
-      telegram.expand();
-
-    }
-
-  }
-  catch(error) {
-
-    console.warn(
-      "Telegram WebApp initialization warning:",
-      error
-    );
-
-  }
-
-  const initData =
-    telegram.initData;
-
-  if (!initData) {
-
-    accountName.textContent =
-      "ورود از تلگرام";
-
-    accountStatus.textContent =
-      "برای ورود، صفحه را از دکمه ورود ربات Telegram باز کنید.";
-
-    return;
-
-  }
-
-  accountName.textContent =
-    "در حال ورود…";
-
-  accountStatus.textContent =
-    "در حال بررسی حساب Telegram";
-
-  try {
-
-    const response =
-      await fetch(
-        API_BASE +
-        "/api/telegram-auth",
-        {
-          method:
-            "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-              initData:
-                initData
-            }),
-
-          cache:
-            "no-store"
-        }
-      );
-
-    const result =
-      await response.json();
-
-    if (
-      !response.ok ||
-      !result.ok
-    ) {
-
-      throw new Error(
-        result.error ||
-        "ورود Telegram ناموفق بود."
-      );
-
-    }
-
-    showAccount(
-      result.customer
-    );
-
-    console.log(
-      "Telegram authentication successful",
-      result.customer
-    );
-
-  }
-  catch(error) {
-
-    console.error(
-      "Telegram Login Error:",
-      error
-    );
-
-    accountName.textContent =
-      "خطا در ورود";
-
-    accountStatus.textContent =
-      error.message ||
-      "خطا در اتصال به سامانه.";
-
-  }
-
-}
-
-
-/* =========================================================
-   LOAD PRODUCTS
-========================================================= */
-
-async function loadProducts() {
-
-  gridEl.innerHTML =
-    '<div class="empty" ' +
-    'style="grid-column:1/-1">' +
-    'در حال دریافت محصولات…' +
-    '</div>';
-
-  try {
-
-    const response =
-      await fetch(
-        API_BASE +
-        "/api/products",
-        {
-          method:
-            "GET",
-
-          cache:
-            "no-store"
-        }
-      );
-
-    const result =
-      await response.json();
-
-    if (
-      !response.ok ||
-      !result.ok
-    ) {
-
-      throw new Error(
-        result.error ||
-        "دریافت محصولات ناموفق بود."
-      );
-
-    }
-
-    if (
-      !Array.isArray(
-        result.products
-      )
-    ) {
-
-      throw new Error(
-        "لیست محصولات معتبر نیست."
-      );
-
-    }
-
-    products =
-      result.products;
-
-    makeFilters();
-
-    renderProducts();
-
-    console.log(
-      "Products loaded:",
-      products.length
-    );
-
-  }
-  catch(error) {
-
-    console.error(
-      "Products Error:",
-      error
-    );
-
-    countEl.textContent =
+    statusBox.textContent =
       "";
 
-    gridEl.innerHTML =
-      '<div class="empty" ' +
-      'style="grid-column:1/-1">' +
-
-        'دریافت محصولات با خطا روبه‌رو شد.' +
-
-        '<br><br>' +
-
-        '<small>' +
-        escapeHtml(
-          error.message
-        ) +
-        '</small>' +
-
-      '</div>';
-
   }
 
-}
 
+  /* =======================================================
+     SAFE TEXT
+  ======================================================= */
 
-/* =========================================================
-   EVENTS
-========================================================= */
-
-searchEl.addEventListener(
-  "input",
-  function() {
-
-    renderProducts();
-
-  }
-);
-
-document.getElementById(
-  "close"
-).addEventListener(
-  "click",
-  closeModal
-);
-
-modalEl.addEventListener(
-  "click",
-  function(event) {
+  function safeText(value) {
 
     if (
-      event.target ===
-      modalEl
+      value === null ||
+      value === undefined
     ) {
 
-      closeModal();
+      return "";
+
+    }
+
+    return String(value);
+
+  }
+
+
+  /* =======================================================
+     PRODUCT IMAGE URL
+  ======================================================= */
+
+  function getProductImageUrl(
+    product
+  ) {
+
+    const id =
+      Number(product.id || 0);
+
+    if (!id) {
+      return "";
+    }
+
+    const number =
+      String(id).padStart(2, "0");
+
+    return (
+      IMAGES_BASE +
+      "product" +
+      number +
+      ".jpg"
+    );
+
+  }
+
+
+  /* =======================================================
+     CATALOG IMAGE URL
+  ======================================================= */
+
+  function getCatalogImageUrl(
+    product
+  ) {
+
+    const id =
+      Number(product.id || 0);
+
+    if (!id) {
+      return "";
+    }
+
+    const number =
+      String(id).padStart(2, "0");
+
+    return (
+      IMAGES_BASE +
+      "catalog-" +
+      number +
+      ".jpg"
+    );
+
+  }
+
+
+  /* =======================================================
+     IMAGE ERROR FALLBACK
+  ======================================================= */
+
+  function imageError(
+    img,
+    product
+  ) {
+
+    if (!img) {
+      return;
+    }
+
+    img.onerror = null;
+
+    const id =
+      Number(product.id || 0);
+
+    const number =
+      String(id).padStart(2, "0");
+
+    img.src =
+      IMAGES_BASE +
+      "product" +
+      number +
+      ".jpg";
+
+  }
+
+
+  /* =======================================================
+     GET PRODUCTS
+  ======================================================= */
+
+  async function loadProducts() {
+
+    loading.style.display =
+      "block";
+
+    productsGrid.innerHTML =
+      "";
+
+    empty.style.display =
+      "none";
+
+    hideStatus();
+
+
+    try {
+
+      const response =
+        await fetch(
+          WORKER_URL +
+          "/api/products",
+          {
+            method: "GET",
+            cache: "no-store"
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error ||
+          "خطا در دریافت محصولات."
+        );
+
+      }
+
+
+      if (
+        !data.ok ||
+        !Array.isArray(data.products)
+      ) {
+
+        throw new Error(
+          "اطلاعات محصولات نامعتبر است."
+        );
+
+      }
+
+
+      products =
+        data.products;
+
+
+      loading.style.display =
+        "none";
+
+
+      createCategories();
+
+      renderProducts();
+
+
+      if (products.length > 0) {
+
+        showStatus(
+          products.length +
+          " محصول با موفقیت دریافت شد.",
+          "success"
+        );
+
+        setTimeout(
+          hideStatus,
+          2500
+        );
+
+      }
+
+    }
+    catch(error) {
+
+      loading.style.display =
+        "none";
+
+      showStatus(
+        "خطا در دریافت محصولات: " +
+        error.message,
+        "error"
+      );
+
+      console.error(
+        "Products error:",
+        error
+      );
 
     }
 
   }
-);
 
-document.addEventListener(
-  "keydown",
-  function(event) {
 
-    if (
-      event.key === "Escape"
-    ) {
+  /* =======================================================
+     CREATE CATEGORIES
+  ======================================================= */
 
-      closeModal();
+  function createCategories() {
+
+    categories.innerHTML =
+      "";
+
+
+    const categorySet =
+      new Set();
+
+
+    products.forEach(
+      function(product) {
+
+        const category =
+          safeText(
+            product.category
+          ).trim();
+
+        if (category) {
+          categorySet.add(category);
+        }
+
+      }
+    );
+
+
+    const allButton =
+      document.createElement("button");
+
+    allButton.type =
+      "button";
+
+    allButton.className =
+      "category-btn active";
+
+    allButton.textContent =
+      "همه";
+
+    allButton.addEventListener(
+      "click",
+      function() {
+
+        activeCategory =
+          "همه";
+
+        updateCategoryButtons();
+
+        renderProducts();
+
+      }
+    );
+
+
+    categories.appendChild(
+      allButton
+    );
+
+
+    Array.from(categorySet)
+      .sort()
+      .forEach(
+        function(category) {
+
+          const button =
+            document.createElement("button");
+
+          button.type =
+            "button";
+
+          button.className =
+            "category-btn";
+
+          button.textContent =
+            category;
+
+          button.dataset.category =
+            category;
+
+          button.addEventListener(
+            "click",
+            function() {
+
+              activeCategory =
+                category;
+
+              updateCategoryButtons();
+
+              renderProducts();
+
+            }
+          );
+
+
+          categories.appendChild(
+            button
+          );
+
+        }
+      );
+
+  }
+
+
+  /* =======================================================
+     CATEGORY BUTTON STATE
+  ======================================================= */
+
+  function updateCategoryButtons() {
+
+    const buttons =
+      categories.querySelectorAll(
+        ".category-btn"
+      );
+
+
+    buttons.forEach(
+      function(button) {
+
+        const category =
+          button.dataset.category ||
+          "همه";
+
+
+        button.classList.toggle(
+          "active",
+          category === activeCategory
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     FILTER PRODUCTS
+  ======================================================= */
+
+  function getFilteredProducts() {
+
+    const search =
+      safeText(
+        searchInput.value
+      )
+      .trim()
+      .toLowerCase();
+
+
+    return products.filter(
+      function(product) {
+
+        const category =
+          safeText(
+            product.category
+          );
+
+
+        if (
+          activeCategory !== "همه" &&
+          category !== activeCategory
+        ) {
+
+          return false;
+
+        }
+
+
+        if (!search) {
+          return true;
+        }
+
+
+        const searchable =
+          [
+            product.name_fa,
+            product.name_en,
+            product.category,
+            product.maker,
+            product.intro,
+            product.composition,
+            product.use_text
+          ]
+          .map(safeText)
+          .join(" ")
+          .toLowerCase();
+
+
+        return searchable.includes(
+          search
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     RENDER PRODUCTS
+  ======================================================= */
+
+  function renderProducts() {
+
+    productsGrid.innerHTML =
+      "";
+
+    empty.style.display =
+      "none";
+
+
+    const filtered =
+      getFilteredProducts();
+
+
+    if (filtered.length === 0) {
+
+      empty.style.display =
+        "block";
+
+      return;
+
+    }
+
+
+    filtered.forEach(
+      function(product) {
+
+        const card =
+          document.createElement("div");
+
+        card.className =
+          "product-card";
+
+
+        const image =
+          document.createElement("img");
+
+        image.className =
+          "product-image";
+
+        image.alt =
+          safeText(
+            product.name_fa
+          );
+
+
+        image.src =
+          getProductImageUrl(
+            product
+          );
+
+
+        image.onerror =
+          function() {
+
+            imageError(
+              image,
+              product
+            );
+
+          };
+
+
+        const info =
+          document.createElement("div");
+
+        info.className =
+          "product-info";
+
+
+        const name =
+          document.createElement("div");
+
+        name.className =
+          "product-name";
+
+        name.textContent =
+          safeText(
+            product.name_fa
+          );
+
+
+        const en =
+          document.createElement("div");
+
+        en.className =
+          "product-en";
+
+        en.textContent =
+          safeText(
+            product.name_en
+          );
+
+
+        info.appendChild(
+          name
+        );
+
+        info.appendChild(
+          en
+        );
+
+
+        if (
+          safeText(
+            product.category
+          )
+        ) {
+
+          const category =
+            document.createElement("span");
+
+          category.className =
+            "product-category";
+
+          category.textContent =
+            safeText(
+              product.category
+            );
+
+          info.appendChild(
+            category
+          );
+
+        }
+
+
+        card.appendChild(
+          image
+        );
+
+        card.appendChild(
+          info
+        );
+
+
+        card.addEventListener(
+          "click",
+          function() {
+
+            openProductModal(
+              product
+            );
+
+          }
+        );
+
+
+        productsGrid.appendChild(
+          card
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     OPEN PRODUCT MODAL
+  ======================================================= */
+
+  function openProductModal(
+    product
+  ) {
+
+    const modal =
+      document.getElementById(
+        "productModal"
+      );
+
+
+    const modalImage =
+      document.getElementById(
+        "modalImage"
+      );
+
+
+    modalImage.src =
+      getProductImageUrl(
+        product
+      );
+
+
+    modalImage.alt =
+      safeText(
+        product.name_fa
+      );
+
+
+    modalImage.onerror =
+      function() {
+
+        imageError(
+          modalImage,
+          product
+        );
+
+      };
+
+
+    document.getElementById(
+      "modalTitle"
+    ).textContent =
+      safeText(
+        product.name_fa
+      );
+
+
+    document.getElementById(
+      "modalEn"
+    ).textContent =
+      safeText(
+        product.name_en
+      );
+
+
+    setSectionText(
+      "modalIntroSection",
+      "modalIntro",
+      product.intro
+    );
+
+
+    setBenefits(
+      product.benefits
+    );
+
+
+    setSectionText(
+      "modalCompositionSection",
+      "modalComposition",
+      product.composition
+    );
+
+
+    setSectionText(
+      "modalUseSection",
+      "modalUse",
+      product.use_text
+    );
+
+
+    setSectionText(
+      "modalWarningsSection",
+      "modalWarnings",
+      product.warnings
+    );
+
+
+    setSectionText(
+      "modalPackageSection",
+      "modalPackage",
+      product.package
+    );
+
+
+    setSectionText(
+      "modalMakerSection",
+      "modalMaker",
+      product.maker
+    );
+
+
+    const catalogButton =
+      document.getElementById(
+        "catalogButton"
+      );
+
+
+    catalogButton.href =
+      getCatalogImageUrl(
+        product
+      );
+
+
+    catalogButton.style.display =
+      "inline-block";
+
+
+    const videoButton =
+      document.getElementById(
+        "videoButton"
+      );
+
+
+    const videoUrl =
+      safeText(
+        product.video_url
+      ).trim();
+
+
+    if (videoUrl) {
+
+      videoButton.href =
+        videoUrl;
+
+      videoButton.style.display =
+        "inline-block";
+
+    }
+    else {
+
+      videoButton.style.display =
+        "none";
+
+    }
+
+
+    modal.classList.add(
+      "show"
+    );
+
+
+    document.body.style.overflow =
+      "hidden";
+
+  }
+
+
+  /* =======================================================
+     SET SECTION TEXT
+  ======================================================= */
+
+  function setSectionText(
+    sectionId,
+    elementId,
+    value
+  ) {
+
+    const section =
+      document.getElementById(
+        sectionId
+      );
+
+    const element =
+      document.getElementById(
+        elementId
+      );
+
+
+    const text =
+      safeText(
+        value
+      ).trim();
+
+
+    if (text) {
+
+      element.textContent =
+        text;
+
+      section.style.display =
+        "block";
+
+    }
+    else {
+
+      element.textContent =
+        "";
+
+      section.style.display =
+        "none";
 
     }
 
   }
-);
-
-profileBtn.addEventListener(
-  "click",
-  openProfile
-);
 
 
-/* =========================================================
-   START APPLICATION
-========================================================= */
+  /* =======================================================
+     BENEFITS
+  ======================================================= */
 
-showAccount(
-  null
-);
+  function setBenefits(
+    benefits
+  ) {
 
-telegramLogin();
+    const section =
+      document.getElementById(
+        "modalBenefitsSection"
+      );
 
-loadProducts();
+
+    const container =
+      document.getElementById(
+        "modalBenefits"
+      );
+
+
+    container.innerHTML =
+      "";
+
+
+    let list = [];
+
+
+    if (Array.isArray(benefits)) {
+
+      list =
+        benefits.filter(
+          function(item) {
+
+            return safeText(
+              item
+            ).trim();
+
+          }
+        );
+
+    }
+    else if (
+      typeof benefits === "string" &&
+      benefits.trim()
+    ) {
+
+      list =
+        benefits
+          .split(/\n|،|,/)
+          .map(
+            function(item) {
+              return item.trim();
+            }
+          )
+          .filter(Boolean);
+
+    }
+
+
+    if (list.length === 0) {
+
+      section.style.display =
+        "none";
+
+      return;
+
+    }
+
+
+    list.forEach(
+      function(item) {
+
+        const span =
+          document.createElement("span");
+
+        span.className =
+          "benefit";
+
+        span.textContent =
+          safeText(item);
+
+        container.appendChild(
+          span
+        );
+
+      }
+    );
+
+
+    section.style.display =
+      "block";
+
+  }
+
+
+  /* =======================================================
+     CLOSE MODAL
+  ======================================================= */
+
+  function closeModal() {
+
+    const modal =
+      document.getElementById(
+        "productModal"
+      );
+
+
+    modal.classList.remove(
+      "show"
+    );
+
+
+    document.body.style.overflow =
+      "";
+
+  }
+
+
+  document.getElementById(
+    "modalClose"
+  ).addEventListener(
+    "click",
+    closeModal
+  );
+
+
+  document.getElementById(
+    "productModal"
+  ).addEventListener(
+    "click",
+    function(event) {
+
+      if (
+        event.target ===
+        this
+      ) {
+
+        closeModal();
+
+      }
+
+    }
+  );
+
+
+  document.addEventListener(
+    "keydown",
+    function(event) {
+
+      if (
+        event.key === "Escape"
+      ) {
+
+        closeModal();
+
+      }
+
+    }
+  );
+
+
+  /* =======================================================
+     SEARCH EVENT
+  ======================================================= */
+
+  searchInput.addEventListener(
+    "input",
+    function() {
+
+      renderProducts();
+
+    }
+  );
+
+
+  /* =======================================================
+     TELEGRAM USER
+  ======================================================= */
+
+  async function authenticateTelegram() {
+
+    if (!tg) {
+      return;
+    }
+
+
+    const initData =
+      tg.initData;
+
+
+    if (!initData) {
+      return;
+    }
+
+
+    try {
+
+      const response =
+        await fetch(
+          WORKER_URL +
+          "/api/telegram-auth",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                initData:
+                  initData
+              })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (
+        !response.ok ||
+        !data.ok
+      ) {
+
+        console.error(
+          "Telegram authentication failed:",
+          data
+        );
+
+        return;
+
+      }
+
+
+      if (data.customer) {
+
+        showTelegramCustomer(
+          data.customer
+        );
+
+      }
+
+    }
+    catch(error) {
+
+      console.error(
+        "Telegram auth error:",
+        error
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
+     SHOW TELEGRAM CUSTOMER
+  ======================================================= */
+
+  function showTelegramCustomer(
+    customer
+  ) {
+
+    const box =
+      document.getElementById(
+        "telegramUser"
+      );
+
+
+    const name =
+      document.getElementById(
+        "telegramName"
+      );
+
+
+    const username =
+      document.getElementById(
+        "telegramUsername"
+      );
+
+
+    const profileBox =
+      document.getElementById(
+        "profileBox"
+      );
+
+
+    const profileName =
+      document.getElementById(
+        "profileName"
+      );
+
+
+    const profileUsername =
+      document.getElementById(
+        "profileUsername"
+      );
+
+
+    const profileStatus =
+      document.getElementById(
+        "profileStatus"
+      );
+
+
+    const fullName =
+      [
+        customer.first_name,
+        customer.last_name
+      ]
+      .filter(Boolean)
+      .join(" ");
+
+
+    name.textContent =
+      fullName ||
+      "کاربر Telegram";
+
+
+    username.textContent =
+      customer.username
+        ? "@" +
+          customer.username +
+          " • حساب فعال"
+        : "حساب فعال";
+
+
+    box.style.display =
+      "block";
+
+
+    profileName.textContent =
+      fullName ||
+      "-";
+
+
+    profileUsername.textContent =
+      customer.username
+        ? "@" +
+          customer.username
+        : "-";
+
+
+    profileStatus.textContent =
+      customer.status === "active"
+        ? "فعال"
+        : safeText(
+            customer.status
+          ) || "فعال";
+
+
+    profileBox.style.display =
+      "block";
+
+  }
+
+
+  /* =======================================================
+     START
+  ======================================================= */
+
+  authenticateTelegram();
+
+  loadProducts();
 
 </script>
 

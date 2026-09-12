@@ -5,75 +5,1465 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#123c25">
 <title>کاتالوگ محصولات مشکفام فارس</title>
+
 <style>
 :root{--bg:#f4f7f3;--card:#fff;--ink:#172019;--muted:#657066;--green:#16834a;--green2:#0d6337;--gold:#d5a62a;--line:#e2e9e3;--shadow:0 8px 25px rgba(20,45,27,.08)}
-*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Tahoma,Arial,sans-serif}body{min-height:100vh}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Tahoma,Arial,sans-serif}
+body{min-height:100vh}
 .app{max-width:1100px;margin:auto;min-height:100vh}
-header{background:linear-gradient(145deg,#0c2417,#123c25 55%,#0d5d34);color:#fff;padding:24px 18px 20px;border-radius:0 0 28px 28px;box-shadow:0 8px 28px rgba(0,0,0,.16)}
-.brand{display:flex;align-items:center;gap:13px}.logo{width:54px;height:54px;border-radius:16px;background:#fff;display:grid;place-items:center;color:#177440;font-size:29px;font-weight:900;box-shadow:0 4px 15px #0003}
-h1{font-size:21px;margin:0 0 4px}.subtitle{font-size:12px;color:#d9eadf}
-.search{margin-top:18px;position:relative}.search input{width:100%;border:0;border-radius:17px;padding:14px 48px 14px 15px;outline:none;background:#fff;color:#172019;box-shadow:0 5px 18px #0002}.search span{position:absolute;right:17px;top:50%;transform:translateY(-50%);font-size:21px;color:#718077}
-main{padding:18px}.toolbar{display:flex;gap:8px;overflow:auto;padding:2px 0 14px;scrollbar-width:none}.toolbar::-webkit-scrollbar{display:none}
-.chip{white-space:nowrap;border:1px solid var(--line);background:#fff;color:#536057;border-radius:999px;padding:9px 14px;font-size:12px}.chip.active{background:var(--green);border-color:var(--green);color:#fff}
-.count{font-size:12px;color:var(--muted);margin:0 2px 14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:0 8px 28px rgba(20,45,27,.08);transition:transform .18s,box-shadow .18s;display:grid;grid-template-columns:minmax(165px,42%) minmax(0,1fr);min-height:230px;cursor:pointer}.card:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(20,45,27,.12)}.card:active{transform:scale(.985)}
-.pic{min-height:230px;background:linear-gradient(145deg,#fafcf9,#eef4ef);display:flex;align-items:center;justify-content:center;padding:16px;border-left:1px solid #edf1ed}.pic img{width:100%;height:100%;max-height:215px;object-fit:contain;display:block}
-.info{padding:22px 20px;display:flex;flex-direction:column;justify-content:center;min-width:0}.name{font-size:18px;font-weight:900;margin:0 0 6px;line-height:1.6;color:#172019;overflow-wrap:anywhere}.en{font-size:11px;color:#7b857e;direction:ltr;text-align:right;line-height:1.6;white-space:normal;overflow-wrap:anywhere;margin-bottom:13px}.spec{display:grid;gap:7px;font-size:12px;line-height:1.7;color:#59645c}.spec div{background:#f5f8f5;border-radius:10px;padding:6px 9px}.spec b{color:var(--green2);font-weight:800}.empty{background:#fff;border:1px dashed #ccd8ce;border-radius:16px;padding:30px;text-align:center;color:#657066}
-@media(max-width:850px){.grid{grid-template-columns:1fr}.card{grid-template-columns:180px minmax(0,1fr);min-height:220px}.pic{min-height:220px}.info{padding:19px}.name{font-size:17px}}
-@media(max-width:520px){main{padding:13px}.grid{gap:12px}.card{grid-template-columns:125px minmax(0,1fr);min-height:195px;border-radius:20px}.pic{min-height:195px;padding:10px}.pic img{max-height:180px}.info{padding:15px 13px}.name{font-size:15px;line-height:1.55}.en{font-size:10px;margin-bottom:10px}.spec{font-size:10px;gap:5px}.spec div{padding:5px 7px}}
-@media(max-width:360px){.card{grid-template-columns:105px minmax(0,1fr)}.pic{min-height:180px}.pic img{max-height:165px}.info{padding:13px 10px}.name{font-size:14px}.spec{font-size:9px}}
 
-.modal{position:fixed;inset:0;background:rgba(10,25,16,.68);z-index:9999;display:none;align-items:flex-start;justify-content:center;padding:0;overflow-y:auto}
+header{
+background:linear-gradient(145deg,#0c2417,#123c25 55%,#0d5d34);
+color:#fff;
+padding:24px 18px 20px;
+border-radius:0 0 28px 28px;
+box-shadow:0 8px 28px rgba(0,0,0,.16)
+}
+
+.brand{display:flex;align-items:center;gap:13px}
+
+.logo{
+width:54px;
+height:54px;
+border-radius:16px;
+background:#fff;
+display:grid;
+place-items:center;
+color:#177440;
+font-size:29px;
+font-weight:900;
+box-shadow:0 4px 15px #0003
+}
+
+h1{font-size:21px;margin:0 0 4px}
+.subtitle{font-size:12px;color:#d9eadf}
+
+.search{margin-top:18px;position:relative}
+
+.search input{
+width:100%;
+border:0;
+border-radius:17px;
+padding:14px 48px 14px 15px;
+outline:none;
+background:#fff;
+color:#172019;
+box-shadow:0 5px 18px #0002
+}
+
+.search span{
+position:absolute;
+right:17px;
+top:50%;
+transform:translateY(-50%);
+font-size:21px;
+color:#718077
+}
+
+main{padding:18px}
+
+.toolbar{
+display:flex;
+gap:8px;
+overflow:auto;
+padding:2px 0 14px;
+scrollbar-width:none
+}
+
+.toolbar::-webkit-scrollbar{display:none}
+
+.chip{
+white-space:nowrap;
+border:1px solid var(--line);
+background:#fff;
+color:#536057;
+border-radius:999px;
+padding:9px 14px;
+font-size:12px
+}
+
+.chip.active{
+background:var(--green);
+border-color:var(--green);
+color:#fff
+}
+
+.count{
+font-size:12px;
+color:var(--muted);
+margin:0 2px 14px
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:18px
+}
+
+.card{
+background:var(--card);
+border:1px solid var(--line);
+border-radius:24px;
+overflow:hidden;
+box-shadow:0 8px 28px rgba(20,45,27,.08);
+transition:transform .18s,box-shadow .18s;
+display:grid;
+grid-template-columns:minmax(165px,42%) minmax(0,1fr);
+min-height:230px;
+cursor:pointer
+}
+
+.card:hover{
+transform:translateY(-2px);
+box-shadow:0 12px 32px rgba(20,45,27,.12)
+}
+
+.card:active{transform:scale(.985)}
+
+.pic{
+min-height:230px;
+background:linear-gradient(145deg,#fafcf9,#eef4ef);
+display:flex;
+align-items:center;
+justify-content:center;
+padding:16px;
+border-left:1px solid #edf1ed
+}
+
+.pic img{
+width:100%;
+height:100%;
+max-height:215px;
+object-fit:contain;
+display:block
+}
+
+.info{
+padding:22px 20px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+min-width:0
+}
+
+.name{
+font-size:18px;
+font-weight:900;
+margin:0 0 6px;
+line-height:1.6;
+color:#172019;
+overflow-wrap:anywhere
+}
+
+.en{
+font-size:11px;
+color:#7b857e;
+direction:ltr;
+text-align:right;
+line-height:1.6;
+white-space:normal;
+overflow-wrap:anywhere;
+margin-bottom:13px
+}
+
+.spec{
+display:grid;
+gap:7px;
+font-size:12px;
+line-height:1.7;
+color:#59645c
+}
+
+.spec div{
+background:#f5f8f5;
+border-radius:10px;
+padding:6px 9px
+}
+
+.spec b{
+color:var(--green2);
+font-weight:800
+}
+
+.empty{
+background:#fff;
+border:1px dashed #ccd8ce;
+border-radius:16px;
+padding:30px;
+text-align:center;
+color:#657066
+}
+
+/* =========================
+   AUTH STATUS
+========================= */
+
+.auth-status{
+display:none;
+margin:12px 18px 0;
+padding:12px 14px;
+border-radius:14px;
+background:#edf6ef;
+color:#245b38;
+font-size:12px;
+line-height:1.8;
+border:1px solid #dcecdf
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.modal{
+position:fixed;
+inset:0;
+background:rgba(10,25,16,.68);
+z-index:9999;
+display:none;
+align-items:flex-start;
+justify-content:center;
+padding:0;
+overflow-y:auto
+}
+
 .modal.show{display:flex}
-.sheet{width:min(900px,100%);min-height:100vh;background:#fff;box-shadow:0 0 40px rgba(0,0,0,.25);overflow:hidden}
-.sheet-head{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(145deg,#0c2417,#123c25 60%,#0d5d34);color:#fff;box-shadow:0 3px 14px rgba(0,0,0,.14)}
-.sheet-head strong{font-size:16px;line-height:1.5;flex:1}
-.close{margin-right:auto;border:0;background:#fff;color:#26352b;width:38px;height:38px;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 2px 8px #0002}
-.detail-top{padding:22px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:24px}
-.detail-img{background:#f2f6f2;border-radius:18px;min-height:300px;display:grid;place-items:center;padding:14px;border:1px solid #e3ebe4}
-.detail-img img{width:100%;height:100%;max-height:380px;object-fit:contain;display:block}
-.detail-title{font-size:24px;margin:8px 0;line-height:1.6}
-.detail-en{direction:ltr;text-align:right;color:#6d766f;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
-.badges{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.badge{padding:8px 11px;background:#edf6ef;border-radius:10px;font-size:11px;color:#31583e}
-.product-details{margin:0 22px 22px;padding:18px;background:#f8fbf8;border:1px solid #e2e9e3;border-radius:16px}.product-details h3{margin:0 0 9px;font-size:16px;color:#123c25}.product-details .intro{font-size:12px;line-height:2.05;color:#39443d;margin:0 0 14px}.detail-block{margin-top:14px}.detail-block h4{margin:0 0 7px;font-size:12px;color:#16834a}.detail-block ul{margin:0;padding:0 18px}.detail-block li{font-size:11px;line-height:1.95;color:#566158;margin:2px 0}.detail-block p{font-size:11px;line-height:1.95;color:#566158;margin:0}.detail-use{background:#edf6ef;padding:10px 12px;border-radius:11px}.source-note{display:none}
-.page-wrap{padding:0 22px 28px}.page-wrap h3{font-size:14px;margin:8px 0 11px}.page-img{width:100%;display:block;border-radius:14px;border:1px solid #ddd;background:#111;cursor:zoom-in}.page-img.zoom{width:170%;max-width:none;cursor:zoom-out}
-@media(max-width:620px){.modal{align-items:flex-start}.sheet{width:100%;min-height:100vh}.sheet-head{padding:11px 13px}.sheet-head strong{font-size:15px}.detail-top{grid-template-columns:125px minmax(0,1fr);gap:14px;padding:14px}.detail-img{min-height:175px;padding:9px}.detail-img img{max-height:220px}.detail-title{font-size:18px;margin:3px 0}.detail-en{font-size:10px}.badges{gap:6px;margin:10px 0}.badge{font-size:10px;padding:6px 8px}.source-note{display:none}.product-details{margin:0 13px 18px;padding:14px;border-radius:14px}.product-details h3{font-size:15px}.product-details .intro{font-size:11px}.detail-block h4{font-size:11px}.detail-block li,.detail-block p{font-size:10px}.page-wrap{padding:0 13px 20px}.page-wrap h3{font-size:13px}}
+
+.sheet{
+width:min(900px,100%);
+min-height:100vh;
+background:#fff;
+box-shadow:0 0 40px rgba(0,0,0,.25);
+overflow:hidden
+}
+
+.sheet-head{
+position:sticky;
+top:0;
+z-index:5;
+display:flex;
+align-items:center;
+gap:12px;
+padding:14px 18px;
+background:linear-gradient(145deg,#0c2417,#123c25 60%,#0d5d34);
+color:#fff;
+box-shadow:0 3px 14px rgba(0,0,0,.14)
+}
+
+.sheet-head strong{
+font-size:16px;
+line-height:1.5;
+flex:1
+}
+
+.close{
+margin-right:auto;
+border:0;
+background:#fff;
+color:#26352b;
+width:38px;
+height:38px;
+border-radius:50%;
+font-size:24px;
+line-height:1;
+cursor:pointer;
+box-shadow:0 2px 8px #0002
+}
+
+.detail-top{
+padding:22px;
+display:grid;
+grid-template-columns:250px minmax(0,1fr);
+gap:24px
+}
+
+.detail-img{
+background:#f2f6f2;
+border-radius:18px;
+min-height:300px;
+display:grid;
+place-items:center;
+padding:14px;
+border:1px solid #e3ebe4
+}
+
+.detail-img img{
+width:100%;
+height:100%;
+max-height:380px;
+object-fit:contain;
+display:block
+}
+
+.detail-title{
+font-size:24px;
+margin:8px 0;
+line-height:1.6
+}
+
+.detail-en{
+direction:ltr;
+text-align:right;
+color:#6d766f;
+font-size:12px;
+line-height:1.7;
+overflow-wrap:anywhere
+}
+
+.badges{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+margin:16px 0
+}
+
+.badge{
+padding:8px 11px;
+background:#edf6ef;
+border-radius:10px;
+font-size:11px;
+color:#31583e
+}
+
+.product-details{
+margin:0 22px 22px;
+padding:18px;
+background:#f8fbf8;
+border:1px solid #e2e9e3;
+border-radius:16px
+}
+
+.product-details h3{
+margin:0 0 9px;
+font-size:16px;
+color:#123c25
+}
+
+.product-details .intro{
+font-size:12px;
+line-height:2.05;
+color:#39443d;
+margin:0 0 14px
+}
+
+.detail-block{margin-top:14px}
+
+.detail-block h4{
+margin:0 0 7px;
+font-size:12px;
+color:#16834a
+}
+
+.detail-block ul{
+margin:0;
+padding:0 18px
+}
+
+.detail-block li{
+font-size:11px;
+line-height:1.95;
+color:#566158;
+margin:2px 0
+}
+
+.detail-block p{
+font-size:11px;
+line-height:1.95;
+color:#566158;
+margin:0
+}
+
+.detail-use{
+background:#edf6ef;
+padding:10px 12px;
+border-radius:11px
+}
+
+.source-note{display:none}
+
+.page-wrap{
+padding:0 22px 28px
+}
+
+.page-wrap h3{
+font-size:14px;
+margin:8px 0 11px
+}
+
+.page-img{
+width:100%;
+display:block;
+border-radius:14px;
+border:1px solid #ddd;
+background:#111;
+cursor:zoom-in
+}
+
+.page-img.zoom{
+width:170%;
+max-width:none;
+cursor:zoom-out
+}
+
+@media(max-width:850px){
+.grid{grid-template-columns:1fr}
+
+.card{
+grid-template-columns:180px minmax(0,1fr);
+min-height:220px
+}
+
+.pic{min-height:220px}
+.info{padding:19px}
+.name{font-size:17px}
+}
+
+@media(max-width:520px){
+main{padding:13px}
+.grid{gap:12px}
+
+.card{
+grid-template-columns:125px minmax(0,1fr);
+min-height:195px;
+border-radius:20px
+}
+
+.pic{
+min-height:195px;
+padding:10px
+}
+
+.pic img{max-height:180px}
+
+.info{padding:15px 13px}
+
+.name{
+font-size:15px;
+line-height:1.55
+}
+
+.en{
+font-size:10px;
+margin-bottom:10px
+}
+
+.spec{
+font-size:10px;
+gap:5px
+}
+
+.spec div{padding:5px 7px}
+
+.auth-status{
+margin:10px 13px 0
+}
+
+.modal{align-items:flex-start}
+.sheet{width:100%;min-height:100vh}
+
+.sheet-head{padding:11px 13px}
+.sheet-head strong{font-size:15px}
+
+.detail-top{
+grid-template-columns:125px minmax(0,1fr);
+gap:14px;
+padding:14px
+}
+
+.detail-img{
+min-height:175px;
+padding:9px
+}
+
+.detail-img img{max-height:220px}
+
+.detail-title{
+font-size:18px;
+margin:3px 0
+}
+
+.detail-en{font-size:10px}
+
+.badges{
+gap:6px;
+margin:10px 0
+}
+
+.badge{
+font-size:10px;
+padding:6px 8px
+}
+
+.source-note{display:none}
+
+.product-details{
+margin:0 13px 18px;
+padding:14px;
+border-radius:14px
+}
+
+.product-details h3{font-size:15px}
+.product-details .intro{font-size:11px}
+.detail-block h4{font-size:11px}
+.detail-block li,.detail-block p{font-size:10px}
+
+.page-wrap{
+padding:0 13px 20px
+}
+
+.page-wrap h3{font-size:13px}
+}
+
+@media(max-width:360px){
+.card{grid-template-columns:105px minmax(0,1fr)}
+.pic{min-height:180px}
+.pic img{max-height:165px}
+.info{padding:13px 10px}
+.name{font-size:14px}
+.spec{font-size:9px}
+}
 </style>
+
+<!-- Telegram Mini App SDK -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
 </head>
+
 <body>
+
 <div class="app">
+
 <header>
-<div class="brand"><div class="logo">🌾</div><div><h1>کاتالوگ محصولات مشکفام فارس</h1><div class="subtitle">معرفی محصولات کودی و تغذیه گیاه</div></div></div>
-<div class="search"><span>⌕</span><input id="search" type="search" placeholder="جستجوی نام محصول، فرمول یا گروه..." autocomplete="off"></div>
-</header>
-<main><div class="toolbar" id="filters"></div><p class="count" id="count"></p><section class="grid" id="grid"></section></main>
+
+<div class="brand">
+<div class="logo">🌾</div>
+
+<div>
+<h1>کاتالوگ محصولات مشکفام فارس</h1>
+<div class="subtitle">معرفی محصولات کودی و تغذیه گیاه</div>
 </div>
-<div class="modal" id="modal"><div class="sheet" role="dialog" aria-modal="true"><div class="sheet-head"><strong id="modalHeading"></strong><button class="close" id="close" aria-label="بستن">×</button></div><div id="detail"></div></div></div>
+</div>
+
+<div class="search">
+<span>⌕</span>
+<input
+id="search"
+type="search"
+placeholder="جستجوی نام محصول، فرمول یا گروه..."
+autocomplete="off">
+</div>
+
+</header>
+
+<!-- وضعیت ورود Telegram -->
+<div id="authStatus" class="auth-status">
+در حال بررسی حساب کاربری...
+</div>
+
+<main>
+
+<div class="toolbar" id="filters"></div>
+
+<p class="count" id="count"></p>
+
+<section class="grid" id="grid"></section>
+
+</main>
+
+</div>
+
+
+<!-- PRODUCT MODAL -->
+
+<div class="modal" id="modal">
+
+<div class="sheet" role="dialog" aria-modal="true">
+
+<div class="sheet-head">
+
+<strong id="modalHeading"></strong>
+
+<button
+class="close"
+id="close"
+aria-label="بستن">
+×
+</button>
+
+</div>
+
+<div id="detail"></div>
+
+</div>
+
+</div>
+
+
 <script>
-const products=[{"id":1,"en":"Metafarm HUMIC","fa":"هیومیک","cat":"اصلاح‌کننده خاک","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-01.jpg","productPhoto":"images/product-01.jpg","pageImg":"images/catalog-01.jpg"},{"id":2,"en":"Metafarm ALGAE","fa":"آلگائه","cat":"محرک رشد","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-02.jpg","productPhoto":"images/product-02.jpg","pageImg":"images/catalog-02.jpg"},{"id":3,"en":"Metafarm AMIN","fa":"آمین","cat":"محرک رشد طبیعی","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-03.jpg","productPhoto":"images/product-03.jpg","pageImg":"images/catalog-03.jpg"},{"id":4,"en":"Metafarm ORTHO 5","fa":"ارتو ۵","cat":"میکرو مغذی","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-04.jpg","productPhoto":"images/product-04.jpg","pageImg":"images/catalog-04.jpg"},{"id":5,"en":"Metafarm MICRO","fa":"میکرو","cat":"میکرو مغذی","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-05.jpg","productPhoto":"images/product-05.jpg","pageImg":"images/catalog-05.jpg"},{"id":6,"en":"Metafarm CALCIBOR","fa":"کالسیبور","cat":"میکرو مغذی","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-06.jpg","productPhoto":"images/product-06.jpg","pageImg":"images/catalog-06.jpg"},{"id":7,"en":"Metafarm 10-52-10","fa":"NPK 10-52-10+TE","cat":"NPK + TE","pack":"۱۰ کیلوگرم","maker":"اسپانیا","productImg":"images/product-07.jpg","productPhoto":"images/product-07.jpg","pageImg":"images/catalog-07.jpg"},{"id":8,"en":"Metafarm 20-20-20","fa":"NPK 20-20-20+TE","cat":"NPK + TE","pack":"۱۰ کیلوگرم","maker":"اسپانیا","productImg":"images/product-08.jpg","productPhoto":"images/product-08.jpg","pageImg":"images/catalog-08.jpg"},{"id":9,"en":"Metafarm 12-12-36","fa":"NPK 12-12-36+TE","cat":"NPK + TE","pack":"۱۰ کیلوگرم","maker":"اسپانیا","productImg":"images/product-09.jpg","productPhoto":"images/product-09.jpg","pageImg":"images/catalog-09.jpg"},{"id":10,"en":"Metafarm K53","fa":"K53","cat":"NPK + TE","pack":"۱ لیتر","maker":"اسپانیا","productImg":"images/product-10.jpg","productPhoto":"images/product-10.jpg","pageImg":"images/catalog-10.jpg"},{"id":11,"en":"HUMIC ACID (MFC)","fa":"هیومیک اسید","cat":"اصلاح‌کننده خاک","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-11.jpg","productPhoto":"images/product-11.jpg","pageImg":"images/catalog-11.jpg"},{"id":12,"en":"AMINO ALGAE 50 (MFC)","fa":"آمینو جلبک ۵۰","cat":"محرک رشد","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-12.jpg","productPhoto":"images/product-12.jpg","pageImg":"images/catalog-12.jpg"},{"id":13,"en":"FRUIT SET (MFC)","fa":"فروت ست","cat":"محرک رشد","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-13.jpg","productPhoto":"images/product-13.jpg","pageImg":"images/catalog-13.jpg"},{"id":14,"en":"IRON 7.5 (MFC)","fa":"آهن ۷.۵","cat":"میکرو مغذی","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-14.jpg","productPhoto":"images/product-14.jpg","pageImg":"images/catalog-14.jpg"},{"id":15,"en":"MICRONUTRIENT (MFC)","fa":"میکرو مغذی","cat":"میکرو مغذی","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-15.jpg","productPhoto":"images/product-15.jpg","pageImg":"images/catalog-15.jpg"},{"id":16,"en":"F.M.Z (MFC)","fa":"آهن، روی، منگنز","cat":"میکرو مغذی","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-16.jpg","productPhoto":"images/product-16.jpg","pageImg":"images/catalog-16.jpg"},{"id":17,"en":"CAL B (MFC)","fa":"کلسیم بور","cat":"میکرو مغذی","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-17.jpg","productPhoto":"images/product-17.jpg","pageImg":"images/catalog-17.jpg"},{"id":18,"en":"BORON (MFC)","fa":"بور مایع","cat":"میکرو مغذی","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-18.jpg","productPhoto":"images/product-18.jpg","pageImg":"images/catalog-18.jpg"},{"id":19,"en":"30-10-10 + ME (MFC)","fa":"NPK 30-10-10 + ME","cat":"NPK + TE","pack":"۱۰ کیلوگرم","maker":"مشکفام فارس","productImg":"images/product-19.jpg","productPhoto":"images/product-19.jpg","pageImg":"images/catalog-19.jpg"},{"id":20,"en":"15-5-30 + ME (MFC)","fa":"NPK 15-5-30 + ME","cat":"NPK + TE","pack":"۱۰ کیلوگرم","maker":"مشکفام فارس","productImg":"images/product-20.jpg","productPhoto":"images/product-20.jpg","pageImg":"images/catalog-20.jpg"}];
-const categories=["همه","اصلاح‌کننده خاک","محرک رشد","محرک رشد طبیعی","میکرو مغذی","NPK + TE"];
+
+/* =========================================================
+   تنظیمات اصلی
+========================================================= */
+
+const WORKER_URL =
+"https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
+
+
+/* =========================================================
+   محصولات فعلی
+   فعلاً عمداً از HTML حذف نشده‌اند.
+   مرحله Products از Supabase بعداً انجام می‌شود.
+========================================================= */
+
+const products=[
+{"id":1,"en":"Metafarm HUMIC","fa":"هیومیک","cat":"اصلاح‌کننده خاک","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-01.jpg","productPhoto":"images/product-01.jpg","pageImg":"images/catalog-01.jpg"},
+{"id":2,"en":"Metafarm ALGAE","fa":"آلگائه","cat":"محرک رشد","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-02.jpg","productPhoto":"images/product-02.jpg","pageImg":"images/catalog-02.jpg"},
+{"id":3,"en":"Metafarm AMIN","fa":"آمین","cat":"محرک رشد طبیعی","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-03.jpg","productPhoto":"images/product-03.jpg","pageImg":"images/catalog-03.jpg"},
+{"id":4,"en":"Metafarm ORTHO 5","fa":"ارتو ۵","cat":"میکرو مغذی","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-04.jpg","productPhoto":"images/product-04.jpg","pageImg":"images/catalog-04.jpg"},
+{"id":5,"en":"Metafarm MICRO","fa":"میکرو","cat":"میکرو مغذی","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-05.jpg","productPhoto":"images/product-05.jpg","pageImg":"images/catalog-05.jpg"},
+{"id":6,"en":"Metafarm CALCIBOR","fa":"کالسیبور","cat":"میکرو مغذی","pack":"۱ کیلوگرم","maker":"اسپانیا","productImg":"images/product-06.jpg","productPhoto":"images/product-06.jpg","pageImg":"images/catalog-06.jpg"},
+{"id":7,"en":"Metafarm 10-52-10","fa":"NPK 10-52-10+TE","cat":"NPK + TE","pack":"۱۰ کیلوگرم","maker":"اسپانیا","productImg":"images/product-07.jpg","productPhoto":"images/product-07.jpg","pageImg":"images/catalog-07.jpg"},
+{"id":8,"en":"Metafarm 20-20-20","fa":"NPK 20-20-20+TE","cat":"NPK + TE","pack":"۱۰ کیلوگرم","maker":"اسپانیا","productImg":"images/product-08.jpg","productPhoto":"images/product-08.jpg","pageImg":"images/catalog-08.jpg"},
+{"id":9,"en":"Metafarm 12-12-36","fa":"NPK 12-12-36+TE","cat":"NPK + TE","pack":"۱۰ کیلوگرم","maker":"اسپانیا","productImg":"images/product-09.jpg","productPhoto":"images/product-09.jpg","pageImg":"images/catalog-09.jpg"},
+{"id":10,"en":"Metafarm K53","fa":"K53","cat":"NPK + TE","pack":"۱ لیتر","maker":"اسپانیا","productImg":"images/product-10.jpg","productPhoto":"images/product-10.jpg","pageImg":"images/catalog-10.jpg"},
+{"id":11,"en":"HUMIC ACID (MFC)","fa":"هیومیک اسید","cat":"اصلاح‌کننده خاک","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-11.jpg","productPhoto":"images/product-11.jpg","pageImg":"images/catalog-11.jpg"},
+{"id":12,"en":"AMINO ALGAE 50 (MFC)","fa":"آمینو جلبک ۵۰","cat":"محرک رشد","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-12.jpg","productPhoto":"images/product-12.jpg","pageImg":"images/catalog-12.jpg"},
+{"id":13,"en":"FRUIT SET (MFC)","fa":"فروت ست","cat":"محرک رشد","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-13.jpg","productPhoto":"images/product-13.jpg","pageImg":"images/catalog-13.jpg"},
+{"id":14,"en":"IRON 7.5 (MFC)","fa":"آهن ۷.۵","cat":"میکرو مغذی","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-14.jpg","productPhoto":"images/product-14.jpg","pageImg":"images/catalog-14.jpg"},
+{"id":15,"en":"MICRONUTRIENT (MFC)","fa":"میکرو مغذی","cat":"میکرو مغذی","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-15.jpg","productPhoto":"images/product-15.jpg","pageImg":"images/catalog-15.jpg"},
+{"id":16,"en":"F.M.Z (MFC)","fa":"آهن، روی، منگنز","cat":"میکرو مغذی","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-16.jpg","productPhoto":"images/product-16.jpg","pageImg":"images/catalog-16.jpg"},
+{"id":17,"en":"CAL B (MFC)","fa":"کلسیم بور","cat":"میکرو مغذی","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-17.jpg","productPhoto":"images/product-17.jpg","pageImg":"images/catalog-17.jpg"},
+{"id":18,"en":"BORON (MFC)","fa":"بور مایع","cat":"میکرو مغذی","pack":"۱ لیتر","maker":"مشکفام فارس","productImg":"images/product-18.jpg","productPhoto":"images/product-18.jpg","pageImg":"images/catalog-18.jpg"},
+{"id":19,"en":"30-10-10 + ME (MFC)","fa":"NPK 30-10-10 + ME","cat":"NPK + TE","pack":"۱۰ کیلوگرم","maker":"مشکفام فارس","productImg":"images/product-19.jpg","productPhoto":"images/product-19.jpg","pageImg":"images/catalog-19.jpg"},
+{"id":20,"en":"15-5-30 + ME (MFC)","fa":"NPK 15-5-30 + ME","cat":"NPK + TE","pack":"۱۰ کیلوگرم","maker":"مشکفام فارس","productImg":"images/product-20.jpg","productPhoto":"images/product-20.jpg","pageImg":"images/catalog-20.jpg"}
+];
+
+
+/* =========================================================
+   دسته‌بندی‌ها
+========================================================= */
+
+const categories=[
+"همه",
+"اصلاح‌کننده خاک",
+"محرک رشد",
+"محرک رشد طبیعی",
+"میکرو مغذی",
+"NPK + TE"
+];
+
 let active="همه";
-const grid=document.getElementById("grid"),search=document.getElementById("search"),count=document.getElementById("count"),filters=document.getElementById("filters"),modal=document.getElementById("modal"),detail=document.getElementById("detail");
-function makeFilters(){filters.innerHTML=categories.map(c=>'<button class="chip '+(c===active?'active':'')+'" onclick="setCat('+JSON.stringify(c)+')">'+c+'</button>').join("")}
-function setCat(c){active=c;makeFilters();render()}
-function matches(p,q){if(!q)return true;q=q.toLowerCase();return[p.en,p.fa,p.cat,p.pack,p.maker].join(" ").toLowerCase().includes(q)}
+
+
+/* =========================================================
+   عناصر صفحه
+========================================================= */
+
+const grid=document.getElementById("grid");
+const search=document.getElementById("search");
+const count=document.getElementById("count");
+const filters=document.getElementById("filters");
+
+const modal=document.getElementById("modal");
+const detail=document.getElementById("detail");
+
+const authStatus=document.getElementById("authStatus");
+
+
+/* =========================================================
+   فیلترها
+========================================================= */
+
+function makeFilters(){
+
+filters.innerHTML=categories
+.map(c=>
+'<button class="chip '+
+(c===active?'active':'')+
+'" onclick="setCat('+JSON.stringify(c)+')">'+
+c+
+'</button>'
+)
+.join("");
+
+}
+
+
+function setCat(c){
+
+active=c;
+
+makeFilters();
+
+render();
+
+}
+
+
+function matches(p,q){
+
+if(!q)return true;
+
+q=q.toLowerCase();
+
+return[
+p.en,
+p.fa,
+p.cat,
+p.pack,
+p.maker
+]
+.join(" ")
+.toLowerCase()
+.includes(q);
+
+}
+
+
+/* =========================================================
+   نمایش محصولات
+========================================================= */
+
 function render(){
- const q=search.value.trim();
- const list=products.filter(p=>(active==="همه"||p.cat===active)&&matches(p,q));
- count.textContent=list.length+" محصول";
- grid.innerHTML=list.length?list.map(p=>'<article class="card" onclick="openProduct('+p.id+')"><div class="pic"><img src="'+p.productPhoto+'" alt="'+p.fa+'" loading="lazy"></div><div class="info"><h2 class="name">'+p.fa+'</h2><div class="en">'+p.en+'</div><div class="spec"><div><b>گروه:</b> '+p.cat+'</div><div><b>بسته‌بندی:</b> '+p.pack+'</div><div><b>تولید:</b> '+p.maker+'</div></div></div></article>').join(""):'<div class="empty" style="grid-column:1/-1">محصولی با این جستجو پیدا نشد.</div>';
+
+const q=search.value.trim();
+
+const list=products.filter(
+p=>
+(active==="همه"||p.cat===active)
+&&
+matches(p,q)
+);
+
+count.textContent=list.length+" محصول";
+
+grid.innerHTML=list.length
+?
+list.map(p=>
+'<article class="card" onclick="openProduct('+p.id+')">'+
+
+'<div class="pic">'+
+'<img src="'+p.productPhoto+'" alt="'+p.fa+'" loading="lazy">'+
+'</div>'+
+
+'<div class="info">'+
+
+'<h2 class="name">'+
+p.fa+
+'</h2>'+
+
+'<div class="en">'+
+p.en+
+'</div>'+
+
+'<div class="spec">'+
+
+'<div><b>گروه:</b> '+p.cat+'</div>'+
+
+'<div><b>بسته‌بندی:</b> '+p.pack+'</div>'+
+
+'<div><b>تولید:</b> '+p.maker+'</div>'+
+
+'</div>'+
+
+'</div>'+
+
+'</article>'
+).join("")
+
+:
+'<div class="empty" style="grid-column:1/-1">'+
+'محصولی با این جستجو پیدا نشد.'+
+'</div>';
+
 }
-const productDetails={"1":{"intro":"هیومیک یک محرک رشد طبیعی و اصلاح‌کننده خاک است که از لئوناردیت استخراج می‌شود و به بهبود ساختار خاک، ظرفیت بافری و رشد ریشه کمک می‌کند.","benefits":["بهبود ساختار خاک و ظرفیت تبادل کاتیونی","افزایش رشد و توسعه ریشه","کمک به حفظ رطوبت و مقاومت در برابر خشکی و شوری","افزایش دسترسی گیاه به ریزمغذی‌ها"],"composition":"هیومات پتاسیم (هیومیک اسید و فولویک اسید)","use":"مصرف در طول فصل رشد؛ دوز دقیق طبق جدول کاتالوگ."},"2":{"intro":"ALGAE عصاره طبیعی و میکرونیزه جلبک قهوه‌ای آسکوفیلوم نودوسوم است و ترکیبات فعال زیستی متنوعی دارد.","benefits":["افزایش مقاومت در برابر تنش‌های محیطی","تحریک فتوسنتز و رشد ریشه","بهبود فعالیت ریزوسفر","کمک به بهبود کیفیت محصول"],"composition":"عصاره جلبک آسکوفیلوم نودوسوم و هیدروکسید پتاسیم؛ حاوی بتائین‌ها، آمینواسیدها، سیتوکینین، مانیتول و اسید آلژینیک.","use":"قابل استفاده از طریق محلول‌پاشی یا آبیاری در طول فصل رشد، طبق کاتالوگ."},"3":{"intro":"AMIN فرمولاسیون پودری با غلظت بالای آمینواسیدهای گیاهی برای تقویت متابولیسم و رشد گیاه است.","benefits":["افزایش جذب مواد مغذی","تقویت رشد ریشه و تشکیل جوانه و گل","کمک به فروت‌ست و کیفیت محصول","افزایش تحمل در برابر خشکی، گرما و شوری"],"composition":"اسیدهای آمینه گیاهی","use":"مصرف در طول فصل رشد؛ مقدار مصرف طبق جدول کاتالوگ."},"4":{"intro":"ORTHO 5 منبع آهن کلاته پایدار برای تأمین آهن قابل جذب و پیشگیری و کنترل کلروز آهن، حتی در خاک‌های قلیایی است.","benefits":["تأمین آهن پایدار و قابل جذب","کمک به سنتز کلروفیل و فتوسنتز","کاهش رسوب و آبشویی آهن در خاک‌های آهکی و قلیایی","کاملاً محلول در آب"],"composition":"آهن کلاته با EDDHA؛ شامل ایزومرهای اورتو-اورتو و اورتو-پارا","use":"قابل استفاده از طریق آبیاری و محلول‌پاشی؛ دوز طبق کاتالوگ."},"5":{"intro":"MICRO ترکیبی از ریزمغذی‌های کلاته برای تأمین عناصر کم‌مصرف مورد نیاز گیاه در مراحل مختلف رشد است.","benefits":["کمک به رفع کمبود ریزمغذی‌ها","تقویت سبزینگی و فتوسنتز","کمک به تشکیل گل، لقاح و میوه","افزایش تحمل گیاه در برابر تنش‌ها"],"composition":"منیزیم سولفات، بوریک اسید، مولیبدات آمونیوم، آهن، روی، منگنز و مس به فرم‌های کلاته.","use":"قابل استفاده در طول فصل رشد؛ دوز طبق جدول کاتالوگ."},"6":{"intro":"CALCIBOR ترکیبی از کلسیم و بور برای محلول‌پاشی و آبیاری است و به استحکام بافت، گلدهی و تشکیل میوه کمک می‌کند.","benefits":["افزایش استحکام و تقسیم سلولی","افزایش تلقیح و کاهش ریزش گل","کمک به جلوگیری از ترک‌خوردگی میوه","افزایش ماندگاری و انبارداری"],"composition":"ترکیبات کلسیم و بور، اسید بوریک و اسیدهای آمینه","use":"به‌ویژه از گلدهی تا تشکیل و رشد میوه؛ طبق کاتالوگ."},"7":{"intro":"10-52-10+TE کود NPK با فسفر بالا برای مراحل اولیه رشد، توسعه ریشه و گلدهی است.","benefits":["تقویت رشد ریشه و شاخه","کمک به افزایش گلدهی","تأمین فسفر مراحل اولیه رشد","حاوی ریزمغذی‌های کلاته"],"composition":"مونوآمونیوم فسفات، مونوپتاسیم فسفات، نیترات پتاسیم و ریزمغذی‌های کلاته.","use":"زراعی: حدود ۱۰ تا ۱۵ کیلوگرم در هکتار؛ گلخانه‌ای: حدود ۲ تا ۴ کیلوگرم در هزار لیتر آب."},"8":{"intro":"20-20-20+TE فرمول متعادل NPK با حلالیت بالا برای تغذیه هم‌زمان نیتروژن، فسفر، پتاسیم و ریزمغذی‌هاست.","benefits":["حلالیت بالا","تغذیه متعادل","کمک به رشد رویشی","تأمین ریزمغذی‌های کلاته"],"composition":"ترکیبات NPK به همراه بور، آهن، روی، منگنز، مس و مولیبدن.","use":"زراعی: حدود ۱۰ تا ۱۵ کیلوگرم در هکتار؛ گلخانه‌ای: حدود ۲ تا ۴ کیلوگرم در هزار لیتر آب."},"9":{"intro":"12-12-36+TE فرمولی با پتاسیم بالا برای رشد و رسیدن میوه و بهبود کیفیت و استحکام بافت آن است.","benefits":["تسریع رسیدن میوه","بهبود رنگ و کیفیت محصول","کمک به استحکام بافت میوه","افزایش مقاومت و عملکرد گیاه"],"composition":"اوره، مونوپتاسیم فسفات، نیترات پتاسیم، سولفات پتاسیم و ریزمغذی‌های کلاته.","use":"زراعی: حدود ۱۰ تا ۱۵ کیلوگرم در هکتار؛ گلخانه‌ای: حدود ۲ تا ۴ کیلوگرم در هزار لیتر آب."},"10":{"intro":"K53 منبع غنی پتاسیم برای محلول‌پاشی است و به تنظیم آب گیاه، انتقال مواد غذایی و کیفیت محصول کمک می‌کند.","benefits":["بهبود رنگ، طعم و کیفیت محصول","افزایش مقاومت در برابر خشکی و سرما","تسهیل انتقال انرژی و مواد غذایی","کاهش تعرق در دوره کم‌آبی","افزایش بازارپسندی و انبارداری"],"composition":"پتاسیم فرمات و پتاسیم کربنات","use":"برای درختان میوه، مرکبات، محصولات باغی، صیفی و سبزی؛ طبق کاتالوگ."},"11":{"intro":"هیومیک اسید MFC محرک رشد طبیعی و اصلاح‌کننده خاک است و ساختار، ظرفیت بافری و تبادل کاتیونی خاک را بهبود می‌دهد.","benefits":["افزایش ظرفیت بافری خاک","کمک به توسعه ریشه","تحریک میکروارگانیسم‌های مفید","کمک به حفظ رطوبت و رشد گیاه"],"composition":"پتاسیم هیومات و فولویک اسید","use":"در طول دوره رشد از طریق آبیاری یا روش توصیه‌شده در کاتالوگ."},"12":{"intro":"AMINO ALGAE 50 ترکیبی از آمینواسیدهای گیاهی و عصاره جلبک قهوه‌ای برای تقویت رشد، جذب مواد غذایی و تحمل تنش است.","benefits":["تقویت رشد و توسعه برگ","افزایش جذب مواد مغذی","افزایش مقاومت در برابر استرس","تحریک فتوسنتز و رشد ریشه","کمک به کیفیت و رسیدن میوه"],"composition":"آمینواسید گیاهی، جلبک دریایی، آمینو روی، آمینو منگنز و آمینو مس","use":"در مراحل حساس رشد و مطابق جدول کاتالوگ."},"13":{"intro":"FRUIT SET برای بهبود گلدهی، گرده‌افشانی، تشکیل میوه و افزایش باردهی با کیفیت طراحی شده است.","benefits":["افزایش گرده‌افشانی و بهبود تلقیح","افزایش طول لوله گرده و لقاح گل","افزایش گلدهی و کاهش ریزش گل","کمک به تشکیل میوه و باردهی با کیفیت"],"composition":"سولفات روی، بوریک اسید، اوره و اسید آمینه","use":"قبل از گلدهی، زمان تورم جوانه و دوره باردهی طبق جدول کاتالوگ."},"14":{"intro":"IRON 7.5 کود ریزمغذی آهن برای رفع کمبود آهن است؛ آهن در سنتز کلروفیل، فتوسنتز و فرآیندهای آنزیمی نقش دارد.","benefits":["رفع کمبود آهن و کمک به کاهش کلروز","تقویت سنتز کلروفیل و فتوسنتز","کمک به بهبود رشد و عملکرد","فعال‌سازی فرآیندهای آنزیمی"],"composition":"آهن کلاته","use":"در مراحل مختلف رشد، به‌ویژه پیش از گلدهی و هنگام تشکیل و رشد میوه؛ طبق کاتالوگ."},"15":{"intro":"MICRONUTRIENT MFC مخلوطی از ریزمغذی‌های کلاته با اسید سیتریک برای محلول‌پاشی و آبیاری است.","benefits":["افزایش سبزینگی و تقویت فتوسنتز","کمک به عملکرد آنزیم‌ها","تقویت رشد و تشکیل میوه","کاهش ریزش میوه و کمک به باردهی","افزایش تحمل در برابر تنش"],"composition":"آمینواسید گیاهی، سیترات آهن، سیترات منگنز، سیترات روی و ریزمغذی‌های محلول/کلاته.","use":"در محصولات زراعی، باغی و سبزی و صیفی در طول رشد؛ طبق کاتالوگ."},"16":{"intro":"F.M.Z ترکیبی از آهن، روی و منگنز برای تأمین ریزمغذی‌های مهم و پشتیبانی از فرآیندهای حیاتی گیاه است.","benefits":["کمک به افزایش عطر و طعم محصولات","تقویت سبزینگی و رشد","رفع علائم کمبود عناصر میکرو","پشتیبانی از ریشه‌زایی، گلدهی، تشکیل میوه و رسیدن محصول"],"composition":"سولفات آهن، سولفات روی، سولفات منگنز، سولفات منیزیم و اوره به همراه آمینواسیدها","use":"در اوایل فصل رشد، پس از ریزش گل و در دوره رشد میوه؛ طبق کاتالوگ."},"17":{"intro":"CAL B ترکیبی از کلسیم و بور برای محلول‌پاشی و آبیاری است و در استحکام بافت، گلدهی و تشکیل میوه نقش دارد.","benefits":["افزایش تقسیم سلولی و استحکام دیواره سلولی","افزایش تلقیح و کاهش ریزش گل","بهبود گلدهی و تشکیل میوه","افزایش ماندگاری و انبارداری"],"composition":"نیترات کلسیم، اسید بوریک و اسید آمینه","use":"درختان میوه، زراعی و سبزی و صیفی؛ در دوره گلدهی و میوه‌دهی طبق کاتالوگ."},"18":{"intro":"بور مایع MFC منبع غنی بور با قابلیت جذب مناسب برای رشد بافت‌های جدید، گلدهی، گرده‌افشانی و تشکیل میوه است.","benefits":["افزایش تولید و جوانه‌زنی دانه گرده","تقویت گلدهی و گرده‌افشانی","کمک به تشکیل میوه و رشد بافت جدید","هم‌افزایی با کلسیم و انتقال قندها","کمک به رشد ریشه"],"composition":"بوریک اسید و اوره","use":"در مراحل مختلف رشد، به‌ویژه پیش از گلدهی و تشکیل میوه؛ طبق کاتالوگ."},"19":{"intro":"30-10-10+ME فرمولی با نیتروژن بالا برای تقویت رشد رویشی، شاخ و برگ و جذب آب و مواد غذایی است.","benefits":["تقویت رشد رویشی و توسعه شاخ و برگ","افزایش رشد گیاه","کمک به جذب آب و مواد غذایی","تأمین ریزمغذی‌های کلاته"],"composition":"مونوآمونیوم فسفات، مونوپتاسیم فسفات، نیترات پتاسیم، سولفات پتاسیم، اوره و ریزمغذی‌های کلاته.","use":"محصولات باغی، زراعی و گلخانه‌ای؛ دوز طبق جدول کاتالوگ."},"20":{"intro":"15-5-30+ME فرمولی با پتاسیم بالا و ترکیبی از مواد مغذی معدنی و محرک‌های رشد طبیعی برای رسیدگی و بهبود کیفیت میوه است.","benefits":["تسریع رسیدن میوه","بهبود رنگ و محتوای قند میوه","کمک به افزایش مقاومت گیاه","تقویت عملکرد و کیفیت محصول","حاوی ریزمغذی‌های کلاته و عصاره جلبک"],"composition":"ترکیبات NPK، بوریک اسید، مولیبدات سدیم، آهن، منگنز، روی، مس و جلبک دریایی آسکوفیلوم نودوسوم.","use":"محصولات باغی، زراعی و گلخانه‌ای؛ مقدار مصرف طبق جدول کاتالوگ."}};
-function detailsHtml(d){return '<div class="product-details"><h3>معرفی و جزئیات محصول</h3><p class="intro">'+d.intro+'</p><div class="detail-block"><h4>مزایا و کاربرد</h4><ul>'+d.benefits.map(x=>'<li>'+x+'</li>').join('')+'</ul></div><div class="detail-block"><h4>ترکیبات سازنده</h4><p>'+d.composition+'</p></div><div class="detail-block detail-use"><h4>نحوه مصرف</h4><p>'+d.use+'</p></div></div>'}
+
+
+/* =========================================================
+   جزئیات محصولات
+========================================================= */
+
+const productDetails={
+
+"1":{
+"intro":"هیومیک یک محرک رشد طبیعی و اصلاح‌کننده خاک است که از لئوناردیت استخراج می‌شود و به بهبود ساختار خاک، ظرفیت بافری و رشد ریشه کمک می‌کند.",
+"benefits":[
+"بهبود ساختار خاک و ظرفیت تبادل کاتیونی",
+"افزایش رشد و توسعه ریشه",
+"کمک به حفظ رطوبت و مقاومت در برابر خشکی و شوری",
+"افزایش دسترسی گیاه به ریزمغذی‌ها"
+],
+"composition":"هیومات پتاسیم (هیومیک اسید و فولویک اسید)",
+"use":"مصرف در طول فصل رشد؛ دوز دقیق طبق جدول کاتالوگ."
+},
+
+"2":{
+"intro":"ALGAE عصاره طبیعی و میکرونیزه جلبک قهوه‌ای آسکوفیلوم نودوسوم است و ترکیبات فعال زیستی متنوعی دارد.",
+"benefits":[
+"افزایش مقاومت در برابر تنش‌های محیطی",
+"تحریک فتوسنتز و رشد ریشه",
+"بهبود فعالیت ریزوسفر",
+"کمک به بهبود کیفیت محصول"
+],
+"composition":"عصاره جلبک آسکوفیلوم نودوسوم و هیدروکسید پتاسیم؛ حاوی بتائین‌ها، آمینواسیدها، سیتوکینین، مانیتول و اسید آلژینیک.",
+"use":"قابل استفاده از طریق محلول‌پاشی یا آبیاری در طول فصل رشد، طبق کاتالوگ."
+},
+
+"3":{
+"intro":"AMIN فرمولاسیون پودری با غلظت بالای آمینواسیدهای گیاهی برای تقویت متابولیسم و رشد گیاه است.",
+"benefits":[
+"افزایش جذب مواد مغذی",
+"تقویت رشد ریشه و تشکیل جوانه و گل",
+"کمک به فروت‌ست و کیفیت محصول",
+"افزایش تحمل در برابر خشکی، گرما و شوری"
+],
+"composition":"اسیدهای آمینه گیاهی",
+"use":"مصرف در طول فصل رشد؛ مقدار مصرف طبق جدول کاتالوگ."
+},
+
+"4":{
+"intro":"ORTHO 5 منبع آهن کلاته پایدار برای تأمین آهن قابل جذب و پیشگیری و کنترل کلروز آهن، حتی در خاک‌های قلیایی است.",
+"benefits":[
+"تأمین آهن پایدار و قابل جذب",
+"کمک به سنتز کلروفیل و فتوسنتز",
+"کاهش رسوب و آبشویی آهن در خاک‌های آهکی و قلیایی",
+"کاملاً محلول در آب"
+],
+"composition":"آهن کلاته با EDDHA؛ شامل ایزومرهای اورتو-اورتو و اورتو-پارا",
+"use":"قابل استفاده از طریق آبیاری و محلول‌پاشی؛ دوز طبق کاتالوگ."
+},
+
+"5":{
+"intro":"MICRO ترکیبی از ریزمغذی‌های کلاته برای تأمین عناصر کم‌مصرف مورد نیاز گیاه در مراحل مختلف رشد است.",
+"benefits":[
+"کمک به رفع کمبود ریزمغذی‌ها",
+"تقویت سبزینگی و فتوسنتز",
+"کمک به تشکیل گل، لقاح و میوه",
+"افزایش تحمل گیاه در برابر تنش‌ها"
+],
+"composition":"منیزیم سولفات، بوریک اسید، مولیبدات آمونیوم، آهن، روی، منگنز و مس به فرم‌های کلاته.",
+"use":"قابل استفاده در طول فصل رشد؛ دوز طبق جدول کاتالوگ."
+},
+
+"6":{
+"intro":"CALCIBOR ترکیبی از کلسیم و بور برای محلول‌پاشی و آبیاری است و به استحکام بافت، گلدهی و تشکیل میوه کمک می‌کند.",
+"benefits":[
+"افزایش استحکام و تقسیم سلولی",
+"افزایش تلقیح و کاهش ریزش گل",
+"کمک به جلوگیری از ترک‌خوردگی میوه",
+"افزایش ماندگاری و انبارداری"
+],
+"composition":"ترکیبات کلسیم و بور، اسید بوریک و اسیدهای آمینه",
+"use":"به‌ویژه از گلدهی تا تشکیل و رشد میوه؛ طبق کاتالوگ."
+},
+
+"7":{
+"intro":"10-52-10+TE کود NPK با فسفر بالا برای مراحل اولیه رشد، توسعه ریشه و گلدهی است.",
+"benefits":[
+"تقویت رشد ریشه و شاخه",
+"کمک به افزایش گلدهی",
+"تأمین فسفر مراحل اولیه رشد",
+"حاوی ریزمغذی‌های کلاته"
+],
+"composition":"مونوآمونیوم فسفات، مونوپتاسیم فسفات، نیترات پتاسیم و ریزمغذی‌های کلاته.",
+"use":"زراعی: حدود ۱۰ تا ۱۵ کیلوگرم در هکتار؛ گلخانه‌ای: حدود ۲ تا ۴ کیلوگرم در هزار لیتر آب."
+},
+
+"8":{
+"intro":"20-20-20+TE فرمول متعادل NPK با حلالیت بالا برای تغذیه هم‌زمان نیتروژن، فسفر، پتاسیم و ریزمغذی‌هاست.",
+"benefits":[
+"حلالیت بالا",
+"تغذیه متعادل",
+"کمک به رشد رویشی",
+"تأمین ریزمغذی‌های کلاته"
+],
+"composition":"ترکیبات NPK به همراه بور، آهن، روی، منگنز، مس و مولیبدن.",
+"use":"زراعی: حدود ۱۰ تا ۱۵ کیلوگرم در هکتار؛ گلخانه‌ای: حدود ۲ تا ۴ کیلوگرم در هزار لیتر آب."
+},
+
+"9":{
+"intro":"12-12-36+TE فرمولی با پتاسیم بالا برای رشد و رسیدن میوه و بهبود کیفیت و استحکام بافت آن است.",
+"benefits":[
+"تسریع رسیدن میوه",
+"بهبود رنگ و کیفیت محصول",
+"کمک به استحکام بافت میوه",
+"افزایش مقاومت و عملکرد گیاه"
+],
+"composition":"اوره، مونوپتاسیم فسفات، نیترات پتاسیم، سولفات پتاسیم و ریزمغذی‌های کلاته.",
+"use":"زراعی: حدود ۱۰ تا ۱۵ کیلوگرم در هکتار؛ گلخانه‌ای: حدود ۲ تا ۴ کیلوگرم در هزار لیتر آب."
+},
+
+"10":{
+"intro":"K53 منبع غنی پتاسیم برای محلول‌پاشی است و به تنظیم آب گیاه، انتقال مواد غذایی و کیفیت محصول کمک می‌کند.",
+"benefits":[
+"بهبود رنگ، طعم و کیفیت محصول",
+"افزایش مقاومت در برابر خشکی و سرما",
+"تسهیل انتقال انرژی و مواد غذایی",
+"کاهش تعرق در دوره کم‌آبی",
+"افزایش بازارپسندی و انبارداری"
+],
+"composition":"پتاسیم فرمات و پتاسیم کربنات",
+"use":"برای درختان میوه، مرکبات، محصولات باغی، صیفی و سبزی؛ طبق کاتالوگ."
+},
+
+"11":{
+"intro":"هیومیک اسید MFC محرک رشد طبیعی و اصلاح‌کننده خاک است و ساختار، ظرفیت بافری و تبادل کاتیونی خاک را بهبود می‌دهد.",
+"benefits":[
+"افزایش ظرفیت بافری خاک",
+"کمک به توسعه ریشه",
+"تحریک میکروارگانیسم‌های مفید",
+"کمک به حفظ رطوبت و رشد گیاه"
+],
+"composition":"پتاسیم هیومات و فولویک اسید",
+"use":"در طول دوره رشد از طریق آبیاری یا روش توصیه‌شده در کاتالوگ."
+},
+
+"12":{
+"intro":"AMINO ALGAE 50 ترکیبی از آمینواسیدهای گیاهی و عصاره جلبک قهوه‌ای برای تقویت رشد، جذب مواد غذایی و تحمل تنش است.",
+"benefits":[
+"تقویت رشد و توسعه برگ",
+"افزایش جذب مواد مغذی",
+"افزایش مقاومت در برابر استرس",
+"تحریک فتوسنتز و رشد ریشه",
+"کمک به کیفیت و رسیدن میوه"
+],
+"composition":"آمینواسید گیاهی، جلبک دریایی، آمینو روی، آمینو منگنز و آمینو مس",
+"use":"در مراحل حساس رشد و مطابق جدول کاتالوگ."
+},
+
+"13":{
+"intro":"FRUIT SET برای بهبود گلدهی، گرده‌افشانی، تشکیل میوه و افزایش باردهی با کیفیت طراحی شده است.",
+"benefits":[
+"افزایش گرده‌افشانی و بهبود تلقیح",
+"افزایش طول لوله گرده و لقاح گل",
+"افزایش گلدهی و کاهش ریزش گل",
+"کمک به تشکیل میوه و باردهی با کیفیت"
+],
+"composition":"سولفات روی، بوریک اسید، اوره و اسید آمینه",
+"use":"قبل از گلدهی، زمان تورم جوانه و دوره باردهی طبق جدول کاتالوگ."
+},
+
+"14":{
+"intro":"IRON 7.5 کود ریزمغذی آهن برای رفع کمبود آهن است؛ آهن در سنتز کلروفیل، فتوسنتز و فرآیندهای آنزیمی نقش دارد.",
+"benefits":[
+"رفع کمبود آهن و کمک به کاهش کلروز",
+"تقویت سنتز کلروفیل و فتوسنتز",
+"کمک به بهبود رشد و عملکرد",
+"فعال‌سازی فرآیندهای آنزیمی"
+],
+"composition":"آهن کلاته",
+"use":"در مراحل مختلف رشد، به‌ویژه پیش از گلدهی و هنگام تشکیل و رشد میوه؛ طبق کاتالوگ."
+},
+
+"15":{
+"intro":"MICRONUTRIENT MFC مخلوطی از ریزمغذی‌های کلاته با اسید سیتریک برای محلول‌پاشی و آبیاری است.",
+"benefits":[
+"افزایش سبزینگی و تقویت فتوسنتز",
+"کمک به عملکرد آنزیم‌ها",
+"تقویت رشد و تشکیل میوه",
+"کاهش ریزش میوه و کمک به باردهی",
+"افزایش تحمل در برابر تنش"
+],
+"composition":"آمینواسید گیاهی، سیترات آهن، سیترات منگنز، سیترات روی و ریزمغذی‌های محلول/کلاته.",
+"use":"در محصولات زراعی، باغی و سبزی و صیفی در طول رشد؛ طبق کاتالوگ."
+},
+
+"16":{
+"intro":"F.M.Z ترکیبی از آهن، روی و منگنز برای تأمین ریزمغذی‌های مهم و پشتیبانی از فرآیندهای حیاتی گیاه است.",
+"benefits":[
+"کمک به افزایش عطر و طعم محصولات",
+"تقویت سبزینگی و رشد",
+"رفع علائم کمبود عناصر میکرو",
+"پشتیبانی از ریشه‌زایی، گلدهی، تشکیل میوه و رسیدن محصول"
+],
+"composition":"سولفات آهن، سولفات روی، سولفات منگنز، سولفات منیزیم و اوره به همراه آمینواسیدها",
+"use":"در اوایل فصل رشد، پس از ریزش گل و در دوره رشد میوه؛ طبق کاتالوگ."
+},
+
+"17":{
+"intro":"CAL B ترکیبی از کلسیم و بور برای محلول‌پاشی و آبیاری است و در استحکام بافت، گلدهی و تشکیل میوه نقش دارد.",
+"benefits":[
+"افزایش تقسیم سلولی و استحکام دیواره سلولی",
+"افزایش تلقیح و کاهش ریزش گل",
+"بهبود گلدهی و تشکیل میوه",
+"افزایش ماندگاری و انبارداری"
+],
+"composition":"نیترات کلسیم، اسید بوریک و اسید آمینه",
+"use":"درختان میوه، زراعی و سبزی و صیفی؛ در دوره گلدهی و میوه‌دهی طبق کاتالوگ."
+},
+
+"18":{
+"intro":"بور مایع MFC منبع غنی بور با قابلیت جذب مناسب برای رشد بافت‌های جدید، گلدهی، گرده‌افشانی و تشکیل میوه است.",
+"benefits":[
+"افزایش تولید و جوانه‌زنی دانه گرده",
+"تقویت گلدهی و گرده‌افشانی",
+"کمک به تشکیل میوه و رشد بافت جدید",
+"هم‌افزایی با کلسیم و انتقال قندها",
+"کمک به رشد ریشه"
+],
+"composition":"بوریک اسید و اوره",
+"use":"در مراحل مختلف رشد، به‌ویژه پیش از گلدهی و تشکیل میوه؛ طبق کاتالوگ."
+},
+
+"19":{
+"intro":"30-10-10+ME فرمولی با نیتروژن بالا برای تقویت رشد رویشی، شاخ و برگ و جذب آب و مواد غذایی است.",
+"benefits":[
+"تقویت رشد رویشی و توسعه شاخ و برگ",
+"افزایش رشد گیاه",
+"کمک به جذب آب و مواد غذایی",
+"تأمین ریزمغذی‌های کلاته"
+],
+"composition":"مونوآمونیوم فسفات، مونوپتاسیم فسفات، نیترات پتاسیم، سولفات پتاسیم، اوره و ریزمغذی‌های کلاته.",
+"use":"محصولات باغی، زراعی و گلخانه‌ای؛ دوز طبق جدول کاتالوگ."
+},
+
+"20":{
+"intro":"15-5-30+ME فرمولی با پتاسیم بالا و ترکیبی از مواد مغذی معدنی و محرک‌های رشد طبیعی برای رسیدگی و بهبود کیفیت میوه است.",
+"benefits":[
+"تسریع رسیدن میوه",
+"بهبود رنگ و محتوای قند میوه",
+"کمک به افزایش مقاومت گیاه",
+"تقویت عملکرد و کیفیت محصول",
+"حاوی ریزمغذی‌های کلاته و عصاره جلبک"
+],
+"composition":"ترکیبات NPK، بوریک اسید، مولیبدات سدیم، آهن، منگنز، روی، مس و جلبک دریایی آسکوفیلوم نودوسوم.",
+"use":"محصولات باغی، زراعی و گلخانه‌ای؛ مقدار مصرف طبق جدول کاتالوگ."
+}
+
+};
+
+
+/* =========================================================
+   نمایش جزئیات محصول
+========================================================= */
+
+function detailsHtml(d){
+
+return '<div class="product-details">'+
+
+'<h3>معرفی و جزئیات محصول</h3>'+
+
+'<p class="intro">'+
+d.intro+
+'</p>'+
+
+'<div class="detail-block">'+
+
+'<h4>مزایا و کاربرد</h4>'+
+
+'<ul>'+
+d.benefits
+.map(x=>'<li>'+x+'</li>')
+.join('')+
+'</ul>'+
+
+'</div>'+
+
+'<div class="detail-block">'+
+
+'<h4>ترکیبات سازنده</h4>'+
+
+'<p>'+
+d.composition+
+'</p>'+
+
+'</div>'+
+
+'<div class="detail-block detail-use">'+
+
+'<h4>نحوه مصرف</h4>'+
+
+'<p>'+
+d.use+
+'</p>'+
+
+'</div>'+
+
+'</div>';
+
+}
+
+
 function openProduct(id){
- const p=products.find(x=>x.id===id);if(!p)return;
- document.getElementById("modalHeading").textContent=p.fa;
- detail.innerHTML='<div class="detail-top"><div class="detail-img"><img src="'+p.productImg+'" alt="'+p.fa+'"></div><div><div class="cat">'+p.cat+'</div><h2 class="detail-title">'+p.fa+'</h2><div class="detail-en">'+p.en+'</div><div class="badges"><span class="badge">بسته‌بندی: '+p.pack+'</span><span class="badge">تولید: '+p.maker+'</span></div></div></div>'+detailsHtml(productDetails[p.id])+'<div class="page-wrap"><h3>صفحه کامل کاتالوگ</h3><img id="pageImage" class="page-img" src="'+p.pageImg+'" alt="صفحه کاتالوگ '+p.en+'"></div>';
- modal.classList.add("show");modal.scrollTop=0;document.body.style.overflow="hidden";document.querySelector(".sheet").scrollTop=0;
- document.getElementById("pageImage").onclick=function(){this.classList.toggle("zoom")};
+
+const p=products.find(x=>x.id===id);
+
+if(!p)return;
+
+document.getElementById("modalHeading").textContent=p.fa;
+
+detail.innerHTML=
+
+'<div class="detail-top">'+
+
+'<div class="detail-img">'+
+'<img src="'+p.productImg+'" alt="'+p.fa+'">'+
+'</div>'+
+
+'<div>'+
+
+'<div class="cat">'+p.cat+'</div>'+
+
+'<h2 class="detail-title">'+
+p.fa+
+'</h2>'+
+
+'<div class="detail-en">'+
+p.en+
+'</div>'+
+
+'<div class="badges">'+
+
+'<span class="badge">بسته‌بندی: '+p.pack+'</span>'+
+
+'<span class="badge">تولید: '+p.maker+'</span>'+
+
+'</div>'+
+
+'</div>'+
+
+'</div>'+
+
+detailsHtml(productDetails[p.id])+
+
+'<div class="page-wrap">'+
+
+'<h3>صفحه کامل کاتالوگ</h3>'+
+
+'<img id="pageImage" class="page-img" src="'+p.pageImg+'" alt="صفحه کاتالوگ '+p.en+'">'+
+
+'</div>';
+
+
+modal.classList.add("show");
+
+modal.scrollTop=0;
+
+document.body.style.overflow="hidden";
+
+document.querySelector(".sheet").scrollTop=0;
+
+
+document.getElementById("pageImage").onclick=function(){
+
+this.classList.toggle("zoom");
+
+};
+
 }
-function closeModal(){modal.classList.remove("show");document.body.style.overflow=""}
-document.getElementById("close").onclick=closeModal;modal.addEventListener("click",e=>{if(e.target===modal)closeModal()});document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});search.addEventListener("input",render);makeFilters();render();
+
+
+function closeModal(){
+
+modal.classList.remove("show");
+
+document.body.style.overflow="";
+
+}
+
+
+document.getElementById("close").onclick=closeModal;
+
+modal.addEventListener(
+"click",
+e=>{
+if(e.target===modal)closeModal();
+}
+);
+
+document.addEventListener(
+"keydown",
+e=>{
+if(e.key==="Escape")closeModal();
+}
+);
+
+search.addEventListener("input",render);
+
+
+/* =========================================================
+   Telegram Authentication
+========================================================= */
+
+async function telegramLogin(){
+
+/*
+   اگر صفحه خارج از Telegram باز شود،
+   Mini App SDK وجود ندارد یا initData خالی است.
+*/
+
+if(
+!window.Telegram ||
+!window.Telegram.WebApp
+){
+
+console.log(
+"Telegram WebApp در دسترس نیست."
+);
+
+authStatus.style.display="block";
+
+authStatus.style.background="#fff7e6";
+
+authStatus.style.color="#795b16";
+
+authStatus.textContent=
+"این صفحه خارج از Telegram باز شده است.";
+
+return;
+
+}
+
+
+/*
+   Telegram WebApp
+*/
+
+const tg=window.Telegram.WebApp;
+
+
+/*
+   اعلام آماده بودن Mini App
+*/
+
+tg.ready();
+
+
+/*
+   باز کردن Mini App در حالت کامل
+*/
+
+if(tg.expand){
+
+tg.expand();
+
+}
+
+
+/*
+   بسیار مهم:
+   فقط initData واقعی را ارسال می‌کنیم.
+
+   از initDataUnsafe برای احراز هویت
+   استفاده نمی‌کنیم.
+*/
+
+const initData=tg.initData;
+
+
+console.log(
+"Telegram initData موجود است:",
+Boolean(initData)
+);
+
+
+if(!initData){
+
+authStatus.style.display="block";
+
+authStatus.style.background="#fff1f1";
+
+authStatus.style.color="#8a2626";
+
+authStatus.textContent=
+"اطلاعات احراز هویت Telegram دریافت نشد.";
+
+return;
+
+}
+
+
+/*
+   ارسال initData به Worker
+*/
+
+try{
+
+authStatus.style.display="block";
+
+authStatus.style.background="#edf6ef";
+
+authStatus.style.color="#245b38";
+
+authStatus.textContent=
+"در حال ورود به حساب کاربری...";
+
+
+const response=await fetch(
+
+WORKER_URL+
+"/api/telegram-auth",
+
+{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+initData:initData
+
+})
+
+}
+
+);
+
+
+/*
+   پاسخ Worker
+*/
+
+const result=await response.json();
+
+
+console.log(
+"Telegram Auth Result:",
+result
+);
+
+
+/*
+   اگر Worker خطا داده باشد
+*/
+
+if(
+!response.ok ||
+!result.ok
+){
+
+throw new Error(
+result.error ||
+"احراز هویت Telegram ناموفق بود."
+);
+
+}
+
+
+/*
+   Customer معتبر دریافت شد.
+
+   فعلاً برای مراحل بعدی در حافظه صفحه
+   نگه می‌داریم.
+*/
+
+window.moshkfamCustomer=
+result.customer;
+
+
+/*
+   نمایش نتیجه
+*/
+
+const customer=
+result.customer;
+
+
+const name=
+
+[
+customer.first_name,
+customer.last_name
+]
+.filter(Boolean)
+.join(" ")
+
+||
+
+customer.username
+
+||
+
+"کاربر";
+
+
+authStatus.style.display="block";
+
+authStatus.style.background="#edf6ef";
+
+authStatus.style.color="#245b38";
+
+
+authStatus.innerHTML=
+
+"✅ ورود موفق بود<br>"+
+"👤 "+name;
+
+
+/*
+   گزارش اینکه Customer جدید بوده
+   یا قبلاً وجود داشته است.
+*/
+
+if(result.new_customer){
+
+console.log(
+"Customer جدید ساخته شد."
+);
+
+}else{
+
+console.log(
+"Customer قبلاً وجود داشت."
+);
+
+}
+
+
+/*
+   نمایش کامل اطلاعات در Console
+   فقط برای تست مرحله فعلی.
+*/
+
+console.log(
+"Customer:",
+result.customer
+);
+
+
+}catch(error){
+
+console.error(
+"Telegram Authentication Error:",
+error
+);
+
+
+authStatus.style.display="block";
+
+authStatus.style.background="#fff1f1";
+
+authStatus.style.color="#8a2626";
+
+
+authStatus.textContent=
+"❌ ورود ناموفق: "+
+error.message;
+
+}
+
+}
+
+
+/* =========================================================
+   شروع برنامه
+========================================================= */
+
+makeFilters();
+
+render();
+
+
+/*
+   شروع Telegram Authentication
+*/
+
+telegramLogin();
+
 </script>
+
 </body>
 </html>

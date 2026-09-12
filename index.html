@@ -1,217 +1,2543 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#123c25">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,viewport-fit=cover"
+>
+
+<meta
+  name="theme-color"
+  content="#123c25"
+>
+
 <title>کاتالوگ محصولات مشکفام فارس</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
 <style>
-:root{--bg:#f4f7f3;--card:#fff;--ink:#172019;--muted:#657066;--green:#16834a;--green2:#0d6337;--gold:#d5a62a;--line:#e2e9e3;--shadow:0 8px 25px rgba(20,45,27,.08)}
-*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Tahoma,Arial,sans-serif}body{min-height:100vh}
-.app{max-width:1100px;margin:auto;min-height:100vh}
-header{background:linear-gradient(145deg,#0c2417,#123c25 55%,#0d5d34);color:#fff;padding:24px 18px 20px;border-radius:0 0 28px 28px;box-shadow:0 8px 28px rgba(0,0,0,.16)}
-.brand{display:flex;align-items:center;gap:13px}.logo{width:54px;height:54px;border-radius:16px;background:#fff;display:grid;place-items:center;color:#177440;font-size:29px;font-weight:900;box-shadow:0 4px 15px #0003}
-h1{font-size:21px;margin:0 0 4px}.subtitle{font-size:12px;color:#d9eadf}
-.search{margin-top:18px;position:relative}.search input{width:100%;border:0;border-radius:17px;padding:14px 48px 14px 15px;outline:none;background:#fff;color:#172019;box-shadow:0 5px 18px #0002}.search span{position:absolute;right:17px;top:50%;transform:translateY(-50%);font-size:21px;color:#718077}
-main{padding:18px}.toolbar{display:flex;gap:8px;overflow:auto;padding:2px 0 14px;scrollbar-width:none}.toolbar::-webkit-scrollbar{display:none}
-.chip{white-space:nowrap;border:1px solid var(--line);background:#fff;color:#536057;border-radius:999px;padding:9px 14px;font-size:12px}.chip.active{background:var(--green);border-color:var(--green);color:#fff}
-.count{font-size:12px;color:var(--muted);margin:0 2px 14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:0 8px 28px rgba(20,45,27,.08);transition:transform .18s,box-shadow .18s;display:grid;grid-template-columns:minmax(165px,42%) minmax(0,1fr);min-height:230px;cursor:pointer}.card:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(20,45,27,.12)}.card:active{transform:scale(.985)}
-.pic{min-height:230px;background:linear-gradient(145deg,#fafcf9,#eef4ef);display:flex;align-items:center;justify-content:center;padding:16px;border-left:1px solid #edf1ed}.pic img{width:100%;height:100%;max-height:215px;object-fit:contain;display:block}
-.info{padding:22px 20px;display:flex;flex-direction:column;justify-content:center;min-width:0}.name{font-size:18px;font-weight:900;margin:0 0 6px;line-height:1.6;color:#172019;overflow-wrap:anywhere}.en{font-size:11px;color:#7b857e;direction:ltr;text-align:right;line-height:1.6;white-space:normal;overflow-wrap:anywhere;margin-bottom:13px}.spec{display:grid;gap:7px;font-size:12px;line-height:1.7;color:#59645c}.spec div{background:#f5f8f5;border-radius:10px;padding:6px 9px}.spec b{color:var(--green2);font-weight:800}.empty{background:#fff;border:1px dashed #ccd8ce;border-radius:16px;padding:30px;text-align:center;color:#657066}
-@media(max-width:850px){.grid{grid-template-columns:1fr}.card{grid-template-columns:180px minmax(0,1fr);min-height:220px}.pic{min-height:220px}.info{padding:19px}.name{font-size:17px}}
-@media(max-width:520px){main{padding:13px}.grid{gap:12px}.card{grid-template-columns:125px minmax(0,1fr);min-height:195px;border-radius:20px}.pic{min-height:195px;padding:10px}.pic img{max-height:180px}.info{padding:15px 13px}.name{font-size:15px;line-height:1.55}.en{font-size:10px;margin-bottom:10px}.spec{font-size:10px;gap:5px}.spec div{padding:5px 7px}}
-@media(max-width:360px){.card{grid-template-columns:105px minmax(0,1fr)}.pic{min-height:180px}.pic img{max-height:165px}.info{padding:13px 10px}.name{font-size:14px}.spec{font-size:9px}}
 
-.modal{position:fixed;inset:0;background:rgba(10,25,16,.68);z-index:9999;display:none;align-items:flex-start;justify-content:center;padding:0;overflow-y:auto}
-.modal.show{display:flex}
-.sheet{width:min(900px,100%);min-height:100vh;background:#fff;box-shadow:0 0 40px rgba(0,0,0,.25);overflow:hidden}
-.sheet-head{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(145deg,#0c2417,#123c25 60%,#0d5d34);color:#fff;box-shadow:0 3px 14px rgba(0,0,0,.14)}
-.sheet-head strong{font-size:16px;line-height:1.5;flex:1}
-.close{margin-right:auto;border:0;background:#fff;color:#26352b;width:38px;height:38px;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 2px 8px #0002}
-.detail-top{padding:22px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:24px}
-.detail-img{background:#f2f6f2;border-radius:18px;min-height:300px;display:grid;place-items:center;padding:14px;border:1px solid #e3ebe4}
-.detail-img img{width:100%;height:100%;max-height:380px;object-fit:contain;display:block}
-.detail-title{font-size:24px;margin:8px 0;line-height:1.6}
-.detail-en{direction:ltr;text-align:right;color:#6d766f;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
-.badges{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.badge{padding:8px 11px;background:#edf6ef;border-radius:10px;font-size:11px;color:#31583e}
-.product-details{margin:0 22px 22px;padding:18px;background:#f8fbf8;border:1px solid #e2e9e3;border-radius:16px}.product-details h3{margin:0 0 9px;font-size:16px;color:#123c25}.product-details .intro{font-size:12px;line-height:2.05;color:#39443d;margin:0 0 14px}.detail-block{margin-top:14px}.detail-block h4{margin:0 0 7px;font-size:12px;color:#16834a}.detail-block ul{margin:0;padding:0 18px}.detail-block li{font-size:11px;line-height:1.95;color:#566158;margin:2px 0}.detail-block p{font-size:11px;line-height:1.95;color:#566158;margin:0}.detail-use{background:#edf6ef;padding:10px 12px;border-radius:11px}.source-note{display:none}
-.page-wrap{padding:0 22px 28px}.page-wrap h3{font-size:14px;margin:8px 0 11px}.page-img{width:100%;display:block;border-radius:14px;border:1px solid #ddd;background:#111;cursor:zoom-in}.page-img.zoom{width:170%;max-width:none;cursor:zoom-out}
-@media(max-width:620px){.modal{align-items:flex-start}.sheet{width:100%;min-height:100vh}.sheet-head{padding:11px 13px}.sheet-head strong{font-size:15px}.detail-top{grid-template-columns:125px minmax(0,1fr);gap:14px;padding:14px}.detail-img{min-height:175px;padding:9px}.detail-img img{max-height:220px}.detail-title{font-size:18px;margin:3px 0}.detail-en{font-size:10px}.badges{gap:6px;margin:10px 0}.badge{font-size:10px;padding:6px 8px}.source-note{display:none}.product-details{margin:0 13px 18px;padding:14px;border-radius:14px}.product-details h3{font-size:15px}.product-details .intro{font-size:11px}.detail-block h4{font-size:11px}.detail-block li,.detail-block p{font-size:10px}.page-wrap{padding:0 13px 20px}.page-wrap h3{font-size:13px}}
+:root{
+  --bg:#f4f7f3;
+  --card:#fff;
+  --ink:#172019;
+  --muted:#657066;
+  --green:#16834a;
+  --green2:#0d6337;
+  --gold:#d5a62a;
+  --line:#e2e9e3;
+  --shadow:0 8px 25px rgba(20,45,27,.08)
+}
 
-.account-bar{margin:16px 0 0;padding:11px 12px;display:flex;align-items:center;gap:10px;background:#ffffff1c;border:1px solid #ffffff2b;border-radius:16px}.account-icon{width:38px;height:38px;border-radius:12px;background:#fff;display:grid;place-items:center;color:#123c25}.account-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}.account-text strong{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.account-text span{font-size:10px;color:#d9eadf;line-height:1.6}.profile-btn{border:0;border-radius:11px;padding:8px 11px;background:#fff;color:#123c25;font-weight:800;cursor:pointer}.account-bar.guest{background:#ffffff12}.warning{background:#fff4e8;padding:10px 12px;border-radius:11px}.warning h4{color:#a65b00!important}.media-actions{padding:0 22px 16px}.media-btn{display:inline-block;padding:10px 13px;background:#edf6ef;color:#0d6337;border-radius:11px;text-decoration:none;font-size:11px;font-weight:800}.video-wrap{padding:0 22px 24px}.video-wrap video{width:100%;border-radius:14px;background:#111}.profile-card{margin:22px;padding:28px 20px;text-align:center;background:#f8fbf8;border:1px solid #e2e9e3;border-radius:18px}.profile-avatar{width:72px;height:72px;border-radius:50%;background:#edf6ef;display:grid;place-items:center;font-size:32px;margin:0 auto 12px}.profile-card h2{margin:0 0 18px;font-size:20px}.profile-card p{text-align:right;font-size:12px;line-height:2;margin:7px 0}.profile-note{color:#657066;background:#fff;padding:10px;border-radius:11px}</style>
+*{
+  box-sizing:border-box
+}
+
+html,
+body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:Tahoma,Arial,sans-serif
+}
+
+body{
+  min-height:100vh
+}
+
+.app{
+  max-width:1100px;
+  margin:auto;
+  min-height:100vh
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+header{
+  background:
+    linear-gradient(
+      145deg,
+      #0c2417,
+      #123c25 55%,
+      #0d5d34
+    );
+
+  color:#fff;
+
+  padding:24px 18px 20px;
+
+  border-radius:
+    0 0 28px 28px;
+
+  box-shadow:
+    0 8px 28px rgba(0,0,0,.16)
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:13px
+}
+
+.logo{
+  width:54px;
+  height:54px;
+  border-radius:16px;
+  background:#fff;
+  display:grid;
+  place-items:center;
+  color:#177440;
+  font-size:29px;
+  font-weight:900;
+  box-shadow:0 4px 15px #0003
+}
+
+h1{
+  font-size:21px;
+  margin:0 0 4px
+}
+
+.subtitle{
+  font-size:12px;
+  color:#d9eadf
+}
+
+
+/* =========================================================
+   ACCOUNT
+========================================================= */
+
+.account-bar{
+  margin:16px 0 0;
+  padding:11px 12px;
+
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  background:#ffffff1c;
+  border:1px solid #ffffff2b;
+  border-radius:16px
+}
+
+.account-bar.guest{
+  background:#ffffff12
+}
+
+.account-icon{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  background:#fff;
+
+  display:grid;
+  place-items:center;
+
+  color:#123c25
+}
+
+.account-text{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+
+  min-width:0;
+  flex:1
+}
+
+.account-text strong{
+  font-size:12px;
+
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+
+.account-text span{
+  font-size:10px;
+  color:#d9eadf;
+  line-height:1.6
+}
+
+.profile-btn{
+  border:0;
+  border-radius:11px;
+
+  padding:8px 11px;
+
+  background:#fff;
+  color:#123c25;
+
+  font-weight:800;
+
+  cursor:pointer
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.search{
+  margin-top:18px;
+  position:relative
+}
+
+.search input{
+  width:100%;
+
+  border:0;
+  border-radius:17px;
+
+  padding:
+    14px
+    48px
+    14px
+    15px;
+
+  outline:none;
+
+  background:#fff;
+  color:#172019;
+
+  box-shadow:
+    0 5px 18px #0002
+}
+
+.search span{
+  position:absolute;
+
+  right:17px;
+  top:50%;
+
+  transform:
+    translateY(-50%);
+
+  font-size:21px;
+
+  color:#718077
+}
+
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+main{
+  padding:18px
+}
+
+.toolbar{
+  display:flex;
+  gap:8px;
+
+  overflow:auto;
+
+  padding:
+    2px 0 14px;
+
+  scrollbar-width:none
+}
+
+.toolbar::-webkit-scrollbar{
+  display:none
+}
+
+.chip{
+  white-space:nowrap;
+
+  border:1px solid var(--line);
+
+  background:#fff;
+
+  color:#536057;
+
+  border-radius:999px;
+
+  padding:9px 14px;
+
+  font-size:12px;
+
+  cursor:pointer
+}
+
+.chip.active{
+  background:var(--green);
+  border-color:var(--green);
+  color:#fff
+}
+
+.count{
+  font-size:12px;
+  color:var(--muted);
+
+  margin:
+    0
+    2px
+    14px
+}
+
+
+/* =========================================================
+   PRODUCT GRID
+========================================================= */
+
+.grid{
+  display:grid;
+
+  grid-template-columns:
+    repeat(2,minmax(0,1fr));
+
+  gap:18px
+}
+
+.card{
+  background:var(--card);
+
+  border:1px solid var(--line);
+
+  border-radius:24px;
+
+  overflow:hidden;
+
+  box-shadow:
+    0 8px 28px rgba(20,45,27,.08);
+
+  transition:
+    transform .18s,
+    box-shadow .18s;
+
+  display:grid;
+
+  grid-template-columns:
+    minmax(165px,42%)
+    minmax(0,1fr);
+
+  min-height:230px;
+
+  cursor:pointer
+}
+
+.card:hover{
+  transform:translateY(-2px);
+
+  box-shadow:
+    0 12px 32px rgba(20,45,27,.12)
+}
+
+.card:active{
+  transform:scale(.985)
+}
+
+.pic{
+  min-height:230px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fafcf9,
+      #eef4ef
+    );
+
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  padding:16px;
+
+  border-left:
+    1px solid #edf1ed
+}
+
+.pic img{
+  width:100%;
+  height:100%;
+
+  max-height:215px;
+
+  object-fit:contain;
+
+  display:block
+}
+
+.info{
+  padding:22px 20px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  justify-content:center;
+
+  min-width:0
+}
+
+.name{
+  font-size:18px;
+
+  font-weight:900;
+
+  margin:
+    0
+    0
+    6px;
+
+  line-height:1.6;
+
+  color:#172019;
+
+  overflow-wrap:anywhere
+}
+
+.en{
+  font-size:11px;
+
+  color:#7b857e;
+
+  direction:ltr;
+
+  text-align:right;
+
+  line-height:1.6;
+
+  white-space:normal;
+
+  overflow-wrap:anywhere;
+
+  margin-bottom:13px
+}
+
+.spec{
+  display:grid;
+  gap:7px;
+
+  font-size:12px;
+
+  line-height:1.7;
+
+  color:#59645c
+}
+
+.spec div{
+  background:#f5f8f5;
+
+  border-radius:10px;
+
+  padding:6px 9px
+}
+
+.spec b{
+  color:var(--green2);
+
+  font-weight:800
+}
+
+.empty{
+  background:#fff;
+
+  border:1px dashed #ccd8ce;
+
+  border-radius:16px;
+
+  padding:30px;
+
+  text-align:center;
+
+  color:#657066
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal{
+  position:fixed;
+
+  inset:0;
+
+  background:
+    rgba(10,25,16,.68);
+
+  z-index:9999;
+
+  display:none;
+
+  align-items:flex-start;
+
+  justify-content:center;
+
+  padding:0;
+
+  overflow-y:auto
+}
+
+.modal.show{
+  display:flex
+}
+
+.sheet{
+  width:min(900px,100%);
+
+  min-height:100vh;
+
+  background:#fff;
+
+  box-shadow:
+    0 0 40px rgba(0,0,0,.25);
+
+  overflow:hidden
+}
+
+.sheet-head{
+  position:sticky;
+
+  top:0;
+
+  z-index:5;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  padding:14px 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #0c2417,
+      #123c25 60%,
+      #0d5d34
+    );
+
+  color:#fff;
+
+  box-shadow:
+    0 3px 14px rgba(0,0,0,.14)
+}
+
+.sheet-head strong{
+  font-size:16px;
+
+  line-height:1.5;
+
+  flex:1
+}
+
+.close{
+  margin-right:auto;
+
+  border:0;
+
+  background:#fff;
+
+  color:#26352b;
+
+  width:38px;
+
+  height:38px;
+
+  border-radius:50%;
+
+  font-size:24px;
+
+  line-height:1;
+
+  cursor:pointer;
+
+  box-shadow:0 2px 8px #0002
+}
+
+
+/* =========================================================
+   DETAIL
+========================================================= */
+
+.detail-top{
+  padding:22px;
+
+  display:grid;
+
+  grid-template-columns:
+    250px
+    minmax(0,1fr);
+
+  gap:24px
+}
+
+.detail-img{
+  background:#f2f6f2;
+
+  border-radius:18px;
+
+  min-height:300px;
+
+  display:grid;
+
+  place-items:center;
+
+  padding:14px;
+
+  border:1px solid #e3ebe4
+}
+
+.detail-img img{
+  width:100%;
+  height:100%;
+
+  max-height:380px;
+
+  object-fit:contain;
+
+  display:block
+}
+
+.cat{
+  color:var(--green);
+
+  font-size:12px;
+
+  margin-top:6px
+}
+
+.detail-title{
+  font-size:24px;
+
+  margin:8px 0;
+
+  line-height:1.6
+}
+
+.detail-en{
+  direction:ltr;
+
+  text-align:right;
+
+  color:#6d766f;
+
+  font-size:12px;
+
+  line-height:1.7;
+
+  overflow-wrap:anywhere
+}
+
+.badges{
+  display:flex;
+
+  gap:8px;
+
+  flex-wrap:wrap;
+
+  margin:16px 0
+}
+
+.badge{
+  padding:8px 11px;
+
+  background:#edf6ef;
+
+  border-radius:10px;
+
+  font-size:11px;
+
+  color:#31583e
+}
+
+.product-details{
+  margin:
+    0
+    22px
+    22px;
+
+  padding:18px;
+
+  background:#f8fbf8;
+
+  border:
+    1px solid
+    #e2e9e3;
+
+  border-radius:16px
+}
+
+.product-details h3{
+  margin:
+    0
+    0
+    9px;
+
+  font-size:16px;
+
+  color:#123c25
+}
+
+.product-details .intro{
+  font-size:12px;
+
+  line-height:2.05;
+
+  color:#39443d;
+
+  margin:
+    0
+    0
+    14px
+}
+
+.detail-block{
+  margin-top:14px
+}
+
+.detail-block h4{
+  margin:
+    0
+    0
+    7px;
+
+  font-size:12px;
+
+  color:#16834a
+}
+
+.detail-block ul{
+  margin:0;
+
+  padding:
+    0
+    18px
+}
+
+.detail-block li{
+  font-size:11px;
+
+  line-height:1.95;
+
+  color:#566158;
+
+  margin:2px 0
+}
+
+.detail-block p{
+  font-size:11px;
+
+  line-height:1.95;
+
+  color:#566158;
+
+  margin:0
+}
+
+.detail-use{
+  background:#edf6ef;
+
+  padding:10px 12px;
+
+  border-radius:11px
+}
+
+.warning{
+  background:#fff4e8;
+
+  padding:10px 12px;
+
+  border-radius:11px
+}
+
+.warning h4{
+  color:#a65b00!important
+}
+
+
+/* =========================================================
+   MEDIA
+========================================================= */
+
+.media-actions{
+  padding:
+    0
+    22px
+    16px
+}
+
+.media-btn{
+  display:inline-block;
+
+  padding:10px 13px;
+
+  background:#edf6ef;
+
+  color:#0d6337;
+
+  border-radius:11px;
+
+  text-decoration:none;
+
+  font-size:11px;
+
+  font-weight:800
+}
+
+.video-wrap{
+  padding:
+    0
+    22px
+    24px
+}
+
+.video-wrap video{
+  width:100%;
+
+  border-radius:14px;
+
+  background:#111
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+.profile-card{
+  margin:22px;
+
+  padding:28px 20px;
+
+  text-align:center;
+
+  background:#f8fbf8;
+
+  border:
+    1px solid
+    #e2e9e3;
+
+  border-radius:18px
+}
+
+.profile-avatar{
+  width:72px;
+  height:72px;
+
+  border-radius:50%;
+
+  background:#edf6ef;
+
+  display:grid;
+
+  place-items:center;
+
+  font-size:32px;
+
+  margin:
+    0
+    auto
+    12px
+}
+
+.profile-card h2{
+  margin:
+    0
+    0
+    18px;
+
+  font-size:20px
+}
+
+.profile-card p{
+  text-align:right;
+
+  font-size:12px;
+
+  line-height:2;
+
+  margin:7px 0
+}
+
+.profile-note{
+  color:#657066;
+
+  background:#fff;
+
+  padding:10px;
+
+  border-radius:11px
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:850px){
+
+  .grid{
+    grid-template-columns:1fr
+  }
+
+  .card{
+    grid-template-columns:
+      180px
+      minmax(0,1fr);
+
+    min-height:220px
+  }
+
+  .pic{
+    min-height:220px
+  }
+
+  .info{
+    padding:19px
+  }
+
+  .name{
+    font-size:17px
+  }
+
+}
+
+
+@media(max-width:520px){
+
+  main{
+    padding:13px
+  }
+
+  .grid{
+    gap:12px
+  }
+
+  .card{
+    grid-template-columns:
+      125px
+      minmax(0,1fr);
+
+    min-height:195px;
+
+    border-radius:20px
+  }
+
+  .pic{
+    min-height:195px;
+
+    padding:10px
+  }
+
+  .pic img{
+    max-height:180px
+  }
+
+  .info{
+    padding:
+      15px
+      13px
+  }
+
+  .name{
+    font-size:15px;
+
+    line-height:1.55
+  }
+
+  .en{
+    font-size:10px;
+
+    margin-bottom:10px
+  }
+
+  .spec{
+    font-size:10px;
+
+    gap:5px
+  }
+
+  .spec div{
+    padding:
+      5px
+      7px
+  }
+
+  .detail-top{
+    grid-template-columns:
+      125px
+      minmax(0,1fr);
+
+    gap:14px;
+
+    padding:14px
+  }
+
+  .detail-img{
+    min-height:175px;
+
+    padding:9px
+  }
+
+  .detail-img img{
+    max-height:220px
+  }
+
+  .detail-title{
+    font-size:18px;
+
+    margin:3px 0
+  }
+
+  .detail-en{
+    font-size:10px
+  }
+
+  .badges{
+    gap:6px;
+
+    margin:10px 0
+  }
+
+  .badge{
+    font-size:10px;
+
+    padding:
+      6px
+      8px
+  }
+
+  .product-details{
+    margin:
+      0
+      13px
+      18px;
+
+    padding:14px;
+
+    border-radius:14px
+  }
+
+  .product-details h3{
+    font-size:15px
+  }
+
+  .product-details .intro{
+    font-size:11px
+  }
+
+  .detail-block h4{
+    font-size:11px
+  }
+
+  .detail-block li,
+  .detail-block p{
+    font-size:10px
+  }
+
+  .media-actions{
+    padding:
+      0
+      13px
+      14px
+  }
+
+  .video-wrap{
+    padding:
+      0
+      13px
+      20px
+  }
+
+}
+
+
+@media(max-width:360px){
+
+  .card{
+    grid-template-columns:
+      105px
+      minmax(0,1fr)
+  }
+
+  .pic{
+    min-height:180px
+  }
+
+  .pic img{
+    max-height:165px
+  }
+
+  .info{
+    padding:
+      13px
+      10px
+  }
+
+  .name{
+    font-size:14px
+  }
+
+  .spec{
+    font-size:9px
+  }
+
+}
+
+</style>
+
 </head>
+
+
 <body>
+
 <div class="app">
+
 <header>
-<div class="brand"><div class="logo">🌾</div><div><h1>کاتالوگ محصولات مشکفام فارس</h1><div class="subtitle">معرفی محصولات کودی و تغذیه گیاه</div></div></div>
-<div class="account-bar" id="accountBar"><div class="account-icon">👤</div><div class="account-text"><strong id="accountName">ورود از تلگرام</strong><span id="accountStatus">برای شناسایی حساب، این صفحه را از ربات تلگرام باز کنید.</span></div><button id="profileBtn" class="profile-btn" style="display:none">پروفایل</button></div><div class="search"><span>⌕</span><input id="search" type="search" placeholder="جستجوی نام محصول، فرمول یا گروه..." autocomplete="off"></div>
-</header>
-<main><div class="toolbar" id="filters"></div><p class="count" id="count"></p><section class="grid" id="grid"></section></main>
-</div>
-<div class="modal" id="modal"><div class="sheet" role="dialog" aria-modal="true"><div class="sheet-head"><strong id="modalHeading"></strong><button class="close" id="close" aria-label="بستن">×</button></div><div id="detail"></div></div></div>
-<script>
-const API_BASE="https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
-let products=[];
-let active="همه";
-let customer=null;
 
-const searchEl=document.getElementById("search");
-const gridEl=document.getElementById("grid");
-const countEl=document.getElementById("count");
-const filtersEl=document.getElementById("filters");
-const modalEl=document.getElementById("modal");
-const detailEl=document.getElementById("detail");
-const accountBar=document.getElementById("accountBar");
-const accountName=document.getElementById("accountName");
-const accountStatus=document.getElementById("accountStatus");
-const profileBtn=document.getElementById("profileBtn");
+  <div class="brand">
 
-function esc(v){
-  return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-}
-function normalize(v){return String(v??"").toLocaleLowerCase("fa-IR").replace(/ي/g,"ی").replace(/ك/g,"ک").trim();}
-function matches(p,q){
-  if(!q)return true;
-  const hay=[p.name_fa,p.name_en,p.category,p.package,p.maker,p.intro,p.composition,p.use_text,p.warnings,(p.benefits||[]).join(" ")].map(normalize).join(" ");
-  return hay.includes(normalize(q));
-}
-function makeFilters(){
-  const cats=["همه",...new Set(products.map(p=>p.category).filter(Boolean))];
-  filtersEl.innerHTML=cats.map(c=>`<button class="chip ${c===active?"active":""}" onclick="setFilter('${esc(c).replace(/'/g,"\\'")}')">${esc(c)}</button>`).join("");
-}
-function setFilter(c){active=c;makeFilters();render();}
-function render(){
-  const q=searchEl.value.trim();
-  const list=products.filter(p=>(active==="همه"||p.category===active)&&matches(p,q));
-  countEl.textContent=list.length+" محصول";
-  gridEl.innerHTML=list.length?list.map(p=>`
-    <article class="card" onclick="openProduct(${Number(p.id)})">
-      <div class="pic"><img src="${esc(p.image_url)}" alt="${esc(p.name_fa)}" loading="lazy"></div>
-      <div class="info">
-        <h2 class="name">${esc(p.name_fa)}</h2>
-        <div class="en">${esc(p.name_en)}</div>
-        <div class="spec">
-          <div><b>گروه:</b> ${esc(p.category)}</div>
-          <div><b>بسته‌بندی:</b> ${esc(p.package)}</div>
-          <div><b>تولید:</b> ${esc(p.maker)}</div>
-        </div>
-      </div>
-    </article>`).join(""):`<div class="empty" style="grid-column:1/-1">محصولی با این جستجو پیدا نشد.</div>`;
-}
-function detailsHtml(p){
-  const benefits=Array.isArray(p.benefits)?p.benefits:[];
-  return `<div class="product-details">
-    <h3>معرفی و جزئیات محصول</h3>
-    ${p.intro?`<p class="intro">${esc(p.intro)}</p>`:""}
-    ${benefits.length?`<div class="detail-block"><h4>مزایا و کاربرد</h4><ul>${benefits.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
-    ${p.composition?`<div class="detail-block"><h4>ترکیبات سازنده</h4><p>${esc(p.composition)}</p></div>`:""}
-    ${p.use_text?`<div class="detail-block detail-use"><h4>نحوه مصرف</h4><p>${esc(p.use_text)}</p></div>`:""}
-    ${p.warnings?`<div class="detail-block warning"><h4>هشدارها و نکات ایمنی</h4><p>${esc(p.warnings)}</p></div>`:""}
-  </div>`;
-}
-function openProduct(id){
-  const p=products.find(x=>Number(x.id)===Number(id)); if(!p)return;
-  document.getElementById("modalHeading").textContent=p.name_fa||"جزئیات محصول";
-  let media="";
-  if(p.catalog_pdf_url) media+=`<div class="media-actions"><a class="media-btn" href="${esc(p.catalog_pdf_url)}" target="_blank" rel="noopener">📄 مشاهده کاتالوگ PDF</a></div>`;
-  if(p.video_url) media+=`<div class="video-wrap"><video controls playsinline preload="metadata" src="${esc(p.video_url)}"></video></div>`;
-  detailEl.innerHTML=`
-    <div class="detail-top">
-      <div class="detail-img"><img src="${esc(p.image_url)}" alt="${esc(p.name_fa)}"></div>
-      <div>
-        <div class="cat">${esc(p.category)}</div>
-        <h2 class="detail-title">${esc(p.name_fa)}</h2>
-        <div class="detail-en">${esc(p.name_en)}</div>
-        <div class="badges">
-          ${p.package?`<span class="badge">بسته‌بندی: ${esc(p.package)}</span>`:""}
-          ${p.maker?`<span class="badge">تولید: ${esc(p.maker)}</span>`:""}
-        </div>
-      </div>
+    <div class="logo">
+      🌾
     </div>
-    ${detailsHtml(p)}
-    ${media}
-  `;
-  modalEl.classList.add("show"); document.body.style.overflow="hidden";
-}
-function closeModal(){modalEl.classList.remove("show");document.body.style.overflow="";}
-document.getElementById("close").onclick=closeModal;
-modalEl.addEventListener("click",e=>{if(e.target===modalEl)closeModal()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
-searchEl.addEventListener("input",render);
 
-function showAccount(c){
-  customer=c||null;
-  if(!c){
-    accountBar.classList.add("guest");
-    accountName.textContent="ورود از تلگرام";
-    accountStatus.textContent="برای شناسایی حساب، این صفحه را از ربات تلگرام باز کنید.";
-    profileBtn.style.display="none";
+    <div>
+
+      <h1>
+        کاتالوگ محصولات مشکفام فارس
+      </h1>
+
+      <div class="subtitle">
+        معرفی محصولات کودی و تغذیه گیاه
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div
+    class="account-bar guest"
+    id="accountBar"
+  >
+
+    <div class="account-icon">
+      👤
+    </div>
+
+    <div class="account-text">
+
+      <strong id="accountName">
+        ورود از تلگرام
+      </strong>
+
+      <span id="accountStatus">
+        برای شناسایی حساب، این صفحه را از ربات تلگرام باز کنید.
+      </span>
+
+    </div>
+
+    <button
+      id="profileBtn"
+      class="profile-btn"
+      style="display:none"
+    >
+      پروفایل
+    </button>
+
+  </div>
+
+
+  <div class="search">
+
+    <span>
+      ⌕
+    </span>
+
+    <input
+      id="search"
+      type="search"
+      placeholder="جستجوی نام محصول، فرمول یا گروه..."
+      autocomplete="off"
+    >
+
+  </div>
+
+</header>
+
+
+<main>
+
+  <div
+    class="toolbar"
+    id="filters"
+  ></div>
+
+  <p
+    class="count"
+    id="count"
+  ></p>
+
+  <section
+    class="grid"
+    id="grid"
+  ></section>
+
+</main>
+
+</div>
+
+
+<!-- =======================================================
+     MODAL
+======================================================= -->
+
+<div
+  class="modal"
+  id="modal"
+>
+
+  <div
+    class="sheet"
+    role="dialog"
+    aria-modal="true"
+  >
+
+    <div class="sheet-head">
+
+      <strong
+        id="modalHeading"
+      ></strong>
+
+      <button
+        class="close"
+        id="close"
+        aria-label="بستن"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div
+      id="detail"
+    ></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   CONFIG
+========================================================= */
+
+const API_BASE =
+  "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let products = [];
+
+let activeCategory = "همه";
+
+let customer = null;
+
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const searchEl =
+  document.getElementById("search");
+
+const gridEl =
+  document.getElementById("grid");
+
+const countEl =
+  document.getElementById("count");
+
+const filtersEl =
+  document.getElementById("filters");
+
+const modalEl =
+  document.getElementById("modal");
+
+const detailEl =
+  document.getElementById("detail");
+
+const accountBar =
+  document.getElementById("accountBar");
+
+const accountName =
+  document.getElementById("accountName");
+
+const accountStatus =
+  document.getElementById("accountStatus");
+
+const profileBtn =
+  document.getElementById("profileBtn");
+
+const modalHeading =
+  document.getElementById("modalHeading");
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(value) {
+
+  return String(
+    value === null ||
+    value === undefined
+      ? ""
+      : value
+  )
+  .replace(
+    /[&<>"']/g,
+    function(character) {
+
+      if (character === "&") {
+        return "&amp;";
+      }
+
+      if (character === "<") {
+        return "&lt;";
+      }
+
+      if (character === ">") {
+        return "&gt;";
+      }
+
+      if (character === '"') {
+        return "&quot;";
+      }
+
+      if (character === "'") {
+        return "&#039;";
+      }
+
+      return character;
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   NORMALIZE SEARCH
+========================================================= */
+
+function normalize(value) {
+
+  return String(
+    value || ""
+  )
+  .toLocaleLowerCase("fa-IR")
+  .replace(/ي/g,"ی")
+  .replace(/ك/g,"ک")
+  .trim();
+
+}
+
+
+/* =========================================================
+   SEARCH MATCH
+========================================================= */
+
+function productMatches(
+  product,
+  query
+) {
+
+  if (!query) {
+    return true;
+  }
+
+
+  const benefits =
+    Array.isArray(
+      product.benefits
+    )
+      ? product.benefits.join(" ")
+      : "";
+
+
+  const searchable = [
+
+    product.name_fa,
+    product.name_en,
+    product.category,
+    product.package,
+    product.maker,
+    product.intro,
+    product.composition,
+    product.use_text,
+    product.warnings,
+    benefits
+
+  ]
+  .map(normalize)
+  .join(" ");
+
+
+  return searchable.includes(
+    normalize(query)
+  );
+
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+function makeFilters() {
+
+  const categories = [
+    "همه"
+  ];
+
+
+  products.forEach(
+    function(product) {
+
+      const category =
+        product.category;
+
+
+      if (
+        category &&
+        !categories.includes(
+          category
+        )
+      ) {
+
+        categories.push(
+          category
+        );
+
+      }
+
+    }
+  );
+
+
+  filtersEl.innerHTML =
+    categories
+      .map(
+        function(category) {
+
+          const activeClass =
+            category === activeCategory
+              ? "active"
+              : "";
+
+
+          return (
+            '<button ' +
+            'class="chip ' +
+            activeClass +
+            '" ' +
+            'data-category="' +
+            escapeHtml(category) +
+            '">' +
+            escapeHtml(category) +
+            '</button>'
+          );
+
+        }
+      )
+      .join("");
+
+
+  const buttons =
+    filtersEl.querySelectorAll(
+      ".chip"
+    );
+
+
+  buttons.forEach(
+    function(button) {
+
+      button.addEventListener(
+        "click",
+        function() {
+
+          activeCategory =
+            button.getAttribute(
+              "data-category"
+            ) || "همه";
+
+
+          makeFilters();
+
+          renderProducts();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   RENDER PRODUCTS
+========================================================= */
+
+function renderProducts() {
+
+  const query =
+    searchEl.value.trim();
+
+
+  const list =
+    products.filter(
+      function(product) {
+
+        const categoryOk =
+          activeCategory === "همه" ||
+          product.category ===
+            activeCategory;
+
+
+        const searchOk =
+          productMatches(
+            product,
+            query
+          );
+
+
+        return (
+          categoryOk &&
+          searchOk
+        );
+
+      }
+    );
+
+
+  countEl.textContent =
+    list.length +
+    " محصول";
+
+
+  if (!list.length) {
+
+    gridEl.innerHTML =
+      '<div class="empty" ' +
+      'style="grid-column:1/-1">' +
+      'محصولی با این جستجو پیدا نشد.' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  gridEl.innerHTML =
+    list
+      .map(
+        function(product) {
+
+          const id =
+            Number(product.id);
+
+
+          return (
+
+            '<article ' +
+            'class="card" ' +
+            'data-product-id="' +
+            id +
+            '">' +
+
+              '<div class="pic">' +
+
+                '<img ' +
+                'src="' +
+                escapeHtml(
+                  product.image_url
+                ) +
+                '" ' +
+                'alt="' +
+                escapeHtml(
+                  product.name_fa
+                ) +
+                '" ' +
+                'loading="lazy">' +
+
+              '</div>' +
+
+              '<div class="info">' +
+
+                '<h2 class="name">' +
+                  escapeHtml(
+                    product.name_fa
+                  ) +
+                '</h2>' +
+
+                '<div class="en">' +
+                  escapeHtml(
+                    product.name_en
+                  ) +
+                '</div>' +
+
+                '<div class="spec">' +
+
+                  '<div>' +
+                    '<b>گروه:</b> ' +
+                    escapeHtml(
+                      product.category
+                    ) +
+                  '</div>' +
+
+                  '<div>' +
+                    '<b>بسته‌بندی:</b> ' +
+                    escapeHtml(
+                      product.package
+                    ) +
+                  '</div>' +
+
+                  '<div>' +
+                    '<b>تولید:</b> ' +
+                    escapeHtml(
+                      product.maker
+                    ) +
+                  '</div>' +
+
+                '</div>' +
+
+              '</div>' +
+
+            '</article>'
+
+          );
+
+        }
+      )
+      .join("");
+
+
+  const cards =
+    gridEl.querySelectorAll(
+      ".card"
+    );
+
+
+  cards.forEach(
+    function(card) {
+
+      card.addEventListener(
+        "click",
+        function() {
+
+          const id =
+            Number(
+              card.getAttribute(
+                "data-product-id"
+              )
+            );
+
+
+          openProduct(id);
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   PRODUCT DETAILS
+========================================================= */
+
+function createProductDetails(
+  product
+) {
+
+  const benefits =
+    Array.isArray(
+      product.benefits
+    )
+      ? product.benefits
+      : [];
+
+
+  let html =
+    '<div class="product-details">';
+
+
+  html +=
+    '<h3>' +
+    'معرفی و جزئیات محصول' +
+    '</h3>';
+
+
+  if (product.intro) {
+
+    html +=
+      '<p class="intro">' +
+      escapeHtml(
+        product.intro
+      ) +
+      '</p>';
+
+  }
+
+
+  if (benefits.length) {
+
+    html +=
+      '<div class="detail-block">' +
+
+        '<h4>' +
+        'مزایا و کاربرد' +
+        '</h4>' +
+
+        '<ul>';
+
+
+    benefits.forEach(
+      function(item) {
+
+        html +=
+          '<li>' +
+          escapeHtml(item) +
+          '</li>';
+
+      }
+    );
+
+
+    html +=
+        '</ul>' +
+      '</div>';
+
+  }
+
+
+  if (product.composition) {
+
+    html +=
+      '<div class="detail-block">' +
+
+        '<h4>' +
+        'ترکیبات سازنده' +
+        '</h4>' +
+
+        '<p>' +
+        escapeHtml(
+          product.composition
+        ) +
+        '</p>' +
+
+      '</div>';
+
+  }
+
+
+  if (product.use_text) {
+
+    html +=
+      '<div class="detail-block detail-use">' +
+
+        '<h4>' +
+        'نحوه مصرف' +
+        '</h4>' +
+
+        '<p>' +
+        escapeHtml(
+          product.use_text
+        ) +
+        '</p>' +
+
+      '</div>';
+
+  }
+
+
+  if (product.warnings) {
+
+    html +=
+      '<div class="detail-block warning">' +
+
+        '<h4>' +
+        'هشدارها و نکات ایمنی' +
+        '</h4>' +
+
+        '<p>' +
+        escapeHtml(
+          product.warnings
+        ) +
+        '</p>' +
+
+      '</div>';
+
+  }
+
+
+  html +=
+    '</div>';
+
+
+  return html;
+
+}
+
+
+/* =========================================================
+   OPEN PRODUCT
+========================================================= */
+
+function openProduct(id) {
+
+  const product =
+    products.find(
+      function(item) {
+
+        return Number(item.id) ===
+          Number(id);
+
+      }
+    );
+
+
+  if (!product) {
     return;
   }
-  accountBar.classList.remove("guest");
-  const full=[c.first_name,c.last_name].filter(Boolean).join(" ");
-  accountName.textContent=full||c.username||"کاربر تلگرام";
-  accountStatus.textContent=c.username?("@"+c.username+" • حساب فعال"):"حساب فعال";
-  profileBtn.style.display="inline-flex";
-}
-function openProfile(){
-  if(!customer)return;
-  const full=[customer.first_name,customer.last_name].filter(Boolean).join(" ");
-  detailEl.innerHTML=`<div class="profile-card">
-    <div class="profile-avatar">👤</div>
-    <h2>${esc(full||"کاربر تلگرام")}</h2>
-    ${customer.username?`<p><b>نام کاربری:</b> @${esc(customer.username)}</p>`:""}
-    <p><b>وضعیت:</b> ${esc(customer.status||"active")==="active"?"فعال":esc(customer.status)}</p>
-    <p><b>نوع حساب:</b> ${esc(customer.role||"customer")==="customer"?"مشتری":esc(customer.role)}</p>
-    <p class="profile-note">این حساب با حساب تلگرام شما در سامانه مشکفام فارس شناسایی شده است.</p>
-  </div>`;
-  document.getElementById("modalHeading").textContent="پروفایل من";
-  modalEl.classList.add("show");document.body.style.overflow="hidden";
-}
-profileBtn.onclick=openProfile;
 
-async function telegramLogin(){
-  if(!window.Telegram || !window.Telegram.WebApp){
-    showAccount(null); return;
+
+  modalHeading.textContent =
+    product.name_fa ||
+    "جزئیات محصول";
+
+
+  let mediaHtml = "";
+
+
+  /*
+   * Catalog
+   */
+
+  if (
+    product.catalog_pdf_url
+  ) {
+
+    mediaHtml +=
+      '<div class="media-actions">' +
+
+        '<a ' +
+        'class="media-btn" ' +
+        'href="' +
+        escapeHtml(
+          product.catalog_pdf_url
+        ) +
+        '" ' +
+        'target="_blank" ' +
+        'rel="noopener">' +
+
+          '📄 مشاهده کاتالوگ' +
+
+        '</a>' +
+
+      '</div>';
+
   }
-  const tg=window.Telegram.WebApp;
-  tg.ready();
-  if(typeof tg.expand==="function")tg.expand();
-  const initData=tg.initData;
-  if(!initData){showAccount(null);return;}
-  accountStatus.textContent="در حال بررسی حساب تلگرام…";
-  try{
-    const response=await fetch(API_BASE+"/api/telegram-auth",{
-      method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({initData})
-    });
-    const result=await response.json();
-    if(!response.ok||!result.ok)throw new Error(result.error||"ورود ناموفق بود.");
-    showAccount(result.customer);
-    console.log("Telegram auth success:",result.customer);
-  }catch(error){
-    console.error("Telegram Login Error:",error);
-    accountName.textContent="خطا در ورود";
-    accountStatus.textContent=error.message||"خطا در اتصال به سامانه.";
+
+
+  /*
+   * Video
+   */
+
+  if (
+    product.video_url
+  ) {
+
+    mediaHtml +=
+      '<div class="video-wrap">' +
+
+        '<video ' +
+        'controls ' +
+        'playsinline ' +
+        'preload="metadata" ' +
+        'src="' +
+        escapeHtml(
+          product.video_url
+        ) +
+        '">' +
+
+        '</video>' +
+
+      '</div>';
+
   }
+
+
+  let html = "";
+
+
+  html +=
+    '<div class="detail-top">' +
+
+      '<div class="detail-img">' +
+
+        '<img ' +
+        'src="' +
+        escapeHtml(
+          product.image_url
+        ) +
+        '" ' +
+        'alt="' +
+        escapeHtml(
+          product.name_fa
+        ) +
+        '">' +
+
+      '</div>' +
+
+      '<div>' +
+
+        '<div class="cat">' +
+          escapeHtml(
+            product.category
+          ) +
+        '</div>' +
+
+        '<h2 class="detail-title">' +
+          escapeHtml(
+            product.name_fa
+          ) +
+        '</h2>' +
+
+        '<div class="detail-en">' +
+          escapeHtml(
+            product.name_en
+          ) +
+        '</div>' +
+
+        '<div class="badges">';
+
+
+  if (product.package) {
+
+    html +=
+      '<span class="badge">' +
+        'بسته‌بندی: ' +
+        escapeHtml(
+          product.package
+        ) +
+      '</span>';
+
+  }
+
+
+  if (product.maker) {
+
+    html +=
+      '<span class="badge">' +
+        'تولید: ' +
+        escapeHtml(
+          product.maker
+        ) +
+      '</span>';
+
+  }
+
+
+  html +=
+        '</div>' +
+
+      '</div>' +
+
+    '</div>';
+
+
+  html +=
+    createProductDetails(
+      product
+    );
+
+
+  html +=
+    mediaHtml;
+
+
+  detailEl.innerHTML =
+    html;
+
+
+  modalEl.classList.add(
+    "show"
+  );
+
+
+  document.body.style.overflow =
+    "hidden";
+
 }
-async function loadProducts(){
-  gridEl.innerHTML='<div class="empty" style="grid-column:1/-1">در حال دریافت محصولات…</div>';
-  try{
-    const response=await fetch(API_BASE+"/api/products",{cache:"no-store"});
-    const result=await response.json();
-    if(!response.ok||!result.ok)throw new Error(result.error||"دریافت محصولات ناموفق بود.");
-    products=Array.isArray(result.products)?result.products:[];
-    makeFilters();render();
-  }catch(error){
-    console.error("Products Error:",error);
-    countEl.textContent="";
-    gridEl.innerHTML=`<div class="empty" style="grid-column:1/-1">دریافت محصولات با خطا روبه‌رو شد.<br><small>${esc(error.message)}</small></div>`;
-  }
+
+
+/* =========================================================
+   CLOSE MODAL
+========================================================= */
+
+function closeModal() {
+
+  modalEl.classList.remove(
+    "show"
+  );
+
+  document.body.style.overflow =
+    "";
+
 }
-showAccount(null);
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+function showAccount(
+  customerData
+) {
+
+  customer =
+    customerData ||
+    null;
+
+
+  if (!customer) {
+
+    accountBar.classList.add(
+      "guest"
+    );
+
+    accountName.textContent =
+      "ورود از تلگرام";
+
+    accountStatus.textContent =
+      "برای شناسایی حساب، این صفحه را از ربات تلگرام باز کنید.";
+
+    profileBtn.style.display =
+      "none";
+
+    return;
+
+  }
+
+
+  accountBar.classList.remove(
+    "guest"
+  );
+
+
+  const fullName =
+    [
+      customer.first_name,
+      customer.last_name
+    ]
+    .filter(Boolean)
+    .join(" ");
+
+
+  accountName.textContent =
+    fullName ||
+    customer.username ||
+    "کاربر تلگرام";
+
+
+  if (customer.username) {
+
+    accountStatus.textContent =
+      "@" +
+      customer.username +
+      " • حساب فعال";
+
+  }
+  else {
+
+    accountStatus.textContent =
+      "حساب تلگرام فعال";
+
+  }
+
+
+  profileBtn.style.display =
+    "inline-flex";
+
+}
+
+
+/* =========================================================
+   OPEN PROFILE
+========================================================= */
+
+function openProfile() {
+
+  if (!customer) {
+    return;
+  }
+
+
+  const fullName =
+    [
+      customer.first_name,
+      customer.last_name
+    ]
+    .filter(Boolean)
+    .join(" ");
+
+
+  let html =
+    '<div class="profile-card">' +
+
+      '<div class="profile-avatar">' +
+        '👤' +
+      '</div>' +
+
+      '<h2>' +
+        escapeHtml(
+          fullName ||
+          "کاربر تلگرام"
+        ) +
+      '</h2>';
+
+
+  if (customer.username) {
+
+    html +=
+      '<p>' +
+        '<b>نام کاربری:</b> @' +
+        escapeHtml(
+          customer.username
+        ) +
+      '</p>';
+
+  }
+
+
+  const status =
+    customer.status ||
+    "active";
+
+
+  const role =
+    customer.role ||
+    "customer";
+
+
+  html +=
+      '<p>' +
+        '<b>وضعیت:</b> ' +
+        (
+          status === "active"
+            ? "فعال"
+            : escapeHtml(status)
+        ) +
+      '</p>' +
+
+      '<p>' +
+        '<b>نوع حساب:</b> ' +
+        (
+          role === "customer"
+            ? "مشتری"
+            : escapeHtml(role)
+        ) +
+      '</p>' +
+
+      '<p class="profile-note">' +
+        'این حساب با حساب تلگرام شما در سامانه مشکفام فارس شناسایی شده است.' +
+      '</p>' +
+
+    '</div>';
+
+
+  detailEl.innerHTML =
+    html;
+
+
+  modalHeading.textContent =
+    "پروفایل من";
+
+
+  modalEl.classList.add(
+    "show"
+  );
+
+
+  document.body.style.overflow =
+    "hidden";
+
+}
+
+
+/* =========================================================
+   TELEGRAM LOGIN
+========================================================= */
+
+async function telegramLogin() {
+
+  /*
+   * خارج از Telegram
+   */
+
+  if (
+    !window.Telegram ||
+    !window.Telegram.WebApp
+  ) {
+
+    showAccount(
+      null
+    );
+
+    return;
+
+  }
+
+
+  const telegram =
+    window.Telegram.WebApp;
+
+
+  try {
+
+    telegram.ready();
+
+
+    if (
+      typeof telegram.expand ===
+      "function"
+    ) {
+
+      telegram.expand();
+
+    }
+
+  }
+  catch(error) {
+
+    console.warn(
+      "Telegram WebApp initialization warning:",
+      error
+    );
+
+  }
+
+
+  const initData =
+    telegram.initData;
+
+
+  /*
+   * اگر صفحه مستقیماً در مرورگر باز شده باشد
+   */
+
+  if (!initData) {
+
+    accountName.textContent =
+      "ورود از تلگرام";
+
+    accountStatus.textContent =
+      "برای ورود، صفحه را از دکمه ورود ربات Telegram باز کنید.";
+
+    return;
+
+  }
+
+
+  accountName.textContent =
+    "در حال ورود…";
+
+
+  accountStatus.textContent =
+    "در حال بررسی حساب Telegram";
+
+
+  try {
+
+    const response =
+      await fetch(
+        API_BASE +
+        "/api/telegram-auth",
+        {
+          method:
+            "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+              initData:
+                initData
+            }),
+
+          cache:
+            "no-store"
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if (
+      !response.ok ||
+      !result.ok
+    ) {
+
+      throw new Error(
+        result.error ||
+        "ورود Telegram ناموفق بود."
+      );
+
+    }
+
+
+    showAccount(
+      result.customer
+    );
+
+
+    console.log(
+      "Telegram authentication successful",
+      result.customer
+    );
+
+  }
+  catch(error) {
+
+    console.error(
+      "Telegram Login Error:",
+      error
+    );
+
+
+    accountName.textContent =
+      "خطا در ورود";
+
+
+    accountStatus.textContent =
+      error.message ||
+      "خطا در اتصال به سامانه.";
+
+  }
+
+}
+
+
+/* =========================================================
+   LOAD PRODUCTS
+========================================================= */
+
+async function loadProducts() {
+
+  gridEl.innerHTML =
+    '<div class="empty" ' +
+    'style="grid-column:1/-1">' +
+    'در حال دریافت محصولات…' +
+    '</div>';
+
+
+  try {
+
+    const response =
+      await fetch(
+        API_BASE +
+        "/api/products",
+        {
+          method:
+            "GET",
+
+          cache:
+            "no-store"
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if (
+      !response.ok ||
+      !result.ok
+    ) {
+
+      throw new Error(
+        result.error ||
+        "دریافت محصولات ناموفق بود."
+      );
+
+    }
+
+
+    if (
+      !Array.isArray(
+        result.products
+      )
+    ) {
+
+      throw new Error(
+        "لیست محصولات معتبر نیست."
+      );
+
+    }
+
+
+    products =
+      result.products;
+
+
+    /*
+     * ساخت دسته‌بندی‌ها
+     */
+
+    makeFilters();
+
+
+    /*
+     * نمایش محصولات
+     */
+
+    renderProducts();
+
+
+    console.log(
+      "Products loaded:",
+      products.length
+    );
+
+  }
+  catch(error) {
+
+    console.error(
+      "Products Error:",
+      error
+    );
+
+
+    countEl.textContent =
+      "";
+
+
+    gridEl.innerHTML =
+      '<div class="empty" ' +
+      'style="grid-column:1/-1">' +
+
+        'دریافت محصولات با خطا روبه‌رو شد.' +
+
+        '<br><br>' +
+
+        '<small>' +
+        escapeHtml(
+          error.message
+        ) +
+        '</small>' +
+
+      '</div>';
+
+  }
+
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+searchEl.addEventListener(
+  "input",
+  function() {
+
+    renderProducts();
+
+  }
+);
+
+
+document.getElementById(
+  "close"
+).addEventListener(
+  "click",
+  closeModal
+);
+
+
+modalEl.addEventListener(
+  "click",
+  function(event) {
+
+    if (
+      event.target ===
+      modalEl
+    ) {
+
+      closeModal();
+
+    }
+
+  }
+);
+
+
+document.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (
+      event.key === "Escape"
+    ) {
+
+      closeModal();
+
+    }
+
+  }
+);
+
+
+profileBtn.addEventListener(
+  "click",
+  openProfile
+);
+
+
+/* =========================================================
+   START APPLICATION
+========================================================= */
+
+showAccount(
+  null
+);
+
+
 telegramLogin();
+
+
 loadProducts();
+
 </script>
+
 </body>
 </html>

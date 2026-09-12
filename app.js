@@ -31,10 +31,20 @@ async function post(path,data={}){
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify(data)
   });
+
   const text=await r.text();
   let json;
-  try{json=JSON.parse(text)}catch{throw new Error(text||"خطای نامشخص")}
-  if(!r.ok||json.ok===false)throw new Error(json.error||"خطا");
+
+  try{
+    json=JSON.parse(text);
+  }catch{
+    throw new Error(text||"خطای نامشخص");
+  }
+
+  if(!r.ok||json.ok===false){
+    throw new Error(json.error||"خطا");
+  }
+
   return json;
 }
 
@@ -43,14 +53,14 @@ async function authenticateTelegram(){
 
   if(!initData){
     document.getElementById("account").classList.remove("hidden");
-    document.getElementById("accountName").textContent="حالت مرورگر";
-    document.getElementById("accountUser").textContent="";
+    document.getElementById("accountName").textContent="کاربر";
     document.getElementById("accountInfo").textContent="برای ورود کامل، سایت را از داخل ربات تلگرام باز کنید.";
     return;
   }
 
   try{
     const data=await post("/api/telegram-auth",{initData});
+
     telegramAuthData=data;
     isAdmin=!!data.is_admin;
 
@@ -70,6 +80,7 @@ async function authenticateTelegram(){
       document.getElementById("adminButton").classList.remove("hidden");
       document.getElementById("adminButton").onclick=openAdmin;
     }
+
   }catch(e){
     showError("خطا در ورود تلگرام: "+e.message);
   }
@@ -79,19 +90,35 @@ async function loadProducts(){
   setLoading(true);
 
   try{
-    const headers={};
-    if(tg?.initData)headers["X-Telegram-Init-Data"]=tg.initData;
+    let url=WORKER_URL+"/api/products";
 
-    const r=await fetch(WORKER_URL+"/api/products",{headers});
-    const data=await r.json();
+    if(tg?.initData){
+      url+="?initData="+encodeURIComponent(tg.initData);
+    }
 
-    if(!r.ok||data.ok===false)throw new Error(data.error||"خطا در دریافت محصولات");
+    const r=await fetch(url);
+
+    const text=await r.text();
+    let data;
+
+    try{
+      data=JSON.parse(text);
+    }catch{
+      throw new Error(text||"پاسخ نامعتبر از سرور");
+    }
+
+    if(!r.ok||data.ok===false){
+      throw new Error(data.error||"خطا در دریافت محصولات");
+    }
 
     products=data.products||data.data||[];
+
     buildCategories();
     renderProducts();
+
   }catch(e){
-    showError(e.message);
+    showError("خطا در دریافت محصولات: "+e.message);
+    console.error(e);
   }finally{
     setLoading(false);
   }
@@ -99,11 +126,20 @@ async function loadProducts(){
 
 function buildCategories(){
   const box=document.getElementById("categories");
-  const categories=[...new Set(products.map(p=>p.category).filter(Boolean))];
+
+  const categories=[
+    ...new Set(
+      products
+        .map(p=>p.category)
+        .filter(Boolean)
+    )
+  ];
 
   box.innerHTML=
     '<button class="active" data-cat="all">همه</button>'+
-    categories.map(c=>'<button data-cat="'+escapeAttr(c)+'">'+escapeHtml(c)+"</button>").join("");
+    categories.map(c=>
+      '<button data-cat="'+escapeAttr(c)+'">'+escapeHtml(c)+"</button>"
+    ).join("");
 
   box.querySelectorAll("button").forEach(b=>{
     b.onclick=()=>{
@@ -116,18 +152,32 @@ function buildCategories(){
 }
 
 function renderProducts(){
-  const search=(document.getElementById("searchInput").value||"").trim().toLowerCase();
+  const search=(
+    document.getElementById("searchInput").value||""
+  ).trim().toLowerCase();
 
   filteredProducts=products.filter(p=>{
-    const categoryOk=activeCategory==="all"||String(p.category||"")===activeCategory;
+    const categoryOk=
+      activeCategory==="all"||
+      String(p.category||"")===activeCategory;
+
     const text=[
-      p.name,p.category,p.description,p.applicable_crops,p.usage,p.ingredients
-    ].filter(Boolean).join(" ").toLowerCase();
+      p.name,
+      p.category,
+      p.description,
+      p.applicable_crops,
+      p.usage,
+      p.ingredients
+    ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
 
     return categoryOk&&(!search||text.includes(search));
   });
 
-  document.getElementById("productCount").textContent=filteredProducts.length+" محصول";
+  document.getElementById("productCount").textContent=
+    filteredProducts.length+" محصول";
 
   const grid=document.getElementById("productGrid");
 
@@ -152,21 +202,49 @@ function productCard(p){
 
   return `
   <article class="product-card">
-    <img class="product-image" src="${escapeAttr(image)}" onerror="this.src='${escapeAttr(RAW_GITHUB_BASE+(p.image||""))}'">
+    <img class="product-image"
+         src="${escapeAttr(image)}"
+         onerror="this.src='${escapeAttr(RAW_GITHUB_BASE+(p.image||""))}'">
+
     <div class="product-body">
-      <div class="product-category">${escapeHtml(p.category||"محصول کشاورزی")}</div>
-      <div class="product-title">${escapeHtml(p.name||"بدون نام")}</div>
-      <div class="${price.private?"price private-price":"price"}">${escapeHtml(price.text)}</div>
-      <div class="card-buttons">
-        <button data-product="${escapeAttr(String(p.id))}">مشاهده</button>
-        ${p.video_url?'<button class="video" data-video="'+escapeAttr(p.video_url)+'" onclick="event.stopPropagation();openExternalUrl(this.dataset.video)">▶ ویدئو</button>':""}
+
+      <div class="product-category">
+        ${escapeHtml(p.category||"محصول کشاورزی")}
       </div>
+
+      <div class="product-title">
+        ${escapeHtml(p.name||"بدون نام")}
+      </div>
+
+      <div class="${price.private?"price private-price":"price"}">
+        ${escapeHtml(price.text)}
+      </div>
+
+      <div class="card-buttons">
+
+        <button data-product="${escapeAttr(String(p.id))}">
+          مشاهده
+        </button>
+
+        ${
+          p.video_url
+          ?
+          '<button class="video" data-video="'+
+          escapeAttr(p.video_url)+
+          '" onclick="event.stopPropagation();openExternalUrl(this.dataset.video)">▶ ویدئو</button>'
+          :
+          ""
+        }
+
+      </div>
+
     </div>
   </article>`;
 }
 
 function openProduct(id){
   const p=products.find(x=>String(x.id)===String(id));
+
   if(!p)return;
 
   currentProduct=p;
@@ -175,71 +253,177 @@ function openProduct(id){
   const image=getImage(p);
 
   document.getElementById("modalContent").innerHTML=`
-    <img class="detail-image" src="${escapeAttr(image)}">
-    <div class="detail-title">${escapeHtml(p.name||"")}</div>
+
+    <img class="detail-image"
+         src="${escapeAttr(image)}">
+
+    <div class="detail-title">
+      ${escapeHtml(p.name||"")}
+    </div>
 
     <div class="detail-box">
-      <b>دسته‌بندی:</b> ${escapeHtml(p.category||"-")}
+      <b>دسته‌بندی:</b>
+      ${escapeHtml(p.category||"-")}
     </div>
 
     <div class="detail-price">
       ${escapeHtml(price.text)}
     </div>
 
-    ${p.description?`<div class="detail-box"><b>📝 معرفی</b><br>${escapeHtml(p.description)}</div>`:""}
+    ${
+      p.description
+      ?
+      `<div class="detail-box">
+        <b>📝 معرفی</b><br>
+        ${escapeHtml(p.description)}
+      </div>`
+      :
+      ""
+    }
 
-    ${p.ingredients?`<div class="detail-box"><b>🧪 آنالیز / ترکیبات</b><br>${escapeHtml(p.ingredients)}</div>`:""}
+    ${
+      p.ingredients
+      ?
+      `<div class="detail-box">
+        <b>🧪 آنالیز / ترکیبات</b><br>
+        ${escapeHtml(p.ingredients)}
+      </div>`
+      :
+      ""
+    }
 
-    ${p.applicable_crops?`<div class="detail-box"><b>🌾 محصولات قابل استفاده</b><br>${escapeHtml(p.applicable_crops)}</div>`:""}
+    ${
+      p.applicable_crops
+      ?
+      `<div class="detail-box">
+        <b>🌾 محصولات قابل استفاده</b><br>
+        ${escapeHtml(p.applicable_crops)}
+      </div>`
+      :
+      ""
+    }
 
-    ${p.usage?`<div class="detail-box"><b>📚 راهنمای مصرف</b><br>${escapeHtml(p.usage)}</div>`:""}
+    ${
+      p.usage
+      ?
+      `<div class="detail-box">
+        <b>📚 راهنمای مصرف</b><br>
+        ${escapeHtml(p.usage)}
+      </div>`
+      :
+      ""
+    }
 
-    ${p.warnings?`<div class="detail-box"><b>⚠️ هشدار</b><br>${escapeHtml(p.warnings)}</div>`:""}
+    ${
+      p.warnings
+      ?
+      `<div class="detail-box">
+        <b>⚠️ هشدار</b><br>
+        ${escapeHtml(p.warnings)}
+      </div>`
+      :
+      ""
+    }
 
-    ${p.video_url?`<button class="video-button" onclick="openExternalUrl('${escapeAttr(p.video_url)}')">▶ مشاهده ویدئوی محصول</button>`:""}
+    ${
+      p.video_url
+      ?
+      `<button class="video-button"
+        onclick="openExternalUrl('${escapeAttr(p.video_url)}')">
+        ▶ مشاهده ویدئوی محصول
+      </button>`
+      :
+      ""
+    }
 
-    ${p.catalog_url?`<button class="catalog-button" onclick="openExternalUrl('${escapeAttr(p.catalog_url)}')">📄 مشاهده کاتالوگ / PDF</button>`:""}
+    ${
+      p.catalog_url
+      ?
+      `<button class="catalog-button"
+        onclick="openExternalUrl('${escapeAttr(p.catalog_url)}')">
+        📄 مشاهده کاتالوگ / PDF
+      </button>`
+      :
+      ""
+    }
+
   `;
 
   document.getElementById("modal").classList.remove("hidden");
 }
 
 function getProductPrice(p){
-  if(p.has_private_price&&p.customer_price!==null&&p.customer_price!==undefined){
+
+  if(
+    p.has_private_price &&
+    p.customer_price!==null &&
+    p.customer_price!==undefined
+  ){
     return{
       private:true,
-      text:"💎 قیمت اختصاصی: "+formatPrice(p.customer_price,p.customer_currency||"تومان")
+      text:
+        "💎 قیمت اختصاصی: "+
+        formatPrice(
+          p.customer_price,
+          p.customer_currency||"تومان"
+        )
     };
   }
 
   const value=p.base_price??p.price;
 
-  if(value===null||value===undefined||value===""){
-    return{private:false,text:"برای اطلاع از قیمت تماس بگیرید"};
+  if(
+    value===null||
+    value===undefined||
+    value===""
+  ){
+    return{
+      private:false,
+      text:"برای اطلاع از قیمت تماس بگیرید"
+    };
   }
 
   return{
     private:false,
-    text:"قیمت: "+formatPrice(value,p.base_currency||p.currency||"تومان")
+    text:
+      "قیمت: "+
+      formatPrice(
+        value,
+        p.base_currency||p.currency||"تومان"
+      )
   };
 }
 
 function formatPrice(value,currency){
   const n=Number(value);
-  if(!Number.isFinite(n))return String(value)+" "+currency;
+
+  if(!Number.isFinite(n)){
+    return String(value)+" "+currency;
+  }
+
   return n.toLocaleString("fa-IR")+" "+currency;
 }
 
 function getImage(p){
-  if(!p.image)return GITHUB_PAGES_BASE+"logo.png";
-  if(/^https?:\/\//i.test(p.image))return p.image;
+  if(!p.image){
+    return GITHUB_PAGES_BASE+"logo.png";
+  }
+
+  if(/^https?:\/\//i.test(p.image)){
+    return p.image;
+  }
+
   return GITHUB_PAGES_BASE+p.image;
 }
 
 function openExternalUrl(url){
   if(!url)return;
-  if(tg?.openLink)tg.openLink(url);
-  else window.open(url,"_blank");
+
+  if(tg?.openLink){
+    tg.openLink(url);
+  }else{
+    window.open(url,"_blank");
+  }
 }
 
 function closeModal(){
@@ -247,22 +431,36 @@ function closeModal(){
 }
 
 async function openAdmin(){
+
   if(!isAdmin){
     alert("دسترسی مدیریت ندارید.");
     return;
   }
 
   document.getElementById("adminModal").classList.remove("hidden");
+
   document.getElementById("adminLoading").classList.remove("hidden");
+
   document.getElementById("adminProducts").innerHTML="";
-  document.getElementById("customerSelect").innerHTML='<option value="">در حال دریافت مشتریان...</option>';
+
+  document.getElementById("customerSelect").innerHTML=
+    '<option value="">در حال دریافت مشتریان...</option>';
 
   try{
-    await Promise.all([loadAdminProducts(),loadCustomers()]);
+
+    await Promise.all([
+      loadAdminProducts(),
+      loadCustomers()
+    ]);
+
   }catch(e){
+
     showAdminError(e.message);
+
   }finally{
+
     document.getElementById("adminLoading").classList.add("hidden");
+
   }
 }
 
@@ -271,66 +469,137 @@ function closeAdmin(){
 }
 
 async function loadAdminProducts(){
-  const data=await post("/api/admin/products",{initData:tg?.initData||""});
+
+  const data=await post(
+    "/api/admin/products",
+    {
+      initData:tg?.initData||""
+    }
+  );
+
   const list=data.products||[];
 
-  document.getElementById("adminProducts").innerHTML=list.map(adminProduct).join("");
+  document.getElementById("adminProducts").innerHTML=
+    list.map(adminProduct).join("");
 }
 
 function adminProduct(p){
+
   const video=p.video_url||"";
 
   return `
   <div class="admin-product">
+
     <div class="admin-product-title">
       🌿 ${escapeHtml(p.name||"")}
     </div>
 
     <div class="admin-row">
-      <input id="price-${p.id}" type="number" value="${p.base_price??""}" placeholder="قیمت عمومی">
-      <button onclick="savePublicPrice(${p.id})">ذخیره قیمت</button>
+
+      <input
+        id="price-${p.id}"
+        type="number"
+        value="${p.base_price??""}"
+        placeholder="قیمت عمومی">
+
+      <button onclick="savePublicPrice(${p.id})">
+        ذخیره قیمت
+      </button>
+
     </div>
 
     <div class="admin-row">
-      <input id="video-${p.id}" class="file-input" type="file" accept="video/*">
-      <button onclick="uploadVideo(${p.id})">🎥 آپلود</button>
+
+      <input
+        id="video-${p.id}"
+        class="file-input"
+        type="file"
+        accept="video/*">
+
+      <button onclick="uploadVideo(${p.id})">
+        🎥 آپلود
+      </button>
+
     </div>
 
-    ${video?`
-      <video class="video-preview" controls src="${escapeAttr(video)}"></video>
+    ${
+      video
+      ?
+      `
+      <video
+        class="video-preview"
+        controls
+        src="${escapeAttr(video)}">
+      </video>
+
       <div class="admin-row">
-        <button class="secondary" onclick="openExternalUrl('${escapeAttr(video)}')">▶ مشاهده</button>
-        <button class="danger" onclick="removeVideo(${p.id})">🗑 حذف ویدئو</button>
+
+        <button
+          class="secondary"
+          onclick="openExternalUrl('${escapeAttr(video)}')">
+          ▶ مشاهده
+        </button>
+
+        <button
+          class="danger"
+          onclick="removeVideo(${p.id})">
+          🗑 حذف ویدئو
+        </button>
+
       </div>
-    `:"<small>ویدئویی برای این محصول ثبت نشده است.</small>"}
+      `
+      :
+      "<small>ویدئویی برای این محصول ثبت نشده است.</small>"
+    }
 
     <div class="admin-row">
-      <button onclick="selectProductForCustomer(${p.id})">👤 قیمت مشتری</button>
+
+      <button onclick="selectProductForCustomer(${p.id})">
+        👤 قیمت مشتری
+      </button>
+
     </div>
+
   </div>`;
 }
 
 async function savePublicPrice(productId){
+
   const input=document.getElementById("price-"+productId);
 
   try{
-    await post("/api/admin/update-price",{
-      initData:tg?.initData||"",
-      product_id:productId,
-      price:input.value,
-      currency:"تومان"
-    });
+
+    await post(
+      "/api/admin/update-price",
+      {
+        initData:tg?.initData||"",
+        product_id:productId,
+        price:input.value,
+        currency:"تومان"
+      }
+    );
 
     alert("قیمت عمومی ذخیره شد.");
+
     await loadProducts();
     await loadAdminProducts();
+
   }catch(e){
+
     alert(e.message);
+
   }
 }
 
 async function loadCustomers(){
-  const data=await post("/api/admin/customers",{initData:tg?.initData||""});
+
+  const data=await post(
+    "/api/admin/customers",
+    {
+      initData:tg?.initData||""
+    }
+  );
+
   customers=data.customers||[];
 
   const select=document.getElementById("customerSelect");
@@ -338,226 +607,451 @@ async function loadCustomers(){
   select.innerHTML=
     '<option value="">انتخاب مشتری</option>'+
     customers.map(c=>{
-      const name=[c.first_name,c.last_name].filter(Boolean).join(" ")||"بدون نام";
-      const user=c.username?" @"+c.username:"";
-      return `<option value="${escapeAttr(String(c.id))}">${escapeHtml(name+user+" — "+(c.telegram_id||""))}</option>`;
+
+      const name=
+        [c.first_name,c.last_name]
+        .filter(Boolean)
+        .join(" ")||
+        "بدون نام";
+
+      const user=
+        c.username?
+        " @"+c.username:
+        "";
+
+      return `
+      <option value="${escapeAttr(String(c.id))}">
+        ${escapeHtml(
+          name+
+          user+
+          " — "+
+          (c.telegram_id||"")
+        )}
+      </option>`;
+
     }).join("");
 
   document.getElementById("adminAccountInfo").innerHTML=
-    "تعداد مشتریان ثبت‌شده: <b>"+customers.length+"</b>";
+    "تعداد مشتریان ثبت‌شده: <b>"+
+    customers.length+
+    "</b>";
 }
 
 async function loadCustomerPrices(){
-  const id=document.getElementById("customerSelect").value;
+
+  const id=
+    document.getElementById("customerSelect").value;
 
   if(!id){
+
     selectedCustomer=null;
-    document.getElementById("customerInfo").classList.add("hidden");
+
+    document
+      .getElementById("customerInfo")
+      .classList.add("hidden");
+
     document.getElementById("customerPrices").innerHTML="";
+
     return;
   }
 
-  selectedCustomer=customers.find(c=>String(c.id)===String(id));
+  selectedCustomer=
+    customers.find(
+      c=>String(c.id)===String(id)
+    );
 
   if(selectedCustomer){
-    const name=[selectedCustomer.first_name,selectedCustomer.last_name].filter(Boolean).join(" ")||"بدون نام";
 
-    document.getElementById("customerInfo").classList.remove("hidden");
+    const name=
+      [
+        selectedCustomer.first_name,
+        selectedCustomer.last_name
+      ]
+      .filter(Boolean)
+      .join(" ")||
+      "بدون نام";
+
+    document
+      .getElementById("customerInfo")
+      .classList.remove("hidden");
+
     document.getElementById("customerInfo").innerHTML=
-      "<b>نام:</b> "+escapeHtml(name)+
-      "<br><b>Username:</b> "+escapeHtml(selectedCustomer.username?"@"+selectedCustomer.username:"-")+
-      "<br><b>Telegram ID:</b> "+escapeHtml(String(selectedCustomer.telegram_id||"-"));
+      "<b>نام:</b> "+
+      escapeHtml(name)+
+      "<br><b>Username:</b> "+
+      escapeHtml(
+        selectedCustomer.username?
+        "@"+selectedCustomer.username:
+        "-"
+      )+
+      "<br><b>Telegram ID:</b> "+
+      escapeHtml(
+        String(
+          selectedCustomer.telegram_id||"-"
+        )
+      );
   }
 
   await renderCustomerPrices();
 }
 
 async function renderCustomerPrices(){
+
   if(!selectedCustomer)return;
 
   try{
-    const data=await post("/api/admin/customer-prices",{
-      initData:tg?.initData||"",
-      customer_id:selectedCustomer.id
-    });
+
+    const data=await post(
+      "/api/admin/customer-prices",
+      {
+        initData:tg?.initData||"",
+        customer_id:selectedCustomer.id
+      }
+    );
 
     const prices=data.prices||[];
+
     const map={};
 
-    prices.forEach(x=>map[String(x.product_id)]=x);
+    prices.forEach(
+      x=>map[String(x.product_id)]=x
+    );
 
     document.getElementById("customerPrices").innerHTML=
       products.map(p=>{
+
         const cp=map[String(p.id)];
+
         return `
         <div class="customer-price-row">
-          <strong>${escapeHtml(p.name||"")}</strong>
+
+          <strong>
+            ${escapeHtml(p.name||"")}
+          </strong>
+
           <div class="admin-row">
-            <input id="cp-${p.id}" type="number" value="${cp?.price??""}" placeholder="قیمت اختصاصی">
-            <button onclick="saveCustomerPrice(${p.id})">ذخیره</button>
-            ${cp?`<button class="danger" onclick="deleteCustomerPrice(${p.id})">حذف</button>`:""}
+
+            <input
+              id="cp-${p.id}"
+              type="number"
+              value="${cp?.price??""}"
+              placeholder="قیمت اختصاصی">
+
+            <button onclick="saveCustomerPrice(${p.id})">
+              ذخیره
+            </button>
+
+            ${
+              cp
+              ?
+              `
+              <button
+                class="danger"
+                onclick="deleteCustomerPrice(${p.id})">
+                حذف
+              </button>
+              `
+              :
+              ""
+            }
+
           </div>
+
         </div>`;
+
       }).join("");
+
   }catch(e){
+
     showAdminError(e.message);
+
   }
 }
 
 function selectProductForCustomer(productId){
-  const select=document.getElementById("customerSelect");
 
-  document.getElementById("customerSection").scrollIntoView({behavior:"smooth"});
+  const select=
+    document.getElementById("customerSelect");
+
+  document
+    .getElementById("customerSection")
+    .scrollIntoView({
+      behavior:"smooth"
+    });
 
   if(!select.value){
+
     alert("ابتدا مشتری را انتخاب کنید.");
+
     return;
   }
 
   setTimeout(()=>{
-    const input=document.getElementById("cp-"+productId);
+
+    const input=
+      document.getElementById(
+        "cp-"+productId
+      );
+
     if(input){
+
       input.focus();
-      input.scrollIntoView({behavior:"smooth",block:"center"});
+
+      input.scrollIntoView({
+        behavior:"smooth",
+        block:"center"
+      });
+
     }
+
   },300);
 }
 
 async function saveCustomerPrice(productId){
+
   if(!selectedCustomer){
+
     alert("ابتدا مشتری را انتخاب کنید.");
+
     return;
   }
 
-  const input=document.getElementById("cp-"+productId);
+  const input=
+    document.getElementById(
+      "cp-"+productId
+    );
 
   try{
-    await post("/api/admin/set-customer-price",{
-      initData:tg?.initData||"",
-      customer_id:selectedCustomer.id,
-      product_id:productId,
-      price:input.value,
-      currency:"تومان"
-    });
+
+    await post(
+      "/api/admin/set-customer-price",
+      {
+        initData:tg?.initData||"",
+        customer_id:selectedCustomer.id,
+        product_id:productId,
+        price:input.value,
+        currency:"تومان"
+      }
+    );
 
     alert("قیمت اختصاصی ذخیره شد.");
+
     await loadProducts();
     await renderCustomerPrices();
+
   }catch(e){
+
     alert(e.message);
+
   }
 }
 
 async function deleteCustomerPrice(productId){
+
   if(!selectedCustomer)return;
 
-  if(!confirm("قیمت اختصاصی این مشتری حذف شود؟"))return;
+  if(!confirm(
+    "قیمت اختصاصی این مشتری حذف شود؟"
+  )){
+    return;
+  }
 
   try{
-    await post("/api/admin/set-customer-price",{
-      initData:tg?.initData||"",
-      customer_id:selectedCustomer.id,
-      product_id:productId,
-      price:null,
-      currency:"تومان"
-    });
+
+    await post(
+      "/api/admin/set-customer-price",
+      {
+        initData:tg?.initData||"",
+        customer_id:selectedCustomer.id,
+        product_id:productId,
+        price:null,
+        currency:"تومان"
+      }
+    );
 
     await loadProducts();
     await renderCustomerPrices();
+
   }catch(e){
+
     alert(e.message);
+
   }
 }
 
 async function uploadVideo(productId){
-  const input=document.getElementById("video-"+productId);
+
+  const input=
+    document.getElementById(
+      "video-"+productId
+    );
+
   const file=input?.files?.[0];
 
   if(!file){
+
     alert("ابتدا فایل ویدئو را انتخاب کنید.");
+
     return;
   }
 
   if(!file.type.startsWith("video/")){
+
     alert("فقط فایل ویدئویی مجاز است.");
+
     return;
   }
 
   if(file.size>100*1024*1024){
-    alert("حداکثر حجم ویدئو 100 مگابایت است.");
+
+    alert(
+      "حداکثر حجم ویدئو 100 مگابایت است."
+    );
+
     return;
   }
 
   const fd=new FormData();
-  fd.append("product_id",String(productId));
-  fd.append("video",file);
+
+  fd.append(
+    "product_id",
+    String(productId)
+  );
+
+  fd.append(
+    "video",
+    file
+  );
 
   try{
-    const r=await fetch(WORKER_URL+"/api/admin/upload-video",{
-      method:"POST",
-      headers:{
-        "X-Telegram-Init-Data":tg?.initData||""
-      },
-      body:fd
-    });
+
+    const r=await fetch(
+      WORKER_URL+"/api/admin/upload-video",
+      {
+        method:"POST",
+        headers:{
+          "X-Telegram-Init-Data":
+            tg?.initData||""
+        },
+        body:fd
+      }
+    );
 
     const text=await r.text();
+
     let data;
 
-    try{data=JSON.parse(text)}catch{throw new Error(text)}
+    try{
 
-    if(!r.ok||data.ok===false)throw new Error(data.error||"خطا در آپلود");
+      data=JSON.parse(text);
 
-    alert("ویدئو با موفقیت آپلود شد.");
+    }catch{
+
+      throw new Error(
+        text||"پاسخ نامعتبر از سرور"
+      );
+
+    }
+
+    if(!r.ok||data.ok===false){
+
+      throw new Error(
+        data.error||"خطا در آپلود"
+      );
+
+    }
+
+    alert(
+      "ویدئو با موفقیت آپلود شد."
+    );
+
     await loadProducts();
     await loadAdminProducts();
+
   }catch(e){
-    alert("خطا در آپلود ویدئو: "+e.message);
+
+    alert(
+      "خطا در آپلود ویدئو: "+
+      e.message
+    );
+
   }
 }
 
 async function removeVideo(productId){
-  if(!confirm("ویدئوی این محصول حذف شود؟"))return;
+
+  if(!confirm(
+    "ویدئوی این محصول حذف شود؟"
+  )){
+    return;
+  }
 
   try{
-    await post("/api/admin/remove-video",{
-      initData:tg?.initData||"",
-      product_id:productId
-    });
+
+    await post(
+      "/api/admin/remove-video",
+      {
+        initData:tg?.initData||"",
+        product_id:productId
+      }
+    );
 
     alert("ویدئو حذف شد.");
+
     await loadProducts();
     await loadAdminProducts();
+
   }catch(e){
+
     alert(e.message);
+
   }
 }
 
 function setLoading(v){
-  document.getElementById("loading").classList.toggle("hidden",!v);
+
+  document
+    .getElementById("loading")
+    .classList
+    .toggle("hidden",!v);
+
 }
 
 function showError(msg){
-  const el=document.getElementById("error");
+
+  const el=
+    document.getElementById("error");
+
   el.textContent=msg;
+
   el.classList.remove("hidden");
+
 }
 
 function showAdminError(msg){
-  const el=document.getElementById("adminError");
+
+  const el=
+    document.getElementById("adminError");
+
   el.textContent=msg;
+
   el.classList.remove("hidden");
+
 }
 
 function escapeHtml(value){
+
   return String(value??"")
     .replace(/&/g,"&amp;")
     .replace(/</g,"&lt;")
     .replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;")
     .replace(/'/g,"&#039;");
+
 }
 
 function escapeAttr(value){
+
   return escapeHtml(value);
+
 }

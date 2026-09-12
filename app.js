@@ -1,1653 +1,1327 @@
-const WORKER_URL="https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
+const WORKER_URL = "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
 
-const tg=window.Telegram&&window.Telegram.WebApp
-?window.Telegram.WebApp
-:null;
+const tg =
+  window.Telegram && window.Telegram.WebApp
+    ? window.Telegram.WebApp
+    : null;
 
-if(tg){
-try{
-tg.ready();
-tg.expand();
-}catch(e){}
+if (tg) {
+  try {
+    tg.ready();
+    tg.expand();
+  } catch (e) {}
 }
 
-let products=[];
-let categories=[];
-let activeCategory="";
-let currentUser=null;
-let isAdmin=false;
-let selectedCustomer=null;
+let products = [];
+let categories = [];
+let activeCategory = "";
+let currentUser = null;
+let isAdmin = false;
+let selectedCustomer = null;
 
-const searchInput=document.getElementById("searchInput");
-const productGrid=document.getElementById("productGrid");
-const productCount=document.getElementById("productCount");
-const loading=document.getElementById("loading");
-const errorBox=document.getElementById("error");
-const empty=document.getElementById("empty");
-const categoriesBox=document.getElementById("categories");
 
-function escapeHtml(value){
-return String(value??"")
-.replace(/&/g,"&")
-.replace(/</g,"<")
-.replace(/>/g,">")
-.replace(/"/g,""")
-.replace(/'/g,"'");
+/* =========================
+   Helpers
+========================= */
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-function authHeaders(){
-const headers={
-"Content-Type":"application/json"
-};
-
-if(tg&&tg.initData){
-headers["X-Telegram-Init-Data"]=tg.initData;
+function getProductName(product) {
+  return product?.name_fa || product?.name_en || "بدون نام";
 }
 
-return headers;
-}
-
-async function request(path,options={}){
-const response=await fetch(
-WORKER_URL+path,
-{
-...options,
-headers:{
-...authHeaders(),
-...(options.headers||{})
-}
-}
-);
-
-const text=await response.text();
-
-let result={};
-
-try{
-result=text?JSON.parse(text):{};
-}catch{
-throw new Error(
-"پاسخ نامعتبر از سرور: "+
-text.slice(0,300)
-);
-}
-
-if(!response.ok){
-throw new Error(
-result.error||
-"خطای سرور"
-);
-}
-
-return result;
-}
-
-async function post(path,data={}){
-return await request(
-path,
-{
-method:"POST",
-body:JSON.stringify(data)
-}
-);
-}
-
-function getProductName(product){
-return (
-product?.name_fa||
-product?.name_en||
-"بدون نام"
-);
-}
-
-function getImage(product){
-return product?.image_url||"";
-}
-
-function getCatalog(product){
-return product?.catalog_pdf_url||"";
-}
-
-function formatPrice(value,currency="تومان"){
-if(
-value===null||
-value===undefined||
-value===""
-){
-return "";
-}
-
-const number=Number(value);
-
-if(!Number.isFinite(number)){
-return "";
-}
-
-return (
-number.toLocaleString("fa-IR")+
-" "+
-(currency||"تومان")
-);
-}
-
-function getPublicPrice(product){
-return formatPrice(
-product?.base_price,
-product?.base_currency||"تومان"
-);
-}
-
-function getPrivatePrice(product){
-if(
-!product?.has_private_price||
-product?.customer_price===null||
-product?.customer_price===undefined
-){
-return "";
-}
-
-return formatPrice(
-product.customer_price,
-product.customer_currency||"تومان"
-);
-}
-
-function getPriceText(product){
-const privatePrice=getPrivatePrice(product);
-
-if(privatePrice){
-return "<div class="private-price"> 💰 قیمت اختصاصی شما: ${escapeHtml(privatePrice)} </div>";
-}
-
-const publicPrice=getPublicPrice(product);
-
-if(publicPrice){
-return "<div class="price"> 💰 ${escapeHtml(publicPrice)} </div>";
-}
-
-return "";
-}
-
-function getTelegramUser(){
-if(
-!tg||
-!tg.initDataUnsafe||
-!tg.initDataUnsafe.user
-){
-return null;
-}
-
-return tg.initDataUnsafe.user;
-}
-
-async function authenticate(){
-const user=getTelegramUser();
-
-if(!user){
-console.warn("Telegram user not available");
-return;
-}
-
-try{
-
-const result=await post(
-  "/api/telegram-auth",
-  {
-    initData:tg?.initData||""
+function formatPrice(price, currency = "تومان") {
+  if (price === null || price === undefined || price === "") {
+    return "";
   }
-);
 
-currentUser={
-  telegram_id:result.telegram_user_id,
-  username:result.username||"",
-  first_name:result.first_name||"",
-  last_name:result.last_name||"",
-  customer_id:result.customer_id||null
-};
+  const number = Number(price);
 
-isAdmin=Boolean(result.is_admin);
+  if (!Number.isFinite(number)) {
+    return escapeHtml(price);
+  }
 
-showAccount();
+  return `${number.toLocaleString("fa-IR")} ${escapeHtml(currency || "تومان")}`;
+}
 
-const adminButton=
-  document.getElementById("adminButton");
+function getImageUrl(product) {
+  return product?.image_url || "";
+}
 
-if(adminButton){
-  if(isAdmin){
-    adminButton.classList.remove("hidden");
-  }else{
-    adminButton.classList.add("hidden");
+function getCatalogUrl(product) {
+  return product?.catalog_pdf_url || "";
+}
+
+function authHeaders() {
+  const headers = {
+    "Content-Type": "application/json"
+  };
+
+  if (tg && tg.initData) {
+    headers["X-Telegram-Init-Data"] = tg.initData;
+  }
+
+  return headers;
+}
+
+async function request(path, options = {}) {
+  const url = WORKER_URL + path;
+
+  const headers = {
+    ...authHeaders(),
+    ...(options.headers || {})
+  };
+
+  const response = await fetch(url, {
+    ...options,
+    headers
+  });
+
+  const text = await response.text();
+
+  let data = {};
+
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (e) {
+    data = {
+      raw: text
+    };
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error ||
+      data?.message ||
+      data?.raw ||
+      `HTTP ${response.status}`
+    );
+  }
+
+  return data;
+}
+
+async function get(path) {
+  return request(path, {
+    method: "GET"
+  });
+}
+
+async function post(path, body = {}) {
+  return request(path, {
+    method: "POST",
+    body: JSON.stringify(body)
+  });
+}
+
+
+/* =========================
+   Telegram User
+========================= */
+
+function getTelegramUser() {
+  if (!tg?.initDataUnsafe?.user) {
+    return null;
+  }
+
+  return tg.initDataUnsafe.user;
+}
+
+async function authenticate() {
+  const user = getTelegramUser();
+
+  if (!user) {
+    showAccount(null);
+    return;
+  }
+
+  try {
+    const result = await post("/api/telegram-auth", {
+      initData: tg.initData || ""
+    });
+
+    if (result?.user) {
+      currentUser = result.user;
+    } else {
+      currentUser = {
+        id: user.id,
+        username: user.username || "",
+        first_name: user.first_name || "",
+        last_name: user.last_name || ""
+      };
+    }
+
+    isAdmin = Boolean(result?.is_admin);
+
+    showAccount(currentUser);
+
+    if (isAdmin) {
+      const button = document.getElementById("adminButton");
+
+      if (button) {
+        button.classList.remove("hidden");
+      }
+    }
+
+  } catch (error) {
+    console.error("Authentication error:", error);
+
+    currentUser = {
+      id: user.id,
+      username: user.username || "",
+      first_name: user.first_name || "",
+      last_name: user.last_name || ""
+    };
+
+    isAdmin = false;
+
+    showAccount(currentUser);
   }
 }
 
-}catch(error){
+function showAccount(user) {
+  const account = document.getElementById("account");
+  const accountName = document.getElementById("accountName");
+  const accountUser = document.getElementById("accountUser");
+  const accountInfo = document.getElementById("accountInfo");
 
-console.error(
-  "Authentication error:",
-  error
-);
+  if (!account) return;
 
-currentUser={
-  telegram_id:user.id,
-  username:user.username||"",
-  first_name:user.first_name||"",
-  last_name:user.last_name||""
-};
-
-showAccount();
-
-}
-}
-
-function showAccount(){
-const account=document.getElementById("account");
-const accountName=document.getElementById("accountName");
-const accountUser=document.getElementById("accountUser");
-const accountInfo=document.getElementById("accountInfo");
-
-if(!account||!currentUser){
-return;
-}
-
-const fullName=[
-currentUser.first_name||"",
-currentUser.last_name||""
-]
-.filter(Boolean)
-.join(" ")
-.trim();
-
-if(accountName){
-accountName.textContent=
-fullName||
-currentUser.username||
-"کاربر";
-}
-
-if(accountUser){
-accountUser.textContent=
-currentUser.username
-?"@"+currentUser.username
-:"";
-}
-
-if(accountInfo){
-accountInfo.innerHTML=
-"شناسه تلگرام: <strong>"+
-escapeHtml(
-currentUser.telegram_id||""
-)+
-"</strong>";
-}
-
-account.classList.remove("hidden");
-}
-
-async function loadProducts(){
-if(loading){
-loading.classList.remove("hidden");
-}
-
-if(errorBox){
-errorBox.classList.add("hidden");
-}
-
-if(empty){
-empty.classList.add("hidden");
-}
-
-try{
-
-const result=await request(
-  "/api/products",
-  {
-    method:"GET"
+  if (!user) {
+    account.classList.add("hidden");
+    return;
   }
-);
 
-products=
-  Array.isArray(result.products)
-    ?result.products
-    :[];
+  account.classList.remove("hidden");
 
-renderCategories();
-renderProducts();
+  const fullName =
+    [user.first_name, user.last_name]
+      .filter(Boolean)
+      .join(" ") ||
+    user.username ||
+    "کاربر";
 
-}catch(error){
+  if (accountName) {
+    accountName.textContent = fullName;
+  }
 
-console.error(
-  "Products error:",
-  error
-);
+  if (accountUser) {
+    accountUser.textContent = user.username
+      ? `@${user.username}`
+      : "";
+  }
 
-if(errorBox){
-  errorBox.textContent=
-    "خطا در دریافت محصولات: "+
-    error.message;
-
-  errorBox.classList.remove("hidden");
+  if (accountInfo) {
+    accountInfo.innerHTML =
+      user.id
+        ? `شناسه تلگرام: ${escapeHtml(user.id)}`
+        : "";
+  }
 }
 
-}finally{
 
-if(loading){
-  loading.classList.add("hidden");
+/* =========================
+   Products
+========================= */
+
+async function loadProducts() {
+  const loading = document.getElementById("loading");
+  const error = document.getElementById("error");
+  const empty = document.getElementById("empty");
+
+  if (loading) {
+    loading.classList.remove("hidden");
+    loading.textContent = "در حال دریافت محصولات...";
+  }
+
+  if (error) {
+    error.classList.add("hidden");
+    error.textContent = "";
+  }
+
+  if (empty) {
+    empty.classList.add("hidden");
+  }
+
+  try {
+    const result = await get("/api/products");
+
+    console.log("Products response:", result);
+
+    if (Array.isArray(result)) {
+      products = result;
+    } else if (Array.isArray(result?.products)) {
+      products = result.products;
+    } else {
+      products = [];
+    }
+
+    console.log("Products loaded:", products);
+
+    renderCategories();
+    renderProducts();
+
+  } catch (err) {
+    console.error("Load products error:", err);
+
+    products = [];
+
+    if (error) {
+      error.textContent =
+        "خطا در دریافت محصولات: " +
+        (err.message || "خطای نامشخص");
+
+      error.classList.remove("hidden");
+    }
+  } finally {
+    if (loading) {
+      loading.classList.add("hidden");
+    }
+  }
 }
 
+function renderCategories() {
+  const container = document.getElementById("categories");
+
+  if (!container) return;
+
+  const values = [];
+
+  for (const product of products) {
+    const category = String(product?.category || "").trim();
+
+    if (category && !values.includes(category)) {
+      values.push(category);
+    }
+  }
+
+  categories = values;
+
+  let html = `
+    <button
+      class="category-btn ${activeCategory === "" ? "active" : ""}"
+      onclick="selectCategory('')">
+      همه
+    </button>
+  `;
+
+  for (const category of categories) {
+    html += `
+      <button
+        class="category-btn ${activeCategory === category ? "active" : ""}"
+        onclick="selectCategory(${JSON.stringify(category)})">
+        ${escapeHtml(category)}
+      </button>
+    `;
+  }
+
+  container.innerHTML = html;
 }
-}
 
-function renderCategories(){
-if(!categoriesBox){
-return;
-}
+function selectCategory(category) {
+  activeCategory = category || "";
 
-const set=new Set();
-
-products.forEach(product=>{
-if(product.category){
-set.add(product.category);
-}
-});
-
-categories=[
-...set
-].sort(
-(a,b)=>a.localeCompare(b,"fa")
-);
-
-categoriesBox.innerHTML="";
-
-const allButton=
-document.createElement("button");
-
-allButton.textContent="همه";
-allButton.className=
-activeCategory===""
-?"active"
-:"";
-
-allButton.onclick=()=>{
-activeCategory="";
-renderCategories();
-renderProducts();
-};
-
-categoriesBox.appendChild(allButton);
-
-categories.forEach(category=>{
-
-const button=
-  document.createElement("button");
-
-button.textContent=category;
-
-button.className=
-  activeCategory===category
-    ?"active"
-    :"";
-
-button.onclick=()=>{
-  activeCategory=category;
   renderCategories();
   renderProducts();
-};
-
-categoriesBox.appendChild(button);
-
-});
 }
 
-function renderProducts(){
-if(!productGrid){
-return;
+function renderProducts() {
+  const grid = document.getElementById("productGrid");
+  const count = document.getElementById("productCount");
+  const empty = document.getElementById("empty");
+  const searchInput = document.getElementById("searchInput");
+
+  if (!grid) return;
+
+  const searchText = String(
+    searchInput?.value || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  let filtered = products.filter(product => {
+    const name =
+      String(product?.name_fa || "").toLowerCase();
+
+    const nameEn =
+      String(product?.name_en || "").toLowerCase();
+
+    const category =
+      String(product?.category || "").toLowerCase();
+
+    const matchesSearch =
+      !searchText ||
+      name.includes(searchText) ||
+      nameEn.includes(searchText) ||
+      category.includes(searchText);
+
+    const matchesCategory =
+      !activeCategory ||
+      product?.category === activeCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  if (count) {
+    count.textContent =
+      `${filtered.length.toLocaleString("fa-IR")} محصول`;
+  }
+
+  if (!filtered.length) {
+    grid.innerHTML = "";
+
+    if (empty) {
+      empty.classList.remove("hidden");
+    }
+
+    return;
+  }
+
+  if (empty) {
+    empty.classList.add("hidden");
+  }
+
+  grid.innerHTML = filtered
+    .map(product => createProductCard(product))
+    .join("");
 }
 
-const q=
-(searchInput?.value||"")
-.trim()
-.toLowerCase();
+function createProductCard(product) {
+  const id = product?.id;
 
-const filtered=
-products.filter(product=>{
+  const name = getProductName(product);
+  const category = product?.category || "";
 
-  const name=
-    getProductName(product)
-      .toLowerCase();
+  const imageUrl = getImageUrl(product);
 
-  const category=
-    (product.category||"")
-      .toLowerCase();
+  const privatePrice =
+    product?.has_private_price
+      ? product?.customer_price
+      : null;
 
-  const intro=
-    (product.intro||"")
-      .toLowerCase();
+  const privateCurrency =
+    product?.customer_currency ||
+    "تومان";
 
-  const matchSearch=
-    !q||
-    name.includes(q)||
-    category.includes(q)||
-    intro.includes(q);
+  let priceHtml = "";
 
-  const matchCategory=
-    !activeCategory||
-    product.category===activeCategory;
+  if (
+    privatePrice !== null &&
+    privatePrice !== undefined &&
+    privatePrice !== ""
+  ) {
+    priceHtml = `
+      <div class="private-price">
+        💰 قیمت اختصاصی شما:
+        ${formatPrice(privatePrice, privateCurrency)}
+      </div>
+    `;
+  } else if (
+    product?.base_price !== null &&
+    product?.base_price !== undefined &&
+    product?.base_price !== ""
+  ) {
+    priceHtml = `
+      <div class="price">
+        💰 ${formatPrice(
+          product.base_price,
+          product.base_currency || "تومان"
+        )}
+      </div>
+    `;
+  }
 
-  return matchSearch&&matchCategory;
-});
-
-if(productCount){
-productCount.textContent=
-filtered.length+
-" محصول";
-}
-
-if(!filtered.length){
-
-productGrid.innerHTML="";
-
-if(empty){
-  empty.classList.remove("hidden");
-}
-
-return;
-
-}
-
-if(empty){
-empty.classList.add("hidden");
-}
-
-productGrid.innerHTML=
-filtered.map(product=>{
-
-  const id=Number(product.id);
-  const name=getProductName(product);
-  const image=getImage(product);
-
-  const intro=
-    product.intro||
-    "برای مشاهده مشخصات و اطلاعات کامل محصول، روی این کارت بزنید.";
-
-  const price=getPriceText(product);
+  const imageHtml = imageUrl
+    ? `
+      <img
+        src="${escapeHtml(imageUrl)}"
+        alt="${escapeHtml(name)}"
+        loading="lazy"
+        onerror="this.style.display='none';this.parentElement.classList.add('image-error');"
+      >
+    `
+    : `
+      <div class="no-image">🌱</div>
+    `;
 
   return `
-    <div
+    <article
       class="product-card"
-      onclick="openProduct(${id})"
+      onclick="openProduct(${Number(id)})"
     >
 
-      ${
-        image
-          ?`
-            <img
-              class="product-image"
-              src="${escapeHtml(image)}"
-              alt="${escapeHtml(name)}"
-              loading="lazy"
-            >
-          `
-          :""
-      }
+      <div class="product-image">
+        ${imageHtml}
+      </div>
 
-      <div class="product-body">
+      <div class="product-card-content">
+
+        <h3>
+          ${escapeHtml(name)}
+        </h3>
 
         ${
-          product.category
-            ?`
-              <div class="product-category">
-                ${escapeHtml(product.category)}
-              </div>
-            `
-            :""
+          category
+            ? `<div class="product-category">
+                ${escapeHtml(category)}
+               </div>`
+            : ""
         }
 
-        <div class="product-title">
+        ${priceHtml}
+
+        <button
+          class="view-product"
+          onclick="event.stopPropagation();openProduct(${Number(id)})">
+          مشاهده محصول
+        </button>
+
+      </div>
+
+    </article>
+  `;
+}
+
+
+/* =========================
+   Product Detail
+========================= */
+
+async function openProduct(id) {
+  const product = products.find(
+    item => Number(item?.id) === Number(id)
+  );
+
+  if (!product) {
+    console.error("Product not found:", id);
+    return;
+  }
+
+  const modal = document.getElementById("modal");
+  const content = document.getElementById("modalContent");
+
+  if (!modal || !content) return;
+
+  const name = getProductName(product);
+
+  let html = `
+    <div class="product-detail">
+
+      <div class="detail-image">
+        ${
+          product.image_url
+            ? `
+              <img
+                src="${escapeHtml(product.image_url)}"
+                alt="${escapeHtml(name)}"
+                onerror="this.style.display='none';"
+              >
+            `
+            : `
+              <div class="no-image">🌱</div>
+            `
+        }
+      </div>
+
+      <h2>${escapeHtml(name)}</h2>
+
+      ${
+        product.category
+          ? `
+            <div class="detail-category">
+              ${escapeHtml(product.category)}
+            </div>
+          `
+          : ""
+      }
+  `;
+
+  if (product.package) {
+    html += `
+      <div class="detail-row">
+        <strong>بسته‌بندی:</strong>
+        <span>${escapeHtml(product.package)}</span>
+      </div>
+    `;
+  }
+
+  if (product.maker) {
+    html += `
+      <div class="detail-row">
+        <strong>تولیدکننده:</strong>
+        <span>${escapeHtml(product.maker)}</span>
+      </div>
+    `;
+  }
+
+  const privatePrice =
+    product?.has_private_price
+      ? product?.customer_price
+      : null;
+
+  if (
+    privatePrice !== null &&
+    privatePrice !== undefined &&
+    privatePrice !== ""
+  ) {
+    html += `
+      <div class="private-price detail-price">
+        💰 قیمت اختصاصی شما:
+        ${formatPrice(
+          privatePrice,
+          product.customer_currency || "تومان"
+        )}
+      </div>
+    `;
+  } else if (
+    product.base_price !== null &&
+    product.base_price !== undefined &&
+    product.base_price !== ""
+  ) {
+    html += `
+      <div class="price detail-price">
+        💰 ${formatPrice(
+          product.base_price,
+          product.base_currency || "تومان"
+        )}
+      </div>
+    `;
+  }
+
+  if (product.intro) {
+    html += `
+      <section class="detail-section">
+        <h3>معرفی محصول</h3>
+        <p>${formatText(product.intro)}</p>
+      </section>
+    `;
+  }
+
+  if (product.composition) {
+    html += `
+      <section class="detail-section">
+        <h3>ترکیبات</h3>
+        <p>${formatText(product.composition)}</p>
+      </section>
+    `;
+  }
+
+  if (product.benefits) {
+    html += `
+      <section class="detail-section">
+        <h3>مزایا</h3>
+        <p>${formatText(product.benefits)}</p>
+      </section>
+    `;
+  }
+
+  if (product.use_text) {
+    html += `
+      <section class="detail-section">
+        <h3>نحوه مصرف</h3>
+        <p>${formatText(product.use_text)}</p>
+      </section>
+    `;
+  }
+
+  if (product.warnings) {
+    html += `
+      <section class="detail-section">
+        <h3>هشدارها</h3>
+        <p>${formatText(product.warnings)}</p>
+      </section>
+    `;
+  }
+
+  if (product.video_url) {
+    html += `
+      <section class="detail-section">
+        <h3>🎬 ویدئوی محصول</h3>
+
+        <video
+          class="product-video"
+          controls
+          preload="metadata"
+          src="${escapeHtml(product.video_url)}">
+        </video>
+      </section>
+    `;
+  }
+
+  if (product.catalog_pdf_url) {
+    html += `
+      <section class="detail-section">
+        <h3>📄 کاتالوگ محصول</h3>
+
+        <a
+          class="catalog-link"
+          href="${escapeHtml(product.catalog_pdf_url)}"
+          target="_blank"
+          rel="noopener">
+          مشاهده کاتالوگ
+        </a>
+      </section>
+    `;
+  }
+
+  html += `
+    </div>
+  `;
+
+  content.innerHTML = html;
+
+  modal.classList.remove("hidden");
+
+  if (tg?.BackButton) {
+    try {
+      tg.BackButton.show();
+
+      tg.BackButton.onClick(closeModal);
+    } catch (e) {}
+  }
+}
+
+function formatText(value) {
+  return escapeHtml(value)
+    .replace(/\r\n/g, "<br>")
+    .replace(/\n/g, "<br>");
+}
+
+function closeModal() {
+  const modal = document.getElementById("modal");
+
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+
+  if (tg?.BackButton) {
+    try {
+      tg.BackButton.hide();
+    } catch (e) {}
+  }
+}
+
+
+/* =========================
+   Admin
+========================= */
+
+function openAdmin() {
+  if (!isAdmin) {
+    alert("شما دسترسی مدیریت ندارید.");
+    return;
+  }
+
+  const modal = document.getElementById("adminModal");
+
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+
+  loadAdminPanel();
+}
+
+function closeAdmin() {
+  const modal = document.getElementById("adminModal");
+
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
+
+async function loadAdminPanel() {
+  const loading = document.getElementById("adminLoading");
+  const error = document.getElementById("adminError");
+
+  if (loading) {
+    loading.classList.remove("hidden");
+  }
+
+  if (error) {
+    error.classList.add("hidden");
+    error.textContent = "";
+  }
+
+  try {
+    const result = await post("/api/admin/products");
+
+    const adminProducts =
+      Array.isArray(result)
+        ? result
+        : result?.products || [];
+
+    renderAdminProducts(adminProducts);
+    renderAdminAccount();
+
+    await loadCustomers();
+
+  } catch (err) {
+    console.error("Admin panel error:", err);
+
+    if (error) {
+      error.textContent =
+        err.message || "خطا در دریافت اطلاعات مدیریت.";
+
+      error.classList.remove("hidden");
+    }
+  } finally {
+    if (loading) {
+      loading.classList.add("hidden");
+    }
+  }
+}
+
+function renderAdminAccount() {
+  const box =
+    document.getElementById("adminAccountInfo");
+
+  if (!box) return;
+
+  if (!currentUser) {
+    box.innerHTML = "کاربر شناسایی نشد.";
+    return;
+  }
+
+  const name =
+    [currentUser.first_name, currentUser.last_name]
+      .filter(Boolean)
+      .join(" ") ||
+    currentUser.username ||
+    "کاربر";
+
+  box.innerHTML = `
+    <strong>${escapeHtml(name)}</strong>
+    <br>
+    ${
+      currentUser.username
+        ? `@${escapeHtml(currentUser.username)}`
+        : ""
+    }
+    <br>
+    Telegram ID:
+    ${escapeHtml(currentUser.id)}
+  `;
+}
+
+function renderAdminProducts(list) {
+  const container =
+    document.getElementById("adminProducts");
+
+  if (!container) return;
+
+  if (!list.length) {
+    container.innerHTML =
+      `<div class="message">محصولی وجود ندارد.</div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(product => {
+    const name = getProductName(product);
+
+    return `
+      <div class="admin-product">
+
+        <div class="admin-product-title">
           ${escapeHtml(name)}
         </div>
 
-        <div class="product-short">
-          ${escapeHtml(intro)}
-        </div>
-
-        ${price}
-
-        ${
-          product.video_url
-            ?`
-              <div class="product-video-label">
-                🎥 ویدئوی معرفی محصول
-              </div>
-            `
-            :""
-        }
-
-      </div>
-
-    </div>
-  `;
-
-}).join("");
-
-}
-
-function openProduct(id){
-const product=
-products.find(
-item=>Number(item.id)===Number(id)
-);
-
-if(!product){
-return;
-}
-
-const modal=
-document.getElementById("modal");
-
-const content=
-document.getElementById("modalContent");
-
-if(!modal||!content){
-return;
-}
-
-const name=getProductName(product);
-const image=getImage(product);
-const catalog=getCatalog(product);
-
-const publicPrice=
-getPublicPrice(product);
-
-const privatePrice=
-getPrivatePrice(product);
-
-let priceHtml="";
-
-if(privatePrice){
-
-priceHtml=`
-  <div class="detail-price private-price">
-    💰 قیمت اختصاصی شما:
-    ${escapeHtml(privatePrice)}
-  </div>
-`;
-
-}else if(publicPrice){
-
-priceHtml=`
-  <div class="detail-price">
-    💰 قیمت:
-    ${escapeHtml(publicPrice)}
-  </div>
-`;
-
-}
-
-content.innerHTML=`
-
-${
-  image
-    ?`
-      <img
-        class="detail-image"
-        src="${escapeHtml(image)}"
-        alt="${escapeHtml(name)}"
-      >
-    `
-    :""
-}
-
-<div class="detail-title">
-  ${escapeHtml(name)}
-</div>
-
-${
-  product.category
-    ?`
-      <div class="product-category">
-        ${escapeHtml(product.category)}
-      </div>
-    `
-    :""
-}
-
-${priceHtml}
-
-${
-  product.intro
-    ?`
-      <div class="detail-box">
-        <strong>📝 معرفی محصول</strong>
-        <div class="detail-description">
-          ${escapeHtml(product.intro)}
-        </div>
-      </div>
-    `
-    :""
-}
-
-${
-  product.composition
-    ?`
-      <div class="detail-box">
-        <strong>🧪 ترکیبات و آنالیز</strong>
-        <div class="detail-description">
-          ${escapeHtml(product.composition)}
-        </div>
-      </div>
-    `
-    :""
-}
-
-${
-  product.benefits
-    ?`
-      <div class="detail-box">
-        <strong>🌱 مزایا</strong>
-        <div class="detail-description">
-          ${escapeHtml(
-            Array.isArray(product.benefits)
-              ?product.benefits.join("، ")
-              :product.benefits
-          )}
-        </div>
-      </div>
-    `
-    :""
-}
-
-${
-  product.use_text
-    ?`
-      <div class="detail-box">
-        <strong>📋 روش مصرف</strong>
-        <div class="detail-description">
-          ${escapeHtml(product.use_text)}
-        </div>
-      </div>
-    `
-    :""
-}
-
-${
-  product.warnings
-    ?`
-      <div class="detail-box">
-        <strong>⚠️ هشدارها</strong>
-        <div class="detail-description">
-          ${escapeHtml(product.warnings)}
-        </div>
-      </div>
-    `
-    :""
-}
-
-${
-  product.video_url
-    ?`
-      <div class="detail-box">
-        <strong>🎥 ویدئوی معرفی</strong>
-
-        <video
-          class="video-preview"
-          controls
-          playsinline
-          preload="metadata"
-          src="${escapeHtml(product.video_url)}"
-        ></video>
-      </div>
-    `
-    :""
-}
-
-${
-  catalog
-    ?`
-      <div class="catalog-container">
-
-        <h3>📚 کاتالوگ محصول</h3>
-
-        <img
-          class="catalog-image"
-          src="${escapeHtml(catalog)}"
-          alt="کاتالوگ ${escapeHtml(name)}"
-          loading="lazy"
-        >
-
-        <a
-          class="catalog-button"
-          href="${escapeHtml(catalog)}"
-          target="_blank"
-          rel="noopener"
-        >
-          📄 باز کردن کاتالوگ
-        </a>
-
-      </div>
-    `
-    :""
-}
-
-`;
-
-modal.classList.remove("hidden");
-
-if(tg){
-try{
-tg.BackButton.show();
-tg.BackButton.onClick(closeModal);
-}catch(e){}
-}
-}
-
-function closeModal(){
-
-const modal=
-document.getElementById("modal");
-
-if(modal){
-modal.classList.add("hidden");
-}
-
-if(tg){
-try{
-tg.BackButton.hide();
-}catch(e){}
-}
-}
-
-async function openAdmin(){
-
-if(!isAdmin){
-alert("دسترسی مدیریت ندارید.");
-return;
-}
-
-const modal=
-document.getElementById("adminModal");
-
-if(modal){
-modal.classList.remove("hidden");
-}
-
-await loadAdminPanel();
-}
-
-function closeAdmin(){
-
-const modal=
-document.getElementById("adminModal");
-
-if(modal){
-modal.classList.add("hidden");
-}
-}
-
-async function loadAdminPanel(){
-
-const adminLoading=
-document.getElementById("adminLoading");
-
-const adminError=
-document.getElementById("adminError");
-
-if(adminLoading){
-adminLoading.classList.remove("hidden");
-}
-
-if(adminError){
-adminError.classList.add("hidden");
-}
-
-try{
-
-const result=
-  await post(
-    "/api/admin/products",
-    {}
-  );
-
-const list=
-  Array.isArray(result.products)
-    ?result.products
-    :[];
-
-renderAdminAccount();
-renderAdminProducts(list);
-
-await loadCustomers();
-
-}catch(error){
-
-console.error(
-  "Admin panel error:",
-  error
-);
-
-if(adminError){
-  adminError.textContent=
-    error.message;
-
-  adminError.classList.remove("hidden");
-}
-
-}finally{
-
-if(adminLoading){
-  adminLoading.classList.add("hidden");
-}
-
-}
-}
-
-function renderAdminAccount(){
-
-const box=
-document.getElementById(
-"adminAccountInfo"
-);
-
-if(!box){
-return;
-}
-
-const user=
-getTelegramUser();
-
-const telegramId=
-currentUser?.telegram_id||
-user?.id||
-"";
-
-const username=
-currentUser?.username||
-user?.username||
-"";
-
-const firstName=
-currentUser?.first_name||
-user?.first_name||
-"";
-
-const lastName=
-currentUser?.last_name||
-user?.last_name||
-"";
-
-box.innerHTML=`
-<div>
-<strong>نام:</strong>
-${escapeHtml(
-[
-firstName,
-lastName
-]
-.filter(Boolean)
-.join(" ")||
-"—"
-)}
-</div>
-
-<div>
-  <strong>Username:</strong>
-  ${escapeHtml(
-    username
-      ?"@"+username
-      :"—"
-  )}
-</div>
-
-<div>
-  <strong>Telegram ID:</strong>
-  ${escapeHtml(
-    telegramId||
-    "—"
-  )}
-</div>
-
-<div>
-  <strong>دسترسی:</strong>
-  مدیر سیستم
-</div>
-
-`;
-}
-
-function renderAdminProducts(list){
-
-const box=
-document.getElementById(
-"adminProducts"
-);
-
-if(!box){
-return;
-}
-
-if(!list.length){
-
-box.innerHTML=
-  "<div class='message'>محصولی وجود ندارد.</div>";
-
-return;
-
-}
-
-box.innerHTML=
-list.map(product=>{
-
-  const id=Number(product.id);
-  const name=getProductName(product);
-
-  const basePrice=
-    product.base_price===null||
-    product.base_price===undefined
-      ?""
-      :product.base_price;
-
-  return `
-    <div class="admin-product">
-
-      <div class="admin-product-title">
-        ${escapeHtml(name)}
-      </div>
-
-      <div class="admin-row">
-
-        <input
-          type="number"
-          step="any"
-          id="price-${id}"
-          value="${escapeHtml(basePrice)}"
-          placeholder="قیمت عمومی"
-        >
+        <label>
+          قیمت عمومی
+          <input
+            type="number"
+            id="price-${Number(product.id)}"
+            value="${
+              product.base_price ??
+              ""
+            }"
+            placeholder="مثلاً 200000"
+          >
+        </label>
 
         <button
-          onclick="savePublicPrice(${id})"
-        >
+          onclick="savePublicPrice(${Number(product.id)})">
           💾 ذخیره قیمت
         </button>
 
-      </div>
+        <hr>
 
-      ${
-        product.video_url
-          ?`
-            <video
-              class="video-preview"
-              controls
-              preload="metadata"
-              src="${escapeHtml(product.video_url)}"
-            ></video>
+        <label>
+          ویدئو
+          <input
+            type="file"
+            id="video-${Number(product.id)}"
+            accept="video/*"
+          >
+        </label>
 
-            <div class="admin-row">
+        <button
+          onclick="uploadProductVideo(${Number(product.id)})">
+          🎬 آپلود ویدئو
+        </button>
 
+        ${
+          product.video_url
+            ? `
               <button
-                class="danger"
-                onclick="deleteProductVideo(${id})"
-              >
+                onclick="deleteProductVideo(${Number(product.id)})">
                 🗑 حذف ویدئو
               </button>
-
-            </div>
-          `
-          :""
-      }
-
-      <div class="admin-row">
-
-        <input
-          class="file-input"
-          type="file"
-          accept="video/*"
-          id="video-${id}"
-        >
-
-        <button
-          onclick="uploadProductVideo(${id})"
-        >
-          🎥 آپلود ویدئو
-        </button>
+            `
+            : ""
+        }
 
       </div>
-
-    </div>
-  `;
-
-}).join("");
-
-}
-
-async function savePublicPrice(productId){
-
-const input=
-document.getElementById(
-"price-"+productId
-);
-
-if(!input){
-return;
-}
-
-const raw=input.value.trim();
-
-let price=null;
-
-if(raw!==""){
-
-price=Number(raw);
-
-if(!Number.isFinite(price)){
-
-  alert(
-    "قیمت واردشده صحیح نیست."
-  );
-
-  return;
-}
-
-}
-
-try{
-
-const result=
-  await post(
-    "/api/admin/update-price",
-    {
-      product_id:Number(productId),
-      base_price:price,
-      base_currency:"تومان"
-    }
-  );
-
-const product=
-  products.find(
-    item=>Number(item.id)===Number(productId)
-  );
-
-if(product){
-
-  product.base_price=price;
-  product.base_currency="تومان";
-}
-
-renderProducts();
-
-if(result.product){
-  console.log(
-    "Updated product:",
-    result.product
-  );
-}
-
-alert("قیمت ذخیره شد.");
-
-}catch(error){
-
-console.error(error);
-
-alert(
-  "خطا در ذخیره قیمت:\n"+
-  error.message
-);
-
-}
-}
-
-async function uploadProductVideo(productId){
-
-const input=
-document.getElementById(
-"video-"+productId
-);
-
-if(
-!input||
-!input.files||
-!input.files[0]
-){
-
-alert(
-  "ابتدا فایل ویدئو را انتخاب کنید."
-);
-
-return;
-
-}
-
-const file=input.files[0];
-
-if(!file.type.startsWith("video/")){
-
-alert(
-  "فقط فایل ویدئویی انتخاب کنید."
-);
-
-return;
-
-}
-
-if(file.size>10010241024){
-
-alert(
-  "حجم ویدئو نباید بیشتر از 100 مگابایت باشد."
-);
-
-return;
-
-}
-
-const formData=
-new FormData();
-
-formData.append(
-"product_id",
-String(productId)
-);
-
-formData.append(
-"video",
-file,
-file.name
-);
-
-try{
-
-const result=
-  await request(
-    "/api/admin/upload-video",
-    {
-      method:"POST",
-      headers:{
-        "X-Telegram-Init-Data":
-          tg?.initData||""
-      },
-      body:formData
-    }
-  );
-
-const product=
-  products.find(
-    item=>Number(item.id)===Number(productId)
-  );
-
-if(product&&result.video_url){
-  product.video_url=
-    result.video_url;
-}
-
-alert(
-  "ویدئو با موفقیت آپلود شد."
-);
-
-await loadAdminPanel();
-renderProducts();
-
-}catch(error){
-
-console.error(error);
-
-alert(
-  "خطا در آپلود ویدئو:\n"+
-  error.message
-);
-
-}
-}
-
-async function deleteProductVideo(productId){
-
-if(!confirm(
-"ویدئوی این محصول حذف شود؟"
-)){
-return;
-}
-
-try{
-
-await post(
-  "/api/admin/remove-video",
-  {
-    product_id:Number(productId)
-  }
-);
-
-const product=
-  products.find(
-    item=>Number(item.id)===Number(productId)
-  );
-
-if(product){
-  product.video_url=null;
-}
-
-alert("ویدئو حذف شد.");
-
-await loadAdminPanel();
-renderProducts();
-
-}catch(error){
-
-console.error(error);
-
-alert(
-  "خطا در حذف ویدئو:\n"+
-  error.message
-);
-
-}
-}
-
-async function loadCustomers(){
-
-const select=
-document.getElementById(
-"customerSelect"
-);
-
-if(!select){
-return;
-}
-
-try{
-
-const result=
-  await post(
-    "/api/admin/customers",
-    {}
-  );
-
-const customers=
-  Array.isArray(result.customers)
-    ?result.customers
-    :[];
-
-select.innerHTML=
-  '<option value="">انتخاب مشتری</option>';
-
-customers.forEach(customer=>{
-
-  const option=
-    document.createElement("option");
-
-  option.value=customer.id;
-
-  const name=
-    [
-      customer.first_name||"",
-      customer.last_name||""
-    ]
-    .filter(Boolean)
-    .join(" ")||
-    customer.username||
-    "مشتری";
-
-  const username=
-    customer.username
-      ?" @"+customer.username
-      :"";
-
-  option.textContent=
-    name+
-    username+
-    " | ID: "+
-    (
-      customer.telegram_user_id||
-      customer.id
-    );
-
-  select.appendChild(option);
-});
-
-}catch(error){
-
-console.error(
-  "Customers error:",
-  error
-);
-
-}
-}
-
-async function loadCustomerPrices(customerId){
-
-const info=
-document.getElementById(
-"customerInfo"
-);
-
-const box=
-document.getElementById(
-"customerPrices"
-);
-
-if(!customerId){
-
-selectedCustomer=null;
-
-if(info){
-  info.classList.add("hidden");
-}
-
-if(box){
-  box.innerHTML="";
-}
-
-return;
-
-}
-
-try{
-
-const result=
-  await post(
-    "/api/admin/customer-prices",
-    {
-      customer_id:Number(customerId)
-    }
-  );
-
-selectedCustomer=
-  result.customer||
-  null;
-
-const prices=
-  Array.isArray(result.prices)
-    ?result.prices
-    :[];
-
-if(info){
-
-  const customer=
-    await getCustomerById(
-      Number(customerId)
-    );
-
-  if(customer){
-
-    info.innerHTML=`
-      <strong>
-        ${escapeHtml(
-          [
-            customer.first_name||"",
-            customer.last_name||""
-          ]
-          .filter(Boolean)
-          .join(" ")||
-          customer.username||
-          "مشتری"
-        )}
-      </strong>
-
-      <br>
-
-      Username:
-      ${escapeHtml(
-        customer.username
-          ?"@"+customer.username
-          :"—"
-      )}
-
-      <br>
-
-      Telegram ID:
-      ${escapeHtml(
-        customer.telegram_user_id||
-        "—"
-      )}
     `;
+  }).join("");
+}
 
+async function savePublicPrice(productId) {
+  const input =
+    document.getElementById(`price-${productId}`);
+
+  if (!input) return;
+
+  const value = input.value.trim();
+
+  try {
+    await post("/api/admin/update-price", {
+      product_id: Number(productId),
+      price: value === "" ? null : Number(value),
+      currency: "تومان"
+    });
+
+    alert("قیمت ذخیره شد.");
+
+    await loadProducts();
+    await loadAdminPanel();
+
+  } catch (err) {
+    alert(
+      "خطا در ذخیره قیمت:\n" +
+      (err.message || "")
+    );
+  }
+}
+
+
+/* =========================
+   Video
+========================= */
+
+async function uploadProductVideo(productId) {
+  const input =
+    document.getElementById(`video-${productId}`);
+
+  if (!input?.files?.length) {
+    alert("ابتدا فایل ویدئو را انتخاب کنید.");
+    return;
+  }
+
+  const file = input.files[0];
+
+  if (file.size > 100 * 1024 * 1024) {
+    alert("حجم ویدئو نباید بیشتر از 100 مگابایت باشد.");
+    return;
+  }
+
+  if (!file.type.startsWith("video/")) {
+    alert("فایل انتخاب‌شده ویدئو نیست.");
+    return;
+  }
+
+  const formData = new FormData();
+
+  formData.append(
+    "product_id",
+    String(productId)
+  );
+
+  formData.append(
+    "file",
+    file
+  );
+
+  try {
+    const headers = {};
+
+    if (tg?.initData) {
+      headers["X-Telegram-Init-Data"] =
+        tg.initData;
+    }
+
+    const response = await fetch(
+      WORKER_URL + "/api/admin/upload-video",
+      {
+        method: "POST",
+        headers,
+        body: formData
+      }
+    );
+
+    const text = await response.text();
+
+    let result = {};
+
+    try {
+      result = text ? JSON.parse(text) : {};
+    } catch (e) {}
+
+    if (!response.ok) {
+      throw new Error(
+        result?.error ||
+        result?.message ||
+        text ||
+        `HTTP ${response.status}`
+      );
+    }
+
+    alert("ویدئو با موفقیت آپلود شد.");
+
+    await loadProducts();
+    await loadAdminPanel();
+
+  } catch (err) {
+    console.error(err);
+
+    alert(
+      "خطا در آپلود ویدئو:\n" +
+      (err.message || "")
+    );
+  }
+}
+
+async function deleteProductVideo(productId) {
+  if (!confirm("ویدئوی این محصول حذف شود؟")) {
+    return;
+  }
+
+  try {
+    await post("/api/admin/remove-video", {
+      product_id: Number(productId)
+    });
+
+    alert("ویدئو حذف شد.");
+
+    await loadProducts();
+    await loadAdminPanel();
+
+  } catch (err) {
+    alert(
+      "خطا در حذف ویدئو:\n" +
+      (err.message || "")
+    );
+  }
+}
+
+
+/* =========================
+   Customers
+========================= */
+
+async function loadCustomers() {
+  const select =
+    document.getElementById("customerSelect");
+
+  if (!select) return;
+
+  try {
+    const result =
+      await post("/api/admin/customers");
+
+    const customers =
+      Array.isArray(result)
+        ? result
+        : result?.customers || [];
+
+    select.innerHTML =
+      `<option value="">انتخاب مشتری</option>`;
+
+    customers.forEach(customer => {
+      const name =
+        [
+          customer.first_name,
+          customer.last_name
+        ]
+          .filter(Boolean)
+          .join(" ") ||
+        customer.username ||
+        "بدون نام";
+
+      const option =
+        document.createElement("option");
+
+      option.value = customer.id;
+
+      option.textContent =
+        `${name} - ${
+          customer.username
+            ? "@" + customer.username
+            : customer.telegram_user_id || ""
+        }`;
+
+      select.appendChild(option);
+    });
+
+  } catch (err) {
+    console.error("Customers error:", err);
+  }
+}
+
+async function loadCustomerPrices(customerId) {
+  if (!customerId) {
+    selectedCustomer = null;
+
+    const info =
+      document.getElementById("customerInfo");
+
+    const prices =
+      document.getElementById("customerPrices");
+
+    if (info) {
+      info.classList.add("hidden");
+      info.innerHTML = "";
+    }
+
+    if (prices) {
+      prices.innerHTML = "";
+    }
+
+    return;
+  }
+
+  selectedCustomer = customerId;
+
+  try {
+    const result =
+      await post("/api/admin/customer-prices", {
+        customer_id: customerId
+      });
+
+    const rows =
+      Array.isArray(result)
+        ? result
+        : result?.prices || [];
+
+    renderCustomerPrices(rows);
+
+  } catch (err) {
+    console.error("Customer prices error:", err);
+
+    const container =
+      document.getElementById("customerPrices");
+
+    if (container) {
+      container.innerHTML =
+        `<div class="message error">
+          ${escapeHtml(err.message || "خطا")}
+        </div>`;
+    }
+  }
+}
+
+function renderCustomerPrices(rows) {
+  const container =
+    document.getElementById("customerPrices");
+
+  const info =
+    document.getElementById("customerInfo");
+
+  if (!container) return;
+
+  const priceMap = new Map();
+
+  rows.forEach(row => {
+    if (row?.product_id !== undefined) {
+      priceMap.set(
+        Number(row.product_id),
+        row
+      );
+    }
+  });
+
+  if (info) {
     info.classList.remove("hidden");
+
+    const selected =
+      document.getElementById("customerSelect");
+
+    const option =
+      selected?.options[
+        selected.selectedIndex
+      ];
+
+    info.innerHTML =
+      option
+        ? `<strong>${escapeHtml(option.textContent)}</strong>`
+        : "";
+  }
+
+  container.innerHTML = products
+    .map(product => {
+      const row =
+        priceMap.get(Number(product.id));
+
+      const price =
+        row?.price ?? "";
+
+      return `
+        <div class="customer-price-row">
+
+          <div>
+            <strong>
+              ${escapeHtml(
+                getProductName(product)
+              )}
+            </strong>
+          </div>
+
+          <input
+            type="number"
+            id="customer-price-${Number(product.id)}"
+            value="${escapeHtml(price)}"
+            placeholder="قیمت اختصاصی"
+          >
+
+          <button
+            onclick="saveCustomerPrice(${Number(product.id)})">
+            💾
+          </button>
+
+        </div>
+      `;
+    })
+    .join("");
+}
+
+async function saveCustomerPrice(productId) {
+  if (!selectedCustomer) {
+    alert("ابتدا مشتری را انتخاب کنید.");
+    return;
+  }
+
+  const input =
+    document.getElementById(
+      `customer-price-${productId}`
+    );
+
+  if (!input) return;
+
+  const value = input.value.trim();
+
+  try {
+    await post("/api/admin/set-customer-price", {
+      customer_id: selectedCustomer,
+      product_id: Number(productId),
+      price: value === "" ? null : Number(value),
+      currency: "تومان"
+    });
+
+    alert("قیمت اختصاصی ذخیره شد.");
+
+    await loadCustomerPrices(
+      selectedCustomer
+    );
+
+    await loadProducts();
+
+  } catch (err) {
+    alert(
+      "خطا در ذخیره قیمت اختصاصی:\n" +
+      (err.message || "")
+    );
   }
 }
 
-renderCustomerPrices(
-  prices,
-  Number(customerId)
-);
 
-}catch(error){
+/* =========================
+   Events
+========================= */
 
-console.error(error);
+const searchInput =
+  document.getElementById("searchInput");
 
-if(box){
-
-  box.innerHTML=
-    `<div class="message error">
-      ${escapeHtml(error.message)}
-    </div>`;
-}
-
-}
-}
-
-async function getCustomerById(customerId){
-
-try{
-
-const result=
-  await post(
-    "/api/admin/customers",
-    {}
+if (searchInput) {
+  searchInput.addEventListener(
+    "input",
+    renderProducts
   );
-
-const customers=
-  Array.isArray(result.customers)
-    ?result.customers
-    :[];
-
-return customers.find(
-  customer=>Number(customer.id)===customerId
-)||null;
-
-}catch{
-return null;
-}
 }
 
-function renderCustomerPrices(
-prices,
-customerId
-){
+const adminButton =
+  document.getElementById("adminButton");
 
-const box=
-document.getElementById(
-"customerPrices"
-);
-
-if(!box){
-return;
-}
-
-const priceMap={};
-
-prices.forEach(item=>{
-priceMap[
-Number(item.product_id)
-]=item;
-});
-
-box.innerHTML=
-products.map(product=>{
-
-  const id=Number(product.id);
-  const item=priceMap[id];
-
-  const value=
-    item&&
-    item.price!==null&&
-    item.price!==undefined
-      ?item.price
-      :"";
-
-  return `
-    <div class="customer-price-row">
-
-      <strong>
-        ${escapeHtml(
-          getProductName(product)
-        )}
-      </strong>
-
-      <div class="admin-row">
-
-        <input
-          type="number"
-          step="any"
-          id="customer-price-${id}"
-          value="${escapeHtml(value)}"
-          placeholder="قیمت اختصاصی"
-        >
-
-        <button
-          onclick="saveCustomerPrice(
-            ${Number(customerId)},
-            ${id}
-          )"
-        >
-          💾 ذخیره
-        </button>
-
-      </div>
-
-    </div>
-  `;
-
-}).join("");
-
-}
-
-async function saveCustomerPrice(
-customerId,
-productId
-){
-
-const input=
-document.getElementById(
-"customer-price-"+productId
-);
-
-if(!input){
-return;
-}
-
-const raw=input.value.trim();
-
-let price=null;
-
-if(raw!==""){
-
-price=Number(raw);
-
-if(
-  !Number.isFinite(price)||
-  price<0
-){
-
-  alert(
-    "قیمت واردشده صحیح نیست."
+if (adminButton) {
+  adminButton.addEventListener(
+    "click",
+    openAdmin
   );
-
-  return;
 }
 
+const customerSelect =
+  document.getElementById("customerSelect");
+
+if (customerSelect) {
+  customerSelect.addEventListener(
+    "change",
+    event => {
+      loadCustomerPrices(
+        event.target.value
+      );
+    }
+  );
 }
 
-try{
 
-await post(
-  "/api/admin/set-customer-price",
-  {
-    customer_id:Number(customerId),
-    product_id:Number(productId),
-    price,
-    currency:"تومان"
+/* =========================
+   Global functions
+========================= */
+
+window.openProduct = openProduct;
+window.closeModal = closeModal;
+
+window.openAdmin = openAdmin;
+window.closeAdmin = closeAdmin;
+
+window.selectCategory = selectCategory;
+
+window.savePublicPrice = savePublicPrice;
+
+window.uploadProductVideo =
+  uploadProductVideo;
+
+window.deleteProductVideo =
+  deleteProductVideo;
+
+window.loadCustomerPrices =
+  loadCustomerPrices;
+
+window.saveCustomerPrice =
+  saveCustomerPrice;
+
+
+/* =========================
+   Start
+========================= */
+
+(async function init() {
+  try {
+    await authenticate();
+  } catch (e) {
+    console.error("Auth init error:", e);
   }
-);
 
-alert(
-  price===null
-    ?"قیمت اختصاصی حذف شد."
-    :"قیمت اختصاصی ذخیره شد."
-);
-
-await loadCustomerPrices(
-  customerId
-);
-
-await loadProducts();
-
-}catch(error){
-
-console.error(error);
-
-alert(
-  "خطا در ذخیره قیمت اختصاصی:\n"+
-  error.message
-);
-
-}
-}
-
-if(searchInput){
-searchInput.addEventListener(
-"input",
-renderProducts
-);
-}
-
-const adminButton=
-document.getElementById(
-"adminButton"
-);
-
-if(adminButton){
-
-adminButton.addEventListener(
-"click",
-openAdmin
-);
-}
-
-const customerSelect=
-document.getElementById(
-"customerSelect"
-);
-
-if(customerSelect){
-
-customerSelect.addEventListener(
-"change",
-()=>{
-loadCustomerPrices(
-customerSelect.value
-);
-}
-);
-}
-
-window.openProduct=openProduct;
-window.closeModal=closeModal;
-window.openAdmin=openAdmin;
-window.closeAdmin=closeAdmin;
-window.savePublicPrice=savePublicPrice;
-window.uploadProductVideo=
-uploadProductVideo;
-window.deleteProductVideo=
-deleteProductVideo;
-window.loadCustomerPrices=
-loadCustomerPrices;
-window.saveCustomerPrice=
-saveCustomerPrice;
-
-(async function init(){
-
-try{
-await authenticate();
-}catch(error){
-console.error(error);
-}
-
-await loadProducts();
-
+  await loadProducts();
 })();
+
+این نسخه را کامل جایگزین "app.js" فعلی کن.
+
+نکته مهم: در این نسخه "catalog_pdf_url" دیگر به‌عنوان عکس نمایش داده نمی‌شود؛ به‌عنوان لینک کاتالوگ باز می‌شود. همچنین محدودیت ویدئو به‌درستی روی ۱۰۰ مگابایت تنظیم شده است.
+
+بعد از آپلود فایل، صفحه را کامل Refresh کن و ببین آیا ۲۰ محصول نمایش داده می‌شوند یا نه.

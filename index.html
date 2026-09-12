@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-
   <title>کاتالوگ محصولات مشکفام فارس</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -36,17 +35,9 @@
       cursor: pointer;
     }
 
-    /* =========================
-       APP
-    ========================= */
-
     .app {
       min-height: 100vh;
     }
-
-    /* =========================
-       HEADER
-    ========================= */
 
     header {
       background: linear-gradient(
@@ -100,9 +91,7 @@
       font-size: 13px;
     }
 
-    /* =========================
-       ACCOUNT
-    ========================= */
+    /* ACCOUNT */
 
     .account {
       max-width: 1100px;
@@ -146,23 +135,15 @@
       font-size: 11px;
     }
 
-    /* =========================
-       ADMIN BUTTON
-    ========================= */
-
     .admin-button-wrap {
-      display: none;
       max-width: 1100px;
       margin: 12px auto 0;
     }
 
-    .admin-button-wrap.show {
-      display: block;
-    }
-
     #adminButton {
+      display: none;
       width: 100%;
-      padding: 12px 16px;
+      padding: 13px 16px;
       border: none;
       border-radius: 15px;
       background: white;
@@ -172,22 +153,16 @@
       box-shadow: 0 5px 15px rgba(0,0,0,.10);
     }
 
-    #adminButton:active {
-      transform: scale(.98);
+    #adminButton.show {
+      display: block;
     }
 
-    /* =========================
-       MAIN
-    ========================= */
+    /* MAIN */
 
     main {
       width: min(1100px, calc(100% - 24px));
       margin: 18px auto 40px;
     }
-
-    /* =========================
-       SEARCH
-    ========================= */
 
     .search-box {
       position: relative;
@@ -222,10 +197,6 @@
       color: #23774f;
       pointer-events: none;
     }
-
-    /* =========================
-       TOOLBAR
-    ========================= */
 
     .toolbar {
       display: flex;
@@ -267,19 +238,11 @@
       color: #71887c;
     }
 
-    /* =========================
-       PRODUCT LIST
-    ========================= */
-
     .grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 16px;
     }
-
-    /* =========================
-       PRODUCT CARD
-    ========================= */
 
     .card {
       background: white;
@@ -302,11 +265,7 @@
     .pic {
       position: relative;
       min-height: 180px;
-      background: linear-gradient(
-        135deg,
-        #edf7f1,
-        #dfeee6
-      );
+      background: linear-gradient(135deg,#edf7f1,#dfeee6);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -328,11 +287,7 @@
       justify-content: center;
       font-size: 42px;
       color: #6a9880;
-      background: linear-gradient(
-        135deg,
-        #edf7f1,
-        #dfeee6
-      );
+      background: linear-gradient(135deg,#edf7f1,#dfeee6);
     }
 
     .pic-placeholder.hidden {
@@ -404,10 +359,6 @@
       font-weight: 700;
     }
 
-    /* =========================
-       LOADING
-    ========================= */
-
     .loading {
       padding: 45px 20px;
       text-align: center;
@@ -433,10 +384,6 @@
       }
     }
 
-    /* =========================
-       ERROR
-    ========================= */
-
     .error-box {
       display: none;
       padding: 18px;
@@ -452,10 +399,6 @@
     .error-box.show {
       display: block;
     }
-
-    /* =========================
-       EMPTY
-    ========================= */
 
     .empty {
       display: none;
@@ -476,16 +419,14 @@
       margin-bottom: 10px;
     }
 
-    /* =========================
-       MODAL
-    ========================= */
+    /* MODALS */
 
     .modal {
       position: fixed;
       inset: 0;
       z-index: 9999;
       display: none;
-      background: rgba(0, 0, 0, .52);
+      background: rgba(0,0,0,.52);
       backdrop-filter: blur(3px);
     }
 
@@ -506,7 +447,6 @@
         transform: translateY(35px);
         opacity: 0;
       }
-
       to {
         transform: translateY(0);
         opacity: 1;
@@ -517,11 +457,7 @@
       position: sticky;
       top: 0;
       z-index: 10;
-      background: linear-gradient(
-        135deg,
-        #0b4b35,
-        #176c49
-      );
+      background: linear-gradient(135deg,#0b4b35,#176c49);
       color: white;
       padding: 13px 15px;
       display: flex;
@@ -567,9 +503,7 @@
       margin: 18px auto 45px;
     }
 
-    /* =========================
-       DETAIL TOP
-    ========================= */
+    /* PRODUCT DETAIL */
 
     .detail-top {
       background: white;
@@ -577,17 +511,13 @@
       border-radius: 23px;
       overflow: hidden;
       display: grid;
-      grid-template-columns: minmax(230px, 36%) 1fr;
-      box-shadow: 0 7px 25px rgba(25, 80, 52, .07);
+      grid-template-columns: minmax(230px,36%) 1fr;
+      box-shadow: 0 7px 25px rgba(25,80,52,.07);
     }
 
     .detail-img-wrap {
       min-height: 320px;
-      background: linear-gradient(
-        135deg,
-        #edf7f1,
-        #dcece3
-      );
+      background: linear-gradient(135deg,#edf7f1,#dcece3);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -660,10 +590,6 @@
       color: #246c4b;
     }
 
-    /* =========================
-       PRODUCT DETAILS
-    ========================= */
-
     .product-details {
       margin-top: 16px;
       display: grid;
@@ -675,7 +601,7 @@
       border: 1px solid #e0ebe5;
       border-radius: 19px;
       padding: 18px;
-      box-shadow: 0 5px 18px rgba(25, 80, 52, .045);
+      box-shadow: 0 5px 18px rgba(25,80,52,.045);
     }
 
     .detail-block h3 {
@@ -713,17 +639,13 @@
       color: #966d21;
     }
 
-    /* =========================
-       CATALOG
-    ========================= */
-
     .page-wrap {
       margin-top: 17px;
       background: white;
       border: 1px solid #e0ebe5;
       border-radius: 20px;
       padding: 17px;
-      box-shadow: 0 5px 18px rgba(25, 80, 52, .045);
+      box-shadow: 0 5px 18px rgba(25,80,52,.045);
     }
 
     .page-wrap h3 {
@@ -764,127 +686,107 @@
       line-height: 1.8;
     }
 
-    /* =========================
-       ADMIN PANEL
-    ========================= */
+    /* ADMIN */
 
-    .admin-intro {
-      background: #edf7f1;
-      border: 1px solid #d8eade;
-      color: #356651;
-      border-radius: 15px;
-      padding: 13px;
-      font-size: 12px;
-      line-height: 1.8;
-      margin-bottom: 14px;
+    .admin-loading {
+      padding: 25px;
+      text-align: center;
+      background: white;
+      border-radius: 18px;
+      color: #668274;
     }
 
-    .admin-product-card {
+    .admin-product {
       background: white;
       border: 1px solid #e0ebe5;
       border-radius: 18px;
-      padding: 15px;
-      box-shadow: 0 5px 18px rgba(25,80,52,.05);
+      padding: 14px;
+      box-shadow: 0 5px 16px rgba(25,80,52,.05);
     }
 
-    .admin-product-title {
+    .admin-product-name {
       font-size: 14px;
       font-weight: 800;
       color: #173c2c;
-      line-height: 1.6;
     }
 
     .admin-product-en {
       direction: ltr;
       text-align: right;
-      color: #899a91;
       font-size: 10px;
-      margin-top: 2px;
+      color: #83958b;
+      margin-top: 3px;
     }
 
-    .admin-product-meta {
+    .admin-meta {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
       margin-top: 9px;
     }
 
-    .admin-meta {
-      background: #f5f9f6;
-      border: 1px solid #e3ece6;
+    .admin-meta span {
+      background: #f3f8f5;
+      border: 1px solid #e2ebe6;
+      padding: 5px 8px;
       border-radius: 8px;
-      padding: 5px 7px;
-      font-size: 9px;
-      color: #61786b;
+      font-size: 10px;
+      color: #557063;
     }
 
-    .admin-price-row {
+    .price-row {
       display: grid;
-      grid-template-columns: minmax(0,1fr) 105px auto;
-      gap: 7px;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
       margin-top: 12px;
     }
 
-    .admin-price-input,
-    .admin-currency-input {
+    .price-input {
       width: 100%;
-      height: 43px;
-      border: 1px solid #d7e5dd;
+      height: 44px;
+      border: 1px solid #d8e5de;
       border-radius: 11px;
-      background: #fff;
+      padding: 0 12px;
       outline: none;
-      padding: 0 10px;
+      font-size: 13px;
       color: #173c2c;
-      font-size: 12px;
+      background: #fbfdfc;
     }
 
-    .admin-price-input:focus,
-    .admin-currency-input:focus {
-      border-color: #29915e;
-      box-shadow: 0 0 0 3px rgba(41,145,94,.09);
+    .price-input:focus {
+      border-color: #238354;
+      box-shadow: 0 0 0 3px rgba(35,131,84,.10);
     }
 
-    .admin-save-btn {
-      height: 43px;
+    .save-price {
       border: none;
       border-radius: 11px;
+      padding: 0 14px;
       background: #176c49;
       color: white;
-      padding: 0 13px;
       font-size: 11px;
       font-weight: 800;
-      white-space: nowrap;
+      min-width: 72px;
     }
 
-    .admin-save-btn:disabled {
+    .save-price:disabled {
       opacity: .55;
-      cursor: wait;
+      cursor: not-allowed;
     }
 
     .admin-message {
-      margin-top: 7px;
-      min-height: 18px;
+      margin-top: 8px;
       font-size: 10px;
-      color: #27704e;
+      min-height: 16px;
+    }
+
+    .admin-message.success {
+      color: #21764d;
     }
 
     .admin-message.error {
-      color: #a0473c;
+      color: #a14339;
     }
-
-    .admin-empty {
-      background: white;
-      border: 1px solid #e0ebe5;
-      border-radius: 18px;
-      padding: 30px 15px;
-      text-align: center;
-      color: #71887c;
-      font-size: 12px;
-    }
-
-    /* =========================
-       FOOTER
-    ========================= */
 
     footer {
       text-align: center;
@@ -893,11 +795,7 @@
       margin: 25px 0 35px;
     }
 
-    /* =========================
-       MOBILE
-    ========================= */
-
-    @media (max-width: 620px) {
+    @media (max-width:620px) {
 
       header {
         padding: 18px 14px 21px;
@@ -922,12 +820,8 @@
         width: calc(100% - 18px);
       }
 
-      .admin-button-wrap {
-        width: calc(100% - 18px);
-      }
-
       .card {
-        grid-template-columns: 125px minmax(0, 1fr);
+        grid-template-columns: 125px minmax(0,1fr);
         min-height: 145px;
       }
 
@@ -985,18 +879,16 @@
         width: calc(100% - 16px);
       }
 
-      .admin-price-row {
-        grid-template-columns: 1fr 95px;
+      .price-row {
+        grid-template-columns: 1fr;
       }
 
-      .admin-save-btn {
-        grid-column: 1 / -1;
-        width: 100%;
+      .save-price {
+        height: 42px;
       }
     }
 
-    @media (min-width: 621px) {
-
+    @media (min-width:621px) {
       .sheet {
         inset: 2% 4%;
         border-radius: 25px;
@@ -1010,93 +902,44 @@
 
 <div class="app">
 
-  <!-- =========================
-       HEADER
-  ========================= -->
-
   <header>
 
     <div class="brand">
-
-      <div class="logo">
-        🌾
-      </div>
+      <div class="logo">🌾</div>
 
       <div class="brand-text">
-        <h1>
-          کاتالوگ محصولات مشکفام فارس
-        </h1>
-
-        <p>
-          معرفی محصولات کودی و تغذیه گیاه
-        </p>
+        <h1>کاتالوگ محصولات مشکفام فارس</h1>
+        <p>معرفی محصولات کودی و تغذیه گیاه</p>
       </div>
-
     </div>
 
-    <!-- Account -->
-
-    <div
-      id="account"
-      class="account"
-    >
+    <!-- ACCOUNT -->
+    <div id="account" class="account">
 
       <div class="account-info">
-
-        <div
-          id="accountName"
-          class="account-name"
-        >
-          -
-        </div>
-
-        <div
-          id="accountUser"
-          class="account-user"
-        >
-          -
-        </div>
-
+        <div id="accountName" class="account-name">-</div>
+        <div id="accountUser" class="account-user">-</div>
       </div>
 
-      <div class="account-status">
+      <div id="accountStatus" class="account-status">
         حساب فعال
       </div>
 
     </div>
 
-    <!-- Admin Button -->
-
-    <div
-      id="adminButtonWrap"
-      class="admin-button-wrap"
-    >
-
-      <button
-        id="adminButton"
-        type="button"
-      >
-        ⚙️ پنل مدیریت
+    <!-- ADMIN BUTTON -->
+    <div class="admin-button-wrap">
+      <button id="adminButton" type="button">
+        ⚙️ پنل مدیریت قیمت محصولات
       </button>
-
     </div>
 
   </header>
 
-
-  <!-- =========================
-       MAIN
-  ========================= -->
-
   <main>
 
-    <!-- Search -->
-
     <div class="search-box">
-
-      <span class="search-icon">
-        ⌕
-      </span>
+      <span class="search-icon">⌕</span>
 
       <input
         id="searchInput"
@@ -1104,16 +947,9 @@
         placeholder="جستجوی نام محصول، فرمول یا گروه..."
         autocomplete="off"
       >
-
     </div>
 
-
-    <!-- Categories -->
-
-    <div
-      id="categoryToolbar"
-      class="toolbar"
-    >
+    <div id="categoryToolbar" class="toolbar">
 
       <button
         class="chip active"
@@ -1124,45 +960,18 @@
 
     </div>
 
-
-    <!-- Count -->
-
-    <div
-      id="count"
-      class="count"
-    >
+    <div id="count" class="count">
       در حال دریافت محصولات...
     </div>
 
+    <div id="errorBox" class="error-box"></div>
 
-    <!-- Error -->
-
-    <div
-      id="errorBox"
-      class="error-box"
-    ></div>
-
-
-    <!-- Loading -->
-
-    <div
-      id="loading"
-      class="loading"
-    >
-
+    <div id="loading" class="loading">
       <div class="spinner"></div>
-
       در حال دریافت محصولات...
-
     </div>
 
-
-    <!-- Empty -->
-
-    <div
-      id="empty"
-      class="empty"
-    >
+    <div id="empty" class="empty">
 
       <div class="empty-icon">
         🔎
@@ -1172,14 +981,7 @@
 
     </div>
 
-
-    <!-- Products -->
-
-    <div
-      id="productGrid"
-      class="grid"
-    ></div>
-
+    <div id="productGrid" class="grid"></div>
 
     <footer>
       مشکفام فارس
@@ -1190,18 +992,13 @@
 </div>
 
 
-<!-- =====================================================
+<!-- =========================================================
      PRODUCT MODAL
-===================================================== -->
+========================================================= -->
 
-<div
-  id="modal"
-  class="modal"
->
+<div id="modal" class="modal">
 
   <div class="sheet">
-
-    <!-- Modal Header -->
 
     <div class="sheet-head">
 
@@ -1228,12 +1025,7 @@
 
     </div>
 
-
-    <!-- Modal Body -->
-
     <div class="sheet-body">
-
-      <!-- Detail Top -->
 
       <div class="detail-top">
 
@@ -1247,7 +1039,6 @@
           >
 
         </div>
-
 
         <div class="detail-info">
 
@@ -1294,16 +1085,10 @@
 
       </div>
 
-
-      <!-- Product Details -->
-
       <div
         id="productDetails"
         class="product-details"
       ></div>
-
-
-      <!-- Catalog -->
 
       <div
         id="catalogWrap"
@@ -1340,14 +1125,11 @@
 </div>
 
 
-<!-- =====================================================
+<!-- =========================================================
      ADMIN MODAL
-===================================================== -->
+========================================================= -->
 
-<div
-  id="adminModal"
-  class="modal"
->
+<div id="adminModal" class="modal">
 
   <div class="sheet">
 
@@ -1376,32 +1158,20 @@
 
     </div>
 
-
     <div class="sheet-body">
-
-      <div class="admin-intro">
-        در این بخش می‌توانید قیمت پایه هر محصول را تغییر دهید.
-        قیمت ذخیره‌شده مستقیماً در جدول محصولات ثبت می‌شود.
-      </div>
-
 
       <div
         id="adminError"
         class="error-box"
       ></div>
 
-
       <div
         id="adminLoading"
-        class="loading"
+        class="admin-loading"
       >
-
         <div class="spinner"></div>
-
         در حال دریافت محصولات...
-
       </div>
-
 
       <div
         id="adminProducts"
@@ -1417,754 +1187,705 @@
 
 <script>
 
-  /* =========================================================
-     CONFIG
-  ========================================================= */
+/* =========================================================
+   CONFIG
+========================================================= */
 
-  const WORKER_URL =
-    "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
+const WORKER_URL =
+  "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
 
-  const GITHUB_PAGES_BASE =
-    "https://dehghaniweb.github.io/moshkfam/images/";
+const GITHUB_PAGES_BASE =
+  "https://dehghaniweb.github.io/moshkfam/images/";
 
-  const RAW_GITHUB_BASE =
-    "https://raw.githubusercontent.com/dehghaniweb/moshkfam/main/images/";
+const RAW_GITHUB_BASE =
+  "https://raw.githubusercontent.com/dehghaniweb/moshkfam/main/images/";
 
 
-  /* =========================================================
-     TELEGRAM
-  ========================================================= */
+/* =========================================================
+   TELEGRAM
+========================================================= */
 
-  const tg =
-    window.Telegram &&
-    window.Telegram.WebApp
-      ? window.Telegram.WebApp
-      : null;
+const tg =
+  window.Telegram &&
+  window.Telegram.WebApp
+    ? window.Telegram.WebApp
+    : null;
 
-  if (tg) {
+if (tg) {
 
-    try {
+  try {
 
-      tg.ready();
-      tg.expand();
+    tg.ready();
+    tg.expand();
 
-    } catch (e) {
+  } catch (e) {
 
-      console.warn(
-        "Telegram WebApp initialization error:",
-        e
-      );
-
-    }
+    console.warn(
+      "Telegram WebApp initialization error:",
+      e
+    );
 
   }
 
-
-  /* =========================================================
-     STATE
-  ========================================================= */
-
-  let products = [];
-
-  let filteredProducts = [];
-
-  let activeCategory = "all";
-
-  let currentProduct = null;
-
-  let isAdmin = false;
-
-  let adminProducts = [];
+}
 
 
-  /* =========================================================
-     DOM
-  ========================================================= */
+/* =========================================================
+   STATE
+========================================================= */
 
-  const productGrid =
-    document.getElementById("productGrid");
+let products = [];
+let filteredProducts = [];
+let activeCategory = "all";
+let currentProduct = null;
 
-  const loading =
-    document.getElementById("loading");
-
-  const empty =
-    document.getElementById("empty");
-
-  const errorBox =
-    document.getElementById("errorBox");
-
-  const count =
-    document.getElementById("count");
-
-  const searchInput =
-    document.getElementById("searchInput");
-
-  const categoryToolbar =
-    document.getElementById("categoryToolbar");
-
-  const account =
-    document.getElementById("account");
-
-  const accountName =
-    document.getElementById("accountName");
-
-  const accountUser =
-    document.getElementById("accountUser");
-
-  const modal =
-    document.getElementById("modal");
-
-  const closeModal =
-    document.getElementById("closeModal");
-
-  const modalHeaderTitle =
-    document.getElementById("modalHeaderTitle");
-
-  const detailImage =
-    document.getElementById("detailImage");
-
-  const detailCategory =
-    document.getElementById("detailCategory");
-
-  const detailTitle =
-    document.getElementById("detailTitle");
-
-  const detailEnglish =
-    document.getElementById("detailEnglish");
-
-  const detailBadges =
-    document.getElementById("detailBadges");
-
-  const productDetails =
-    document.getElementById("productDetails");
-
-  const pageImage =
-    document.getElementById("pageImage");
-
-  const catalogError =
-    document.getElementById("catalogError");
-
-  const videoButton =
-    document.getElementById("videoButton");
+let telegramAuthData = null;
+let isAdmin = false;
 
 
-  /* ADMIN DOM */
+/* =========================================================
+   DOM
+========================================================= */
 
-  const adminButtonWrap =
-    document.getElementById("adminButtonWrap");
+const productGrid =
+  document.getElementById("productGrid");
 
-  const adminButton =
-    document.getElementById("adminButton");
+const loading =
+  document.getElementById("loading");
 
-  const adminModal =
-    document.getElementById("adminModal");
+const empty =
+  document.getElementById("empty");
 
-  const closeAdminModal =
-    document.getElementById("closeAdminModal");
+const errorBox =
+  document.getElementById("errorBox");
 
-  const adminLoading =
-    document.getElementById("adminLoading");
+const count =
+  document.getElementById("count");
 
-  const adminProductsContainer =
-    document.getElementById("adminProducts");
+const searchInput =
+  document.getElementById("searchInput");
 
-  const adminError =
-    document.getElementById("adminError");
+const categoryToolbar =
+  document.getElementById("categoryToolbar");
+
+const account =
+  document.getElementById("account");
+
+const accountName =
+  document.getElementById("accountName");
+
+const accountUser =
+  document.getElementById("accountUser");
+
+const accountStatus =
+  document.getElementById("accountStatus");
+
+const adminButton =
+  document.getElementById("adminButton");
+
+const adminModal =
+  document.getElementById("adminModal");
+
+const closeAdminModal =
+  document.getElementById("closeAdminModal");
+
+const adminProducts =
+  document.getElementById("adminProducts");
+
+const adminLoading =
+  document.getElementById("adminLoading");
+
+const adminError =
+  document.getElementById("adminError");
+
+const modal =
+  document.getElementById("modal");
+
+const closeModal =
+  document.getElementById("closeModal");
+
+const modalHeaderTitle =
+  document.getElementById("modalHeaderTitle");
+
+const detailImage =
+  document.getElementById("detailImage");
+
+const detailCategory =
+  document.getElementById("detailCategory");
+
+const detailTitle =
+  document.getElementById("detailTitle");
+
+const detailEnglish =
+  document.getElementById("detailEnglish");
+
+const detailBadges =
+  document.getElementById("detailBadges");
+
+const productDetails =
+  document.getElementById("productDetails");
+
+const pageImage =
+  document.getElementById("pageImage");
+
+const catalogError =
+  document.getElementById("catalogError");
+
+const videoButton =
+  document.getElementById("videoButton");
 
 
-  /* =========================================================
-     IMAGE HELPERS
-  ========================================================= */
+/* =========================================================
+   IMAGE HELPERS
+========================================================= */
 
-  function getProductNumber(product) {
+function getProductNumber(product) {
 
-    const number =
-      Number(product?.id);
+  const number =
+    Number(product?.id);
 
-    if (
-      !Number.isFinite(number) ||
-      number <= 0
-    ) {
-
-      return null;
-
-    }
-
-    return String(number).padStart(2, "0");
-
-  }
-
-
-  function getImageCandidates(
-    product,
-    type
+  if (
+    !Number.isFinite(number) ||
+    number <= 0
   ) {
+    return null;
+  }
 
-    const number =
-      getProductNumber(product);
+  return String(number).padStart(2, "0");
 
-    if (!number) {
+}
 
-      return [];
 
-    }
+function getImageCandidates(
+  product,
+  type
+) {
 
-    if (type === "product") {
+  const number =
+    getProductNumber(product);
 
-      return [
+  if (!number) {
+    return [];
+  }
 
-        GITHUB_PAGES_BASE +
-        `product-${number}.jpg`,
-
-        RAW_GITHUB_BASE +
-        `product-${number}.jpg`
-
-      ];
-
-    }
+  if (type === "product") {
 
     return [
 
       GITHUB_PAGES_BASE +
-      `catalog-${number}.jpg`,
+        "product-" +
+        number +
+        ".jpg",
 
       RAW_GITHUB_BASE +
-      `catalog-${number}.jpg`
+        "product-" +
+        number +
+        ".jpg"
 
     ];
 
   }
 
+  return [
 
-  function setImageWithFallback(
-    img,
-    candidates,
-    fallbackElement = null
+    GITHUB_PAGES_BASE +
+      "catalog-" +
+      number +
+      ".jpg",
+
+    RAW_GITHUB_BASE +
+      "catalog-" +
+      number +
+      ".jpg"
+
+  ];
+
+}
+
+
+/* =========================================================
+   IMAGE FALLBACK
+========================================================= */
+
+function setImageWithFallback(
+  img,
+  candidates,
+  fallbackElement = null
+) {
+
+  if (!img) {
+    return;
+  }
+
+  if (
+    !Array.isArray(candidates) ||
+    candidates.length === 0
   ) {
 
-    if (!img) {
-      return;
+    if (fallbackElement) {
+      fallbackElement.classList.remove("hidden");
     }
 
-    if (
-      !Array.isArray(candidates) ||
-      candidates.length === 0
-    ) {
+    img.style.display = "none";
 
-      if (fallbackElement) {
+    return;
+  }
 
-        fallbackElement.classList.remove(
-          "hidden"
-        );
+  let index = 0;
 
-      }
+  img.style.display = "block";
+
+  if (fallbackElement) {
+    fallbackElement.classList.add("hidden");
+  }
+
+  function loadNext() {
+
+    if (index >= candidates.length) {
 
       img.style.display = "none";
 
-      return;
+      if (fallbackElement) {
+        fallbackElement.classList.remove("hidden");
+      }
 
+      return;
     }
 
-    let index = 0;
+    const url =
+      candidates[index++];
+
+    img.src = url;
+
+  }
+
+  img.onload = function () {
 
     img.style.display = "block";
 
     if (fallbackElement) {
-
-      fallbackElement.classList.add(
-        "hidden"
-      );
-
+      fallbackElement.classList.add("hidden");
     }
 
+  };
 
-    function loadNext() {
-
-      if (index >= candidates.length) {
-
-        img.style.display = "none";
-
-        if (fallbackElement) {
-
-          fallbackElement.classList.remove(
-            "hidden"
-          );
-
-        }
-
-        return;
-
-      }
-
-      const url =
-        candidates[index++];
-
-      img.src = url;
-
-    }
-
-
-    img.onload = function () {
-
-      img.style.display = "block";
-
-      if (fallbackElement) {
-
-        fallbackElement.classList.add(
-          "hidden"
-        );
-
-      }
-
-    };
-
-
-    img.onerror = function () {
-
-      loadNext();
-
-    };
-
+  img.onerror = function () {
 
     loadNext();
 
-  }
+  };
+
+  loadNext();
+
+}
 
 
-  function setProductImage(
-    img,
-    product,
-    fallbackElement = null
-  ) {
+function setProductImage(
+  img,
+  product,
+  fallbackElement = null
+) {
 
-    const candidates =
-      getImageCandidates(
-        product,
-        "product"
-      );
-
-    setImageWithFallback(
-      img,
-      candidates,
-      fallbackElement
+  const candidates =
+    getImageCandidates(
+      product,
+      "product"
     );
 
-  }
-
-
-  function setCatalogImage(
+  setImageWithFallback(
     img,
-    product
-  ) {
+    candidates,
+    fallbackElement
+  );
 
-    const candidates =
-      getImageCandidates(
-        product,
-        "catalog"
-      );
+}
 
-    setImageWithFallback(
-      img,
-      candidates
+
+function setCatalogImage(
+  img,
+  product
+) {
+
+  const candidates =
+    getImageCandidates(
+      product,
+      "catalog"
     );
 
+  setImageWithFallback(
+    img,
+    candidates
+  );
+
+}
+
+
+/* =========================================================
+   TELEGRAM AUTH
+========================================================= */
+
+async function authenticateTelegram() {
+
+  if (!tg) {
+
+    console.warn(
+      "Telegram WebApp is not available."
+    );
+
+    return null;
   }
 
+  const initData =
+    tg.initData || "";
 
-  /* =========================================================
-     TELEGRAM AUTHENTICATION
-  ========================================================= */
+  if (!initData) {
 
-  async function authenticateTelegram() {
+    console.warn(
+      "Telegram initData is empty."
+    );
 
-    if (!tg) {
-
-      console.warn(
-        "Telegram WebApp is not available."
-      );
-
-      return null;
-
-    }
-
-    const initData =
-      tg.initData || "";
-
-    if (!initData) {
-
-      console.warn(
-        "Telegram initData is empty."
-      );
-
-      return null;
-
-    }
-
-
-    try {
-
-      const response =
-        await fetch(
-          WORKER_URL +
-          "/api/telegram-auth",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json"
-            },
-
-            body: JSON.stringify({
-              initData: initData
-            })
-          }
-        );
-
-
-      const data =
-        await response.json();
-
-
-      if (
-        response.ok &&
-        data
-      ) {
-
-        if (data.customer) {
-
-          showAccount(
-            data.customer
-          );
-
-        }
-
-        /*
-          Worker مقدار is_admin را
-          بر اساس Telegram ID بررسی‌شده
-          برمی‌گرداند.
-        */
-
-        isAdmin =
-          data.is_admin === true;
-
-        if (isAdmin) {
-
-          adminButtonWrap.classList.add(
-            "show"
-          );
-
-        } else {
-
-          adminButtonWrap.classList.remove(
-            "show"
-          );
-
-        }
-
-      }
-
-
-      return data;
-
-    } catch (error) {
-
-      console.error(
-        "Telegram authentication error:",
-        error
-      );
-
-      return null;
-
-    }
-
+    return null;
   }
 
+  try {
 
-  /* =========================================================
-     SHOW ACCOUNT
-  ========================================================= */
+    const response =
+      await fetch(
+        WORKER_URL +
+        "/api/telegram-auth",
+        {
+          method: "POST",
 
-  function showAccount(customer) {
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
 
-    if (!customer) {
-      return;
-    }
+          body: JSON.stringify({
+            initData: initData
+          })
+        }
+      );
 
-    const firstName =
-      customer.first_name || "";
+    const data =
+      await response.json();
 
-    const lastName =
-      customer.last_name || "";
+    console.log(
+      "Telegram auth response:",
+      data
+    );
 
-    const fullName =
-      `${firstName} ${lastName}`.trim();
+    telegramAuthData = data;
 
-
-    accountName.textContent =
-      fullName ||
-      customer.username ||
-      "کاربر تلگرام";
-
-
-    if (customer.username) {
-
-      accountUser.textContent =
-        "@" +
-        String(customer.username)
-          .replace(/^@/, "");
-
-    } else if (
-      customer.telegram_user_id
+    if (
+      response.ok &&
+      data &&
+      data.ok
     ) {
 
-      accountUser.textContent =
-        "Telegram ID: " +
-        customer.telegram_user_id;
+      /*
+        Worker فعلی اطلاعات کاربر را
+        مستقیم برمی‌گرداند.
+      */
 
-    } else {
+      showAccount(data);
 
-      accountUser.textContent =
-        "حساب تلگرام";
-
-    }
-
-
-    account.classList.add(
-      "show"
-    );
-
-  }
-
-
-  /* =========================================================
-     LOAD PRODUCTS
-  ========================================================= */
-
-  async function loadProducts() {
-
-    loading.style.display =
-      "block";
-
-    productGrid.innerHTML =
-      "";
-
-    empty.classList.remove(
-      "show"
-    );
-
-    errorBox.classList.remove(
-      "show"
-    );
-
-
-    try {
-
-      const response =
-        await fetch(
-          WORKER_URL +
-          "/api/products",
-          {
-            method: "GET",
-
-            headers: {
-              "Accept":
-                "application/json"
-            },
-
-            cache: "no-store"
-          }
-        );
-
-
-      const data =
-        await response.json();
-
-
-      if (!response.ok) {
-
-        throw new Error(
-          data?.message ||
-          data?.error ||
-          "خطا در دریافت محصولات"
-        );
-
-      }
-
-
-      if (Array.isArray(data)) {
-
-        products = data;
-
-      } else if (
-        Array.isArray(data.products)
+      if (
+        data.is_admin === true
       ) {
 
-        products = data.products;
+        isAdmin = true;
 
-      } else if (
-        Array.isArray(data.data)
-      ) {
+        adminButton.classList.add(
+          "show"
+        );
 
-        products = data.data;
+        accountStatus.textContent =
+          "👑 مدیر سیستم";
 
       } else {
 
-        products = [];
+        isAdmin = false;
+
+        accountStatus.textContent =
+          "حساب فعال";
 
       }
-
-
-      /*
-        فقط محصولات فعال نمایش داده شوند.
-      */
-
-      products =
-        products.filter(
-          product =>
-            product &&
-            (
-              product.active === undefined ||
-              product.active === null ||
-              product.active === true
-            )
-        );
-
-
-      buildCategories();
-
-      applyFilters();
-
-
-    } catch (error) {
-
-      console.error(
-        "Products loading error:",
-        error
-      );
-
-
-      errorBox.innerHTML =
-        `
-          <strong>
-            خطا در دریافت محصولات
-          </strong>
-          <br>
-          ${escapeHtml(
-            error?.message ||
-            "ارتباط با سرور برقرار نشد."
-          )}
-          <br><br>
-          لطفاً چند لحظه بعد دوباره صفحه را باز کنید.
-        `;
-
-
-      errorBox.classList.add(
-        "show"
-      );
-
-
-      count.textContent =
-        "دریافت محصولات ناموفق بود.";
-
-
-    } finally {
-
-      loading.style.display =
-        "none";
 
     }
 
-  }
+    return data;
 
+  } catch (error) {
 
-  /* =========================================================
-     CATEGORIES
-  ========================================================= */
-
-  function buildCategories() {
-
-    const categories =
-      [
-        ...new Set(
-          products
-            .map(
-              product =>
-                String(
-                  product.category || ""
-                ).trim()
-            )
-            .filter(Boolean)
-        )
-      ];
-
-
-    categoryToolbar.innerHTML =
-      `
-        <button
-          class="chip active"
-          data-category="all"
-        >
-          همه محصولات
-        </button>
-      `;
-
-
-    categories.forEach(
-      category => {
-
-        const button =
-          document.createElement(
-            "button"
-          );
-
-        button.className =
-          "chip";
-
-        button.dataset.category =
-          category;
-
-        button.textContent =
-          category;
-
-
-        button.addEventListener(
-          "click",
-          function () {
-
-            activeCategory =
-              category;
-
-            updateCategoryButtons();
-
-            applyFilters();
-
-          }
-        );
-
-
-        categoryToolbar.appendChild(
-          button
-        );
-
-      }
+    console.error(
+      "Telegram authentication error:",
+      error
     );
 
+    return null;
 
-    const allButton =
-      categoryToolbar.querySelector(
-        '[data-category="all"]'
+  }
+
+}
+
+
+/* =========================================================
+   SHOW ACCOUNT
+========================================================= */
+
+function showAccount(customer) {
+
+  if (!customer) {
+    return;
+  }
+
+  const firstName =
+    customer.first_name || "";
+
+  const lastName =
+    customer.last_name || "";
+
+  const fullName =
+    (
+      firstName +
+      " " +
+      lastName
+    ).trim();
+
+  accountName.textContent =
+    fullName ||
+    customer.username ||
+    "کاربر تلگرام";
+
+  if (customer.username) {
+
+    accountUser.textContent =
+      "@" +
+      String(customer.username)
+        .replace(/^@/, "");
+
+  } else if (
+    customer.telegram_user_id
+  ) {
+
+    accountUser.textContent =
+      "Telegram ID: " +
+      customer.telegram_user_id;
+
+  } else {
+
+    accountUser.textContent =
+      "حساب تلگرام";
+
+  }
+
+  account.classList.add("show");
+
+}
+
+
+/* =========================================================
+   LOAD PRODUCTS
+========================================================= */
+
+async function loadProducts() {
+
+  loading.style.display =
+    "block";
+
+  productGrid.innerHTML =
+    "";
+
+  empty.classList.remove(
+    "show"
+  );
+
+  errorBox.classList.remove(
+    "show"
+  );
+
+  try {
+
+    const response =
+      await fetch(
+        WORKER_URL +
+        "/api/products",
+        {
+          method: "GET",
+
+          headers: {
+            "Accept":
+              "application/json"
+          },
+
+          cache: "no-store"
+        }
       );
 
+    const data =
+      await response.json();
 
-    if (allButton) {
+    if (!response.ok) {
 
-      allButton.addEventListener(
+      throw new Error(
+        data?.message ||
+        data?.error ||
+        "خطا در دریافت محصولات"
+      );
+
+    }
+
+    if (Array.isArray(data)) {
+
+      products = data;
+
+    } else if (
+      Array.isArray(data.products)
+    ) {
+
+      products =
+        data.products;
+
+    } else if (
+      Array.isArray(data.data)
+    ) {
+
+      products =
+        data.data;
+
+    } else {
+
+      products = [];
+
+    }
+
+    products =
+      products.filter(
+        product =>
+          product &&
+          (
+            product.active === undefined ||
+            product.active === null ||
+            product.active === true
+          )
+      );
+
+    buildCategories();
+
+    applyFilters();
+
+  } catch (error) {
+
+    console.error(
+      "Products loading error:",
+      error
+    );
+
+    errorBox.innerHTML =
+      "<strong>خطا در دریافت محصولات</strong><br>" +
+      escapeHtml(
+        error?.message ||
+        "ارتباط با سرور برقرار نشد."
+      ) +
+      "<br><br>" +
+      "لطفاً چند لحظه بعد دوباره صفحه را باز کنید.";
+
+    errorBox.classList.add(
+      "show"
+    );
+
+    count.textContent =
+      "دریافت محصولات ناموفق بود.";
+
+  } finally {
+
+    loading.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================================================
+   CATEGORIES
+========================================================= */
+
+function buildCategories() {
+
+  const categories =
+    [
+      ...new Set(
+        products
+          .map(
+            product =>
+              String(
+                product.category || ""
+              ).trim()
+          )
+          .filter(Boolean)
+      )
+    ];
+
+  categoryToolbar.innerHTML =
+    "";
+
+  const allButton =
+    document.createElement(
+      "button"
+    );
+
+  allButton.className =
+    "chip active";
+
+  allButton.dataset.category =
+    "all";
+
+  allButton.textContent =
+    "همه محصولات";
+
+  allButton.addEventListener(
+    "click",
+    function () {
+
+      activeCategory =
+        "all";
+
+      updateCategoryButtons();
+
+      applyFilters();
+
+    }
+  );
+
+  categoryToolbar.appendChild(
+    allButton
+  );
+
+  categories.forEach(
+    category => {
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+      button.className =
+        "chip";
+
+      button.dataset.category =
+        category;
+
+      button.textContent =
+        category;
+
+      button.addEventListener(
         "click",
         function () {
 
           activeCategory =
-            "all";
+            category;
 
           updateCategoryButtons();
 
@@ -2173,868 +1894,599 @@
         }
       );
 
-    }
-
-  }
-
-
-  function updateCategoryButtons() {
-
-    const buttons =
-      categoryToolbar.querySelectorAll(
-        ".chip"
+      categoryToolbar.appendChild(
+        button
       );
 
+    }
+  );
 
-    buttons.forEach(
-      button => {
+}
 
-        button.classList.toggle(
-          "active",
-          button.dataset.category ===
+
+function updateCategoryButtons() {
+
+  const buttons =
+    categoryToolbar.querySelectorAll(
+      ".chip"
+    );
+
+  buttons.forEach(
+    button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.category ===
           activeCategory
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   FILTER
+========================================================= */
+
+function applyFilters() {
+
+  const search =
+    String(
+      searchInput.value || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  filteredProducts =
+    products.filter(
+      product => {
+
+        const category =
+          String(
+            product.category || ""
+          );
+
+        if (
+          activeCategory !== "all" &&
+          category !== activeCategory
+        ) {
+
+          return false;
+
+        }
+
+        if (!search) {
+          return true;
+        }
+
+        const searchable =
+          [
+            product.name_fa,
+            product.name_en,
+            product.category,
+            product.package,
+            product.maker,
+            product.intro,
+            product.composition,
+            product.use_text,
+            product.warnings
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+
+        return searchable.includes(
+          search
         );
 
       }
     );
 
-  }
+  renderProducts();
+
+}
 
 
-  /* =========================================================
-     FILTER
-  ========================================================= */
+/* =========================================================
+   RENDER PRODUCTS
+========================================================= */
 
-  function applyFilters() {
+function renderProducts() {
 
-    const search =
-      String(
-        searchInput.value || ""
-      )
-        .trim()
-        .toLowerCase();
+  productGrid.innerHTML =
+    "";
 
+  empty.classList.remove(
+    "show"
+  );
 
-    filteredProducts =
-      products.filter(
-        product => {
+  count.textContent =
+    String(
+      filteredProducts.length
+    ) +
+    " محصول";
 
-          const category =
-            String(
-              product.category || ""
-            );
+  if (
+    filteredProducts.length === 0
+  ) {
 
-
-          if (
-            activeCategory !== "all" &&
-            category !== activeCategory
-          ) {
-
-            return false;
-
-          }
-
-
-          if (!search) {
-
-            return true;
-
-          }
-
-
-          const searchable =
-            [
-              product.name_fa,
-              product.name_en,
-              product.category,
-              product.package,
-              product.maker,
-              product.intro,
-              product.composition,
-              product.use_text,
-              product.warnings
-            ]
-              .filter(Boolean)
-              .join(" ")
-              .toLowerCase();
-
-
-          return searchable.includes(
-            search
-          );
-
-        }
-      );
-
-
-    renderProducts();
-
-  }
-
-
-  /* =========================================================
-     RENDER PRODUCTS
-  ========================================================= */
-
-  function renderProducts() {
-
-    productGrid.innerHTML =
-      "";
-
-    empty.classList.remove(
+    empty.classList.add(
       "show"
     );
 
-
-    count.textContent =
-      `${filteredProducts.length} محصول`;
-
-
-    if (
-      filteredProducts.length === 0
-    ) {
-
-      empty.classList.add(
-        "show"
-      );
-
-      return;
-
-    }
-
-
-    filteredProducts.forEach(
-      product => {
-
-        const card =
-          createProductCard(
-            product
-          );
-
-        productGrid.appendChild(
-          card
-        );
-
-      }
-    );
+    return;
 
   }
 
-
-  /* =========================================================
-     GET BASE PRICE
-  ========================================================= */
-
-  function getProductPrice(product) {
-
-    if (
-      product.price !== undefined &&
-      product.price !== null &&
-      product.price !== ""
-    ) {
-
-      return {
-        price: product.price,
-        currency:
-          product.currency ||
-          product.base_currency ||
-          "تومان"
-      };
-
-    }
-
-
-    if (
-      product.base_price !== undefined &&
-      product.base_price !== null &&
-      product.base_price !== ""
-    ) {
-
-      return {
-        price: product.base_price,
-        currency:
-          product.base_currency ||
-          "تومان"
-      };
-
-    }
-
-
-    return null;
-
-  }
-
-
-  /* =========================================================
-     CREATE CARD
-  ========================================================= */
-
-  function createProductCard(
-    product
-  ) {
-
-    const card =
-      document.createElement(
-        "article"
-      );
-
-    card.className =
-      "card";
-
-
-    /* Picture */
-
-    const pic =
-      document.createElement(
-        "div"
-      );
-
-    pic.className =
-      "pic";
-
-
-    const img =
-      document.createElement(
-        "img"
-      );
-
-    img.alt =
-      product.name_fa ||
-      "محصول";
-
-
-    const placeholder =
-      document.createElement(
-        "div"
-      );
-
-    placeholder.className =
-      "pic-placeholder";
-
-    placeholder.textContent =
-      "🌿";
-
-
-    pic.appendChild(img);
-
-    pic.appendChild(
-      placeholder
-    );
-
-
-    setProductImage(
-      img,
-      product,
-      placeholder
-    );
-
-
-    /* Info */
-
-    const info =
-      document.createElement(
-        "div"
-      );
-
-    info.className =
-      "info";
-
-
-    const category =
-      document.createElement(
-        "div"
-      );
-
-    category.className =
-      "category";
-
-    category.textContent =
-      product.category ||
-      "محصول کودی";
-
-
-    const name =
-      document.createElement(
-        "h2"
-      );
-
-    name.className =
-      "name";
-
-    name.textContent =
-      product.name_fa ||
-      "محصول بدون نام";
-
-
-    const en =
-      document.createElement(
-        "div"
-      );
-
-    en.className =
-      "en";
-
-    en.textContent =
-      product.name_en ||
-      "";
-
-
-    const specs =
-      document.createElement(
-        "div"
-      );
-
-    specs.className =
-      "spec";
-
-
-    if (product.package) {
-
-      const span =
-        document.createElement(
-          "span"
-        );
-
-      span.textContent =
-        "📦 " +
-        product.package;
-
-      specs.appendChild(
-        span
-      );
-
-    }
-
-
-    if (product.maker) {
-
-      const span =
-        document.createElement(
-          "span"
-        );
-
-      span.textContent =
-        "🏭 " +
-        product.maker;
-
-      specs.appendChild(
-        span
-      );
-
-    }
-
-
-    const priceInfo =
-      getProductPrice(
-        product
-      );
-
-
-    if (priceInfo) {
-
-      const span =
-        document.createElement(
-          "span"
-        );
-
-      span.textContent =
-        "💰 " +
-        formatPrice(
-          priceInfo.price,
-          priceInfo.currency
-        );
-
-      specs.appendChild(
-        span
-      );
-
-    }
-
-
-    const arrow =
-      document.createElement(
-        "div"
-      );
-
-    arrow.className =
-      "card-arrow";
-
-    arrow.textContent =
-      "مشاهده مشخصات و کاتالوگ ←";
-
-
-    info.appendChild(
-      category
-    );
-
-    info.appendChild(
-      name
-    );
-
-
-    if (product.name_en) {
-
-      info.appendChild(
-        en
-      );
-
-    }
-
-
-    if (specs.children.length) {
-
-      info.appendChild(
-        specs
-      );
-
-    }
-
-
-    info.appendChild(
-      arrow
-    );
-
-
-    card.appendChild(
-      pic
-    );
-
-    card.appendChild(
-      info
-    );
-
-
-    card.addEventListener(
-      "click",
-      function () {
-
-        openProduct(
+  filteredProducts.forEach(
+    product => {
+
+      const card =
+        createProductCard(
           product
         );
 
-      }
-    );
+      productGrid.appendChild(
+        card
+      );
+
+    }
+  );
+
+}
 
 
-    return card;
+/* =========================================================
+   GET PRODUCT PRICE
+========================================================= */
+
+function getProductPrice(product) {
+
+  if (
+    product.base_price !== undefined &&
+    product.base_price !== null &&
+    product.base_price !== ""
+  ) {
+
+    return {
+      price: product.base_price,
+      currency:
+        product.base_currency ||
+        "تومان"
+    };
 
   }
 
-
-  /* =========================================================
-     OPEN PRODUCT
-  ========================================================= */
-
-  function openProduct(
-    product
+  if (
+    product.price !== undefined &&
+    product.price !== null &&
+    product.price !== ""
   ) {
 
-    if (!product) {
-      return;
-    }
+    return {
+      price: product.price,
+      currency:
+        product.currency ||
+        "تومان"
+    };
+
+  }
+
+  return null;
+
+}
 
 
-    currentProduct =
-      product;
+/* =========================================================
+   CREATE CARD
+========================================================= */
 
+function createProductCard(
+  product
+) {
 
-    modalHeaderTitle.textContent =
-      product.name_fa ||
-      "اطلاعات محصول";
-
-
-    detailTitle.textContent =
-      product.name_fa ||
-      "-";
-
-
-    detailEnglish.textContent =
-      product.name_en ||
-      "";
-
-
-    detailCategory.textContent =
-      product.category ||
-      "محصول";
-
-
-    /* Product image */
-
-    setProductImage(
-      detailImage,
-      product
+  const card =
+    document.createElement(
+      "article"
     );
 
+  card.className =
+    "card";
 
-    /* Badges */
-
-    detailBadges.innerHTML =
-      "";
-
-
-    addBadge(
-      product.package,
-      "📦"
+  const pic =
+    document.createElement(
+      "div"
     );
 
+  pic.className =
+    "pic";
 
-    addBadge(
-      product.maker,
-      "🏭"
+  const img =
+    document.createElement(
+      "img"
     );
 
+  img.alt =
+    product.name_fa ||
+    "محصول";
 
-    const priceInfo =
-      getProductPrice(
-        product
+  const placeholder =
+    document.createElement(
+      "div"
+    );
+
+  placeholder.className =
+    "pic-placeholder";
+
+  placeholder.textContent =
+    "🌿";
+
+  pic.appendChild(img);
+
+  pic.appendChild(
+    placeholder
+  );
+
+  setProductImage(
+    img,
+    product,
+    placeholder
+  );
+
+  const info =
+    document.createElement(
+      "div"
+    );
+
+  info.className =
+    "info";
+
+  const category =
+    document.createElement(
+      "div"
+    );
+
+  category.className =
+    "category";
+
+  category.textContent =
+    product.category ||
+    "محصول کودی";
+
+  const name =
+    document.createElement(
+      "h2"
+    );
+
+  name.className =
+    "name";
+
+  name.textContent =
+    product.name_fa ||
+    "محصول بدون نام";
+
+  const en =
+    document.createElement(
+      "div"
+    );
+
+  en.className =
+    "en";
+
+  en.textContent =
+    product.name_en ||
+    "";
+
+  const specs =
+    document.createElement(
+      "div"
+    );
+
+  specs.className =
+    "spec";
+
+  if (product.package) {
+
+    const span =
+      document.createElement(
+        "span"
       );
 
+    span.textContent =
+      "📦 " +
+      product.package;
 
-    if (priceInfo) {
+    specs.appendChild(
+      span
+    );
 
-      addBadge(
-        formatPrice(
-          priceInfo.price,
-          priceInfo.currency
-        ),
-        "💰"
+  }
+
+  if (product.maker) {
+
+    const span =
+      document.createElement(
+        "span"
       );
 
+    span.textContent =
+      "🏭 " +
+      product.maker;
+
+    specs.appendChild(
+      span
+    );
+
+  }
+
+  const priceInfo =
+    getProductPrice(product);
+
+  if (priceInfo) {
+
+    const span =
+      document.createElement(
+        "span"
+      );
+
+    span.textContent =
+      "💰 " +
+      formatPrice(
+        priceInfo.price,
+        priceInfo.currency
+      );
+
+    specs.appendChild(
+      span
+    );
+
+  }
+
+  const arrow =
+    document.createElement(
+      "div"
+    );
+
+  arrow.className =
+    "card-arrow";
+
+  arrow.textContent =
+    "مشاهده مشخصات و کاتالوگ ←";
+
+  info.appendChild(category);
+  info.appendChild(name);
+
+  if (product.name_en) {
+    info.appendChild(en);
+  }
+
+  if (specs.children.length) {
+    info.appendChild(specs);
+  }
+
+  info.appendChild(arrow);
+
+  card.appendChild(pic);
+  card.appendChild(info);
+
+  card.addEventListener(
+    "click",
+    function () {
+
+      openProduct(product);
+
     }
+  );
+
+  return card;
+
+}
 
 
-    /* Details */
+/* =========================================================
+   OPEN PRODUCT
+========================================================= */
 
-    renderProductDetails(
-      product
+function openProduct(product) {
+
+  if (!product) {
+    return;
+  }
+
+  currentProduct =
+    product;
+
+  modalHeaderTitle.textContent =
+    product.name_fa ||
+    "اطلاعات محصول";
+
+  detailTitle.textContent =
+    product.name_fa ||
+    "-";
+
+  detailEnglish.textContent =
+    product.name_en ||
+    "";
+
+  detailCategory.textContent =
+    product.category ||
+    "محصول";
+
+  setProductImage(
+    detailImage,
+    product
+  );
+
+  detailBadges.innerHTML =
+    "";
+
+  addBadge(
+    product.package,
+    "📦"
+  );
+
+  addBadge(
+    product.maker,
+    "🏭"
+  );
+
+  const priceInfo =
+    getProductPrice(product);
+
+  if (priceInfo) {
+
+    addBadge(
+      formatPrice(
+        priceInfo.price,
+        priceInfo.currency
+      ),
+      "💰"
     );
 
+  }
 
-    /* Catalog */
+  renderProductDetails(
+    product
+  );
 
-    catalogError.style.display =
-      "none";
+  catalogError.style.display =
+    "none";
 
-    pageImage.style.display =
-      "block";
+  pageImage.style.display =
+    "block";
 
-    pageImage.classList.remove(
-      "zoom"
-    );
+  pageImage.classList.remove(
+    "zoom"
+  );
 
+  pageImage.onerror =
+    function () {
 
-    setCatalogImage(
-      pageImage,
-      product
-    );
+      pageImage.style.display =
+        "none";
 
+      catalogError.style.display =
+        "block";
 
-    pageImage.onerror =
+      catalogError.textContent =
+        "تصویر صفحه کاتالوگ این محصول پیدا نشد. مسیر تصویر را بررسی کنید.";
+
+    };
+
+  setCatalogImage(
+    pageImage,
+    product
+  );
+
+  if (
+    product.video_url &&
+    String(product.video_url).trim()
+  ) {
+
+    videoButton.style.display =
+      "inline-block";
+
+    videoButton.onclick =
       function () {
 
-        pageImage.style.display =
-          "none";
-
-        catalogError.style.display =
-          "block";
-
-        catalogError.textContent =
-          "تصویر صفحه کاتالوگ این محصول پیدا نشد. مسیر تصویر را بررسی کنید.";
+        openExternalUrl(
+          product.video_url
+        );
 
       };
 
+  } else {
 
-    /* Video */
+    videoButton.style.display =
+      "none";
 
-    if (
-      product.video_url &&
-      String(
-        product.video_url
-      ).trim()
-    ) {
-
-      videoButton.style.display =
-        "inline-block";
-
-
-      videoButton.onclick =
-        function () {
-
-          openExternalUrl(
-            product.video_url
-          );
-
-        };
-
-    } else {
-
-      videoButton.style.display =
-        "none";
-
-      videoButton.onclick =
-        null;
-
-    }
-
-
-    modal.classList.add(
-      "show"
-    );
-
-
-    document.body.style.overflow =
-      "hidden";
-
-
-    const sheet =
-      modal.querySelector(
-        ".sheet"
-      );
-
-
-    if (sheet) {
-
-      sheet.scrollTop =
-        0;
-
-    }
+    videoButton.onclick =
+      null;
 
   }
 
+  modal.classList.add(
+    "show"
+  );
 
-  /* =========================================================
-     ADD BADGE
-  ========================================================= */
+  document.body.style.overflow =
+    "hidden";
 
-  function addBadge(
-    value,
-    icon
+  const sheet =
+    modal.querySelector(
+      ".sheet"
+    );
+
+  if (sheet) {
+    sheet.scrollTop = 0;
+  }
+
+}
+
+
+/* =========================================================
+   BADGE
+========================================================= */
+
+function addBadge(
+  value,
+  icon
+) {
+
+  if (
+    value === undefined ||
+    value === null ||
+    String(value).trim() === ""
   ) {
 
-    if (
-      value === undefined ||
-      value === null ||
-      String(value).trim() === ""
-    ) {
-
-      return;
-
-    }
-
-
-    const badge =
-      document.createElement(
-        "div"
-      );
-
-    badge.className =
-      "badge";
-
-
-    badge.textContent =
-      icon +
-      " " +
-      String(value);
-
-
-    detailBadges.appendChild(
-      badge
-    );
+    return;
 
   }
 
+  const badge =
+    document.createElement(
+      "div"
+    );
 
-  /* =========================================================
-     DETAILS RENDER
-  ========================================================= */
+  badge.className =
+    "badge";
 
-  function renderProductDetails(
-    product
+  badge.textContent =
+    icon +
+    " " +
+    String(value);
+
+  detailBadges.appendChild(
+    badge
+  );
+
+}
+
+
+/* =========================================================
+   DETAILS
+========================================================= */
+
+function renderProductDetails(
+  product
+) {
+
+  productDetails.innerHTML =
+    "";
+
+  addDetailBlock(
+    "معرفی محصول",
+    product.intro
+  );
+
+  if (
+    Array.isArray(
+      product.benefits
+    ) &&
+    product.benefits.length
   ) {
-
-    productDetails.innerHTML =
-      "";
-
-
-    addDetailBlock(
-      "معرفی محصول",
-      product.intro
-    );
-
-
-    /*
-      benefits می‌تواند آرایه
-      یا متن ساده باشد.
-    */
-
-    if (
-      Array.isArray(
-        product.benefits
-      ) &&
-      product.benefits.length
-    ) {
-
-      const block =
-        document.createElement(
-          "section"
-        );
-
-      block.className =
-        "detail-block";
-
-
-      const title =
-        document.createElement(
-          "h3"
-        );
-
-      title.textContent =
-        "مزایا";
-
-
-      const list =
-        document.createElement(
-          "ul"
-        );
-
-      list.className =
-        "benefits-list";
-
-
-      product.benefits.forEach(
-        benefit => {
-
-          if (
-            benefit === null ||
-            benefit === undefined ||
-            String(
-              benefit
-            ).trim() === ""
-          ) {
-
-            return;
-
-          }
-
-
-          const li =
-            document.createElement(
-              "li"
-            );
-
-          li.textContent =
-            String(
-              benefit
-            );
-
-
-          list.appendChild(
-            li
-          );
-
-        }
-      );
-
-
-      block.appendChild(
-        title
-      );
-
-      block.appendChild(
-        list
-      );
-
-      productDetails.appendChild(
-        block
-      );
-
-
-    } else {
-
-      addDetailBlock(
-        "مزایا",
-        product.benefits
-      );
-
-    }
-
-
-    addDetailBlock(
-      "ترکیبات",
-      product.composition
-    );
-
-
-    addDetailBlock(
-      "نحوه مصرف",
-      product.use_text,
-      "detail-use"
-    );
-
-
-    addDetailBlock(
-      "هشدارها",
-      product.warnings,
-      "warning"
-    );
-
-
-    if (
-      productDetails.children.length === 0
-    ) {
-
-      const block =
-        document.createElement(
-          "section"
-        );
-
-      block.className =
-        "detail-block";
-
-
-      const p =
-        document.createElement(
-          "p"
-        );
-
-      p.textContent =
-        "اطلاعات تکمیلی این محصول هنوز ثبت نشده است.";
-
-
-      block.appendChild(
-        p
-      );
-
-
-      productDetails.appendChild(
-        block
-      );
-
-    }
-
-  }
-
-
-  /* =========================================================
-     DETAIL BLOCK
-  ========================================================= */
-
-  function addDetailBlock(
-    title,
-    text,
-    extraClass = ""
-  ) {
-
-    if (
-      text === undefined ||
-      text === null ||
-      String(text).trim() === ""
-    ) {
-
-      return;
-
-    }
-
 
     const block =
       document.createElement(
@@ -3042,18 +2494,94 @@
       );
 
     block.className =
-      "detail-block " +
-      extraClass;
+      "detail-block";
 
-
-    const h3 =
+    const title =
       document.createElement(
         "h3"
       );
 
-    h3.textContent =
-      title;
+    title.textContent =
+      "مزایا";
 
+    const list =
+      document.createElement(
+        "ul"
+      );
+
+    list.className =
+      "benefits-list";
+
+    product.benefits.forEach(
+      benefit => {
+
+        if (
+          benefit === null ||
+          benefit === undefined ||
+          String(benefit).trim() === ""
+        ) {
+
+          return;
+
+        }
+
+        const li =
+          document.createElement(
+            "li"
+          );
+
+        li.textContent =
+          String(benefit);
+
+        list.appendChild(li);
+
+      }
+    );
+
+    block.appendChild(title);
+    block.appendChild(list);
+
+    productDetails.appendChild(
+      block
+    );
+
+  } else {
+
+    addDetailBlock(
+      "مزایا",
+      product.benefits
+    );
+
+  }
+
+  addDetailBlock(
+    "ترکیبات",
+    product.composition
+  );
+
+  addDetailBlock(
+    "نحوه مصرف",
+    product.use_text,
+    "detail-use"
+  );
+
+  addDetailBlock(
+    "هشدارها",
+    product.warnings,
+    "warning"
+  );
+
+  if (
+    productDetails.children.length === 0
+  ) {
+
+    const block =
+      document.createElement(
+        "section"
+      );
+
+    block.className =
+      "detail-block";
 
     const p =
       document.createElement(
@@ -3061,17 +2589,9 @@
       );
 
     p.textContent =
-      String(text);
+      "اطلاعات تکمیلی این محصول هنوز ثبت نشده است.";
 
-
-    block.appendChild(
-      h3
-    );
-
-    block.appendChild(
-      p
-    );
-
+    block.appendChild(p);
 
     productDetails.appendChild(
       block
@@ -3079,925 +2599,626 @@
 
   }
 
+}
 
-  /* =========================================================
-     CLOSE PRODUCT MODAL
-  ========================================================= */
 
-  function closeProductModal() {
+/* =========================================================
+   DETAIL BLOCK
+========================================================= */
 
-    modal.classList.remove(
-      "show"
-    );
+function addDetailBlock(
+  title,
+  text,
+  extraClass = ""
+) {
 
-    document.body.style.overflow =
-      "";
+  if (
+    text === undefined ||
+    text === null ||
+    String(text).trim() === ""
+  ) {
 
-    currentProduct =
-      null;
+    return;
 
   }
 
+  const block =
+    document.createElement(
+      "section"
+    );
 
-  closeModal.addEventListener(
-    "click",
-    closeProductModal
+  block.className =
+    "detail-block " +
+    extraClass;
+
+  const h3 =
+    document.createElement(
+      "h3"
+    );
+
+  h3.textContent =
+    title;
+
+  const p =
+    document.createElement(
+      "p"
+    );
+
+  p.textContent =
+    String(text);
+
+  block.appendChild(h3);
+  block.appendChild(p);
+
+  productDetails.appendChild(
+    block
   );
 
+}
 
-  modal.addEventListener(
-    "click",
-    function(event) {
 
-      if (
-        event.target === modal
-      ) {
+/* =========================================================
+   CLOSE PRODUCT MODAL
+========================================================= */
 
-        closeProductModal();
+function closeProductModal() {
 
-      }
-
-    }
+  modal.classList.remove(
+    "show"
   );
 
+  document.body.style.overflow =
+    "";
 
-  /* =========================================================
-     CATALOG ZOOM
-  ========================================================= */
+  currentProduct =
+    null;
 
-  pageImage.addEventListener(
-    "click",
-    function() {
+}
 
-      if (
-        pageImage.style.display ===
-        "none"
-      ) {
+closeModal.addEventListener(
+  "click",
+  closeProductModal
+);
 
-        return;
-
-      }
-
-
-      pageImage.classList.toggle(
-        "zoom"
-      );
-
-    }
-  );
-
-
-  /* =========================================================
-     SEARCH
-  ========================================================= */
-
-  searchInput.addEventListener(
-    "input",
-    function() {
-
-      applyFilters();
-
-    }
-  );
-
-
-  /* =========================================================
-     PRICE
-  ========================================================= */
-
-  function formatPrice(
-    price,
-    currency
-  ) {
-
-    const numeric =
-      Number(price);
-
+modal.addEventListener(
+  "click",
+  function(event) {
 
     if (
-      !Number.isFinite(numeric)
+      event.target === modal
     ) {
 
-      return String(price);
-
-    }
-
-
-    let formatted =
-      numeric.toLocaleString(
-        "fa-IR"
-      );
-
-
-    if (currency) {
-
-      formatted +=
-        " " +
-        String(currency);
-
-    }
-
-
-    return formatted;
-
-  }
-
-
-  /* =========================================================
-     EXTERNAL URL
-  ========================================================= */
-
-  function openExternalUrl(
-    url
-  ) {
-
-    if (!url) {
-      return;
-    }
-
-
-    try {
-
-      if (
-        tg &&
-        typeof tg.openLink ===
-        "function"
-      ) {
-
-        tg.openLink(
-          String(url)
-        );
-
-        return;
-
-      }
-
-    } catch (error) {
-
-      console.warn(
-        "Telegram openLink error:",
-        error
-      );
-
-    }
-
-
-    window.open(
-      String(url),
-      "_blank"
-    );
-
-  }
-
-
-  /* =========================================================
-     ESCAPE HTML
-  ========================================================= */
-
-  function escapeHtml(
-    value
-  ) {
-
-    return String(value)
-      .replace(
-        /&/g,
-        "&amp;"
-      )
-      .replace(
-        /</g,
-        "&lt;"
-      )
-      .replace(
-        />/g,
-        "&gt;"
-      )
-      .replace(
-        /"/g,
-        "&quot;"
-      )
-      .replace(
-        /'/g,
-        "&#039;"
-      );
-
-  }
-
-
-  /* =========================================================
-     ADMIN - LOAD PRODUCTS
-  ========================================================= */
-
-  async function loadAdminProducts() {
-
-    if (!isAdmin) {
-
-      return;
-
-    }
-
-
-    adminLoading.style.display =
-      "block";
-
-    adminProductsContainer.innerHTML =
-      "";
-
-    adminError.classList.remove(
-      "show"
-    );
-
-
-    if (!tg || !tg.initData) {
-
-      adminLoading.style.display =
-        "none";
-
-      showAdminError(
-        "اطلاعات ورود تلگرام در دسترس نیست."
-      );
-
-      return;
-
-    }
-
-
-    try {
-
-      const response =
-        await fetch(
-          WORKER_URL +
-          "/api/admin/products",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              "Accept":
-                "application/json"
-            },
-
-            body: JSON.stringify({
-              initData:
-                tg.initData
-            })
-          }
-        );
-
-
-      const data =
-        await response.json();
-
-
-      if (!response.ok) {
-
-        throw new Error(
-          data?.message ||
-          data?.error ||
-          "دریافت محصولات مدیریتی ناموفق بود."
-        );
-
-      }
-
-
-      if (
-        !data ||
-        data.ok !== true
-      ) {
-
-        throw new Error(
-          data?.message ||
-          "پاسخ نامعتبر از سرور دریافت شد."
-        );
-
-      }
-
-
-      if (
-        Array.isArray(
-          data.products
-        )
-      ) {
-
-        adminProducts =
-          data.products;
-
-      } else {
-
-        adminProducts =
-          [];
-
-      }
-
-
-      renderAdminProducts();
-
-
-    } catch (error) {
-
-      console.error(
-        "Admin products error:",
-        error
-      );
-
-
-      showAdminError(
-        error?.message ||
-        "ارتباط با سرور برقرار نشد."
-      );
-
-    } finally {
-
-      adminLoading.style.display =
-        "none";
+      closeProductModal();
 
     }
 
   }
+);
 
 
-  /* =========================================================
-     ADMIN - RENDER PRODUCTS
-  ========================================================= */
+/* =========================================================
+   ADMIN PANEL
+========================================================= */
 
-  function renderAdminProducts() {
+async function loadAdminProducts() {
 
-    adminProductsContainer.innerHTML =
-      "";
+  if (!isAdmin) {
 
-
-    if (
-      adminProducts.length === 0
-    ) {
-
-      const emptyBox =
-        document.createElement(
-          "div"
-        );
-
-      emptyBox.className =
-        "admin-empty";
-
-      emptyBox.textContent =
-        "محصولی برای مدیریت پیدا نشد.";
-
-      adminProductsContainer.appendChild(
-        emptyBox
-      );
-
-      return;
-
-    }
-
-
-    adminProducts.forEach(
-      product => {
-
-        const card =
-          document.createElement(
-            "div"
-          );
-
-        card.className =
-          "admin-product-card";
-
-
-        const title =
-          document.createElement(
-            "div"
-          );
-
-        title.className =
-          "admin-product-title";
-
-        title.textContent =
-          product.name_fa ||
-          "محصول بدون نام";
-
-
-        const en =
-          document.createElement(
-            "div"
-          );
-
-        en.className =
-          "admin-product-en";
-
-        en.textContent =
-          product.name_en ||
-          "";
-
-
-        const meta =
-          document.createElement(
-            "div"
-          );
-
-        meta.className =
-          "admin-product-meta";
-
-
-        if (product.category) {
-
-          const item =
-            document.createElement(
-              "span"
-            );
-
-          item.className =
-            "admin-meta";
-
-          item.textContent =
-            product.category;
-
-          meta.appendChild(
-            item
-          );
-
-        }
-
-
-        if (product.package) {
-
-          const item =
-            document.createElement(
-              "span"
-            );
-
-          item.className =
-            "admin-meta";
-
-          item.textContent =
-            "📦 " +
-            product.package;
-
-          meta.appendChild(
-            item
-          );
-
-        }
-
-
-        if (product.maker) {
-
-          const item =
-            document.createElement(
-              "span"
-            );
-
-          item.className =
-            "admin-meta";
-
-          item.textContent =
-            "🏭 " +
-            product.maker;
-
-          meta.appendChild(
-            item
-          );
-
-        }
-
-
-        const priceRow =
-          document.createElement(
-            "div"
-          );
-
-        priceRow.className =
-          "admin-price-row";
-
-
-        const priceInput =
-          document.createElement(
-            "input"
-          );
-
-        priceInput.className =
-          "admin-price-input";
-
-        priceInput.type =
-          "number";
-
-        priceInput.min =
-          "0";
-
-        priceInput.step =
-          "any";
-
-        priceInput.inputMode =
-          "decimal";
-
-        priceInput.placeholder =
-          "قیمت پایه";
-
-
-        if (
-          product.base_price !== undefined &&
-          product.base_price !== null
-        ) {
-
-          priceInput.value =
-            product.base_price;
-
-        }
-
-
-        const currencyInput =
-          document.createElement(
-            "input"
-          );
-
-        currencyInput.className =
-          "admin-currency-input";
-
-        currencyInput.type =
-          "text";
-
-        currencyInput.maxLength =
-          20;
-
-        currencyInput.placeholder =
-          "واحد";
-
-        currencyInput.value =
-          product.base_currency ||
-          "تومان";
-
-
-        const saveButton =
-          document.createElement(
-            "button"
-          );
-
-        saveButton.className =
-          "admin-save-btn";
-
-        saveButton.type =
-          "button";
-
-        saveButton.textContent =
-          "💾 ذخیره";
-
-
-        const message =
-          document.createElement(
-            "div"
-          );
-
-        message.className =
-          "admin-message";
-
-
-        saveButton.addEventListener(
-          "click",
-          async function() {
-
-            await updateAdminPrice(
-              product,
-              priceInput,
-              currencyInput,
-              saveButton,
-              message
-            );
-
-          }
-        );
-
-
-        priceRow.appendChild(
-          priceInput
-        );
-
-        priceRow.appendChild(
-          currencyInput
-        );
-
-        priceRow.appendChild(
-          saveButton
-        );
-
-
-        card.appendChild(
-          title
-        );
-
-        if (product.name_en) {
-
-          card.appendChild(
-            en
-          );
-
-        }
-
-        if (meta.children.length) {
-
-          card.appendChild(
-            meta
-          );
-
-        }
-
-        card.appendChild(
-          priceRow
-        );
-
-        card.appendChild(
-          message
-        );
-
-
-        adminProductsContainer.appendChild(
-          card
-        );
-
-      }
-    );
-
-  }
-
-
-  /* =========================================================
-     ADMIN - UPDATE PRICE
-  ========================================================= */
-
-  async function updateAdminPrice(
-    product,
-    priceInput,
-    currencyInput,
-    saveButton,
-    message
-  ) {
-
-    if (!isAdmin) {
-
-      return;
-
-    }
-
-
-    const rawPrice =
-      String(
-        priceInput.value || ""
-      ).trim();
-
-
-    const currency =
-      String(
-        currencyInput.value ||
-        "تومان"
-      ).trim();
-
-
-    let basePrice =
-      null;
-
-
-    if (rawPrice !== "") {
-
-      basePrice =
-        Number(rawPrice);
-
-
-      if (
-        !Number.isFinite(
-          basePrice
-        ) ||
-        basePrice < 0
-      ) {
-
-        message.textContent =
-          "قیمت واردشده معتبر نیست.";
-
-        message.classList.add(
-          "error"
-        );
-
-        return;
-
-      }
-
-    }
-
-
-    if (
-      currency.length < 1 ||
-      currency.length > 20
-    ) {
-
-      message.textContent =
-        "واحد پول معتبر نیست.";
-
-      message.classList.add(
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    saveButton.disabled =
-      true;
-
-    saveButton.textContent =
-      "در حال ذخیره...";
-
-    message.textContent =
-      "";
-
-    message.classList.remove(
-      "error"
-    );
-
-
-    try {
-
-      if (!tg || !tg.initData) {
-
-        throw new Error(
-          "اطلاعات ورود تلگرام در دسترس نیست."
-        );
-
-      }
-
-
-      const response =
-        await fetch(
-          WORKER_URL +
-          "/api/admin/update-price",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              "Accept":
-                "application/json"
-            },
-
-            body: JSON.stringify({
-
-              initData:
-                tg.initData,
-
-              product_id:
-                Number(product.id),
-
-              base_price:
-                basePrice,
-
-              base_currency:
-                currency
-
-            })
-          }
-        );
-
-
-      const data =
-        await response.json();
-
-
-      if (!response.ok) {
-
-        throw new Error(
-          data?.message ||
-          data?.error ||
-          "ذخیره قیمت ناموفق بود."
-        );
-
-      }
-
-
-      if (
-        !data ||
-        data.ok !== true
-      ) {
-
-        throw new Error(
-          data?.message ||
-          "پاسخ نامعتبر از سرور دریافت شد."
-        );
-
-      }
-
-
-      /*
-        مقدار محلی پنل را هم به‌روز می‌کنیم.
-      */
-
-      product.base_price =
-        basePrice;
-
-      product.base_currency =
-        currency;
-
-
-      message.textContent =
-        "✓ قیمت با موفقیت ذخیره شد.";
-
-      message.classList.remove(
-        "error"
-      );
-
-
-      /*
-        محصولات صفحه اصلی را هم
-        با قیمت جدید به‌روزرسانی می‌کنیم.
-      */
-
-      const mainProduct =
-        products.find(
-          item =>
-            Number(item.id) ===
-            Number(product.id)
-        );
-
-
-      if (mainProduct) {
-
-        mainProduct.base_price =
-          basePrice;
-
-        mainProduct.base_currency =
-          currency;
-
-      }
-
-
-      applyFilters();
-
-
-    } catch (error) {
-
-      console.error(
-        "Update admin price error:",
-        error
-      );
-
-
-      message.textContent =
-        error?.message ||
-        "ذخیره قیمت انجام نشد.";
-
-      message.classList.add(
-        "error"
-      );
-
-    } finally {
-
-      saveButton.disabled =
-        false;
-
-      saveButton.textContent =
-        "💾 ذخیره";
-
-    }
-
-  }
-
-
-  /* =========================================================
-     ADMIN ERROR
-  ========================================================= */
-
-  function showAdminError(
-    message
-  ) {
-
-    adminError.innerHTML =
-      `
-        <strong>
-          خطا در پنل مدیریت
-        </strong>
-        <br>
-        ${escapeHtml(
-          message
-        )}
-      `;
+    adminError.textContent =
+      "شما دسترسی مدیر سیستم را ندارید.";
 
     adminError.classList.add(
       "show"
     );
 
+    return;
+
   }
 
+  adminLoading.style.display =
+    "block";
 
-  /* =========================================================
-     ADMIN MODAL
-  ========================================================= */
+  adminProducts.innerHTML =
+    "";
 
-  async function openAdminPanel() {
+  adminError.classList.remove(
+    "show"
+  );
+
+  try {
+
+    const initData =
+      tg?.initData || "";
+
+    if (!initData) {
+
+      throw new Error(
+        "اطلاعات ورود تلگرام در دسترس نیست."
+      );
+
+    }
+
+    const response =
+      await fetch(
+        WORKER_URL +
+        "/api/admin/products",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            initData: initData
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    console.log(
+      "Admin products response:",
+      data
+    );
+
+    if (!response.ok || !data.ok) {
+
+      throw new Error(
+        data?.message ||
+        data?.error ||
+        "دریافت محصولات مدیریتی ناموفق بود."
+      );
+
+    }
+
+    const list =
+      Array.isArray(data.products)
+        ? data.products
+        : [];
+
+    if (list.length === 0) {
+
+      adminProducts.innerHTML =
+        '<div class="admin-loading">محصولی برای مدیریت وجود ندارد.</div>';
+
+      return;
+
+    }
+
+    list.forEach(
+      product => {
+
+        adminProducts.appendChild(
+          createAdminProduct(
+            product
+          )
+        );
+
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Admin products error:",
+      error
+    );
+
+    adminError.innerHTML =
+      "<strong>خطا در دریافت محصولات مدیریت</strong><br>" +
+      escapeHtml(
+        error?.message ||
+        "خطای نامشخص"
+      );
+
+    adminError.classList.add(
+      "show"
+    );
+
+  } finally {
+
+    adminLoading.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================================================
+   CREATE ADMIN PRODUCT
+========================================================= */
+
+function createAdminProduct(
+  product
+) {
+
+  const box =
+    document.createElement(
+      "div"
+    );
+
+  box.className =
+    "admin-product";
+
+  const name =
+    document.createElement(
+      "div"
+    );
+
+  name.className =
+    "admin-product-name";
+
+  name.textContent =
+    product.name_fa ||
+    "محصول بدون نام";
+
+  const en =
+    document.createElement(
+      "div"
+    );
+
+  en.className =
+    "admin-product-en";
+
+  en.textContent =
+    product.name_en ||
+    "";
+
+  const meta =
+    document.createElement(
+      "div"
+    );
+
+  meta.className =
+    "admin-meta";
+
+  if (product.category) {
+
+    const span =
+      document.createElement(
+        "span"
+      );
+
+    span.textContent =
+      product.category;
+
+    meta.appendChild(span);
+
+  }
+
+  if (product.package) {
+
+    const span =
+      document.createElement(
+        "span"
+      );
+
+    span.textContent =
+      "📦 " +
+      product.package;
+
+    meta.appendChild(span);
+
+  }
+
+  if (product.maker) {
+
+    const span =
+      document.createElement(
+        "span"
+      );
+
+    span.textContent =
+      "🏭 " +
+      product.maker;
+
+    meta.appendChild(span);
+
+  }
+
+  const row =
+    document.createElement(
+      "div"
+    );
+
+  row.className =
+    "price-row";
+
+  const input =
+    document.createElement(
+      "input"
+    );
+
+  input.type =
+    "number";
+
+  input.inputMode =
+    "decimal";
+
+  input.min =
+    "0";
+
+  input.step =
+    "any";
+
+  input.className =
+    "price-input";
+
+  input.placeholder =
+    "قیمت پایه";
+
+  if (
+    product.base_price !== undefined &&
+    product.base_price !== null &&
+    product.base_price !== ""
+  ) {
+
+    input.value =
+      product.base_price;
+
+  }
+
+  const saveButton =
+    document.createElement(
+      "button"
+    );
+
+  saveButton.type =
+    "button";
+
+  saveButton.className =
+    "save-price";
+
+  saveButton.textContent =
+    "ذخیره";
+
+  const message =
+    document.createElement(
+      "div"
+    );
+
+  message.className =
+    "admin-message";
+
+  saveButton.addEventListener(
+    "click",
+    async function() {
+
+      await updateAdminPrice(
+        product,
+        input,
+        saveButton,
+        message
+      );
+
+    }
+  );
+
+  row.appendChild(input);
+  row.appendChild(saveButton);
+
+  box.appendChild(name);
+  box.appendChild(en);
+
+  if (meta.children.length) {
+    box.appendChild(meta);
+  }
+
+  box.appendChild(row);
+  box.appendChild(message);
+
+  return box;
+
+}
+
+
+/* =========================================================
+   UPDATE ADMIN PRICE
+========================================================= */
+
+async function updateAdminPrice(
+  product,
+  input,
+  button,
+  message
+) {
+
+  if (!isAdmin) {
+
+    message.textContent =
+      "دسترسی مدیر وجود ندارد.";
+
+    message.className =
+      "admin-message error";
+
+    return;
+
+  }
+
+  const value =
+    String(
+      input.value || ""
+    ).trim();
+
+  if (
+    value !== "" &&
+    (
+      !Number.isFinite(
+        Number(value)
+      ) ||
+      Number(value) < 0
+    )
+  ) {
+
+    message.textContent =
+      "قیمت واردشده معتبر نیست.";
+
+    message.className =
+      "admin-message error";
+
+    return;
+
+  }
+
+  button.disabled =
+    true;
+
+  button.textContent =
+    "در حال ذخیره...";
+
+  message.textContent =
+    "";
+
+  try {
+
+    const initData =
+      tg?.initData || "";
+
+    if (!initData) {
+
+      throw new Error(
+        "اطلاعات ورود تلگرام در دسترس نیست."
+      );
+
+    }
+
+    const response =
+      await fetch(
+        WORKER_URL +
+        "/api/admin/update-price",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+
+            initData:
+              initData,
+
+            product_id:
+              product.id,
+
+            base_price:
+              value === ""
+                ? null
+                : Number(value),
+
+            base_currency:
+              product.base_currency ||
+              "تومان"
+
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    console.log(
+      "Update price response:",
+      data
+    );
+
+    if (
+      !response.ok ||
+      !data.ok
+    ) {
+
+      throw new Error(
+        data?.message ||
+        data?.error ||
+        "ذخیره قیمت ناموفق بود."
+      );
+
+    }
+
+    message.textContent =
+      "✓ قیمت با موفقیت ذخیره شد.";
+
+    message.className =
+      "admin-message success";
+
+    /*
+      محصول داخل لیست اصلی هم به‌روز شود.
+    */
+
+    const localProduct =
+      products.find(
+        p =>
+          String(p.id) ===
+          String(product.id)
+      );
+
+    if (localProduct) {
+
+      localProduct.base_price =
+        data.product?.base_price ??
+        (
+          value === ""
+            ? null
+            : Number(value)
+        );
+
+      localProduct.base_currency =
+        data.product?.base_currency ||
+        product.base_currency ||
+        "تومان";
+
+    }
+
+    applyFilters();
+
+  } catch (error) {
+
+    console.error(
+      "Update price error:",
+      error
+    );
+
+    message.textContent =
+      "✕ " +
+      (
+        error?.message ||
+        "ذخیره قیمت ناموفق بود."
+      );
+
+    message.className =
+      "admin-message error";
+
+  } finally {
+
+    button.disabled =
+      false;
+
+    button.textContent =
+      "ذخیره";
+
+  }
+
+}
+
+
+/* =========================================================
+   OPEN ADMIN
+========================================================= */
+
+adminButton.addEventListener(
+  "click",
+  async function() {
 
     if (!isAdmin) {
 
       return;
 
     }
-
 
     adminModal.classList.add(
       "show"
@@ -4006,83 +3227,80 @@
     document.body.style.overflow =
       "hidden";
 
-
     const sheet =
       adminModal.querySelector(
         ".sheet"
       );
 
-
     if (sheet) {
-
-      sheet.scrollTop =
-        0;
-
+      sheet.scrollTop = 0;
     }
-
 
     await loadAdminProducts();
 
   }
+);
 
 
-  function closeAdminPanel() {
+/* =========================================================
+   CLOSE ADMIN
+========================================================= */
 
-    adminModal.classList.remove(
-      "show"
-    );
+function closeAdmin() {
 
-    document.body.style.overflow =
-      "";
-
-  }
-
-
-  adminButton.addEventListener(
-    "click",
-    openAdminPanel
+  adminModal.classList.remove(
+    "show"
   );
 
+  document.body.style.overflow =
+    "";
 
-  closeAdminModal.addEventListener(
-    "click",
-    closeAdminPanel
-  );
+}
 
+closeAdminModal.addEventListener(
+  "click",
+  closeAdmin
+);
 
-  adminModal.addEventListener(
-    "click",
-    function(event) {
+adminModal.addEventListener(
+  "click",
+  function(event) {
 
-      if (
-        event.target ===
-        adminModal
-      ) {
+    if (
+      event.target === adminModal
+    ) {
 
-        closeAdminPanel();
-
-      }
+      closeAdmin();
 
     }
-  );
+
+  }
+);
 
 
-  /* =========================================================
-     ESCAPE KEY
-  ========================================================= */
+/* =========================================================
+   ESCAPE
+========================================================= */
 
-  document.addEventListener(
-    "keydown",
-    function(event) {
+document.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (
+      event.key === "Escape"
+    ) {
 
       if (
-        event.key !== "Escape"
+        adminModal.classList.contains(
+          "show"
+        )
       ) {
+
+        closeAdmin();
 
         return;
 
       }
-
 
       if (
         modal.classList.contains(
@@ -4094,44 +3312,186 @@
 
       }
 
+    }
 
-      if (
-        adminModal.classList.contains(
-          "show"
-        )
-      ) {
+  }
+);
 
-        closeAdminPanel();
 
-      }
+/* =========================================================
+   CATALOG ZOOM
+========================================================= */
+
+pageImage.addEventListener(
+  "click",
+  function() {
+
+    if (
+      pageImage.style.display ===
+      "none"
+    ) {
+
+      return;
 
     }
-  );
+
+    pageImage.classList.toggle(
+      "zoom"
+    );
+
+  }
+);
 
 
-  /* =========================================================
-     START
-  ========================================================= */
+/* =========================================================
+   SEARCH
+========================================================= */
 
-  async function init() {
+searchInput.addEventListener(
+  "input",
+  function() {
 
-    /*
-      احراز هویت تلگرام و دریافت محصولات
-      همزمان انجام می‌شوند.
-    */
+    applyFilters();
 
-    await Promise.allSettled([
+  }
+);
 
-      authenticateTelegram(),
 
-      loadProducts()
+/* =========================================================
+   PRICE FORMAT
+========================================================= */
 
-    ]);
+function formatPrice(
+  price,
+  currency
+) {
+
+  const numeric =
+    Number(price);
+
+  if (
+    !Number.isFinite(numeric)
+  ) {
+
+    return String(price);
 
   }
 
+  let formatted =
+    numeric.toLocaleString(
+      "fa-IR"
+    );
 
-  init();
+  if (currency) {
+
+    formatted +=
+      " " +
+      String(currency);
+
+  }
+
+  return formatted;
+
+}
+
+
+/* =========================================================
+   OPEN EXTERNAL URL
+========================================================= */
+
+function openExternalUrl(url) {
+
+  if (!url) {
+    return;
+  }
+
+  try {
+
+    if (
+      tg &&
+      typeof tg.openLink ===
+        "function"
+    ) {
+
+      tg.openLink(
+        String(url)
+      );
+
+      return;
+
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "Telegram openLink error:",
+      error
+    );
+
+  }
+
+  window.open(
+    String(url),
+    "_blank"
+  );
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(value) {
+
+  return String(value)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+async function init() {
+
+  /*
+    ابتدا احراز هویت انجام می‌شود
+    تا مشخص شود کاربر مدیر است یا خیر.
+  */
+
+  await authenticateTelegram();
+
+  /*
+    سپس محصولات عادی دریافت می‌شوند.
+  */
+
+  await loadProducts();
+
+}
+
+
+init();
 
 </script>
 

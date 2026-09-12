@@ -6,7 +6,6 @@
 
   <title>کاتالوگ محصولات مشکفام فارس</title>
 
-  <!-- Telegram Mini App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
@@ -19,10 +18,7 @@
       margin: 0;
       padding: 0;
       min-height: 100%;
-      font-family:
-        Tahoma,
-        Arial,
-        sans-serif;
+      font-family: Tahoma, Arial, sans-serif;
       background: #f3f7f4;
       color: #173c2c;
     }
@@ -53,28 +49,16 @@
     ========================= */
 
     header {
-      background:
-        linear-gradient(
-          135deg,
-          #0b4b35 0%,
-          #176c49 50%,
-          #27845a 100%
-        );
-
+      background: linear-gradient(
+        135deg,
+        #0b4b35 0%,
+        #176c49 50%,
+        #27845a 100%
+      );
       color: white;
-      padding:
-        22px
-        18px
-        26px;
-
-      border-radius:
-        0
-        0
-        28px
-        28px;
-
-      box-shadow:
-        0 8px 25px rgba(0, 70, 40, 0.18);
+      padding: 22px 18px 26px;
+      border-radius: 0 0 28px 28px;
+      box-shadow: 0 8px 25px rgba(0, 70, 40, 0.18);
     }
 
     .brand {
@@ -89,23 +73,14 @@
       width: 56px;
       height: 56px;
       min-width: 56px;
-
       border-radius: 17px;
-
       background: rgba(255,255,255,.16);
-
       display: flex;
       align-items: center;
       justify-content: center;
-
       font-size: 30px;
-
-      border:
-        1px solid
-        rgba(255,255,255,.25);
-
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.15);
     }
 
     .brand-text {
@@ -132,16 +107,11 @@
     .account {
       max-width: 1100px;
       margin: 15px auto 0;
-
       display: none;
-
       padding: 12px 14px;
-
       border-radius: 16px;
-
       background: rgba(255,255,255,.12);
       border: 1px solid rgba(255,255,255,.16);
-
       align-items: center;
       justify-content: space-between;
       gap: 10px;
@@ -177,6 +147,36 @@
     }
 
     /* =========================
+       ADMIN BUTTON
+    ========================= */
+
+    .admin-button-wrap {
+      display: none;
+      max-width: 1100px;
+      margin: 12px auto 0;
+    }
+
+    .admin-button-wrap.show {
+      display: block;
+    }
+
+    #adminButton {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 15px;
+      background: white;
+      color: #176c49;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 5px 15px rgba(0,0,0,.10);
+    }
+
+    #adminButton:active {
+      transform: scale(.98);
+    }
+
+    /* =========================
        MAIN
     ========================= */
 
@@ -197,54 +197,29 @@
     .search-box input {
       width: 100%;
       height: 54px;
-
-      border:
-        1px solid
-        #d9e7df;
-
+      border: 1px solid #d9e7df;
       border-radius: 17px;
-
       background: white;
-
-      padding:
-        0
-        48px
-        0
-        16px;
-
+      padding: 0 48px 0 16px;
       outline: none;
-
       font-size: 14px;
-
       color: #173c2c;
-
-      box-shadow:
-        0 4px 16px
-        rgba(22, 75, 50, .06);
-
+      box-shadow: 0 4px 16px rgba(22, 75, 50, .06);
       transition: .2s;
     }
 
     .search-box input:focus {
       border-color: #29915e;
-
-      box-shadow:
-        0 0 0 3px
-        rgba(41,145,94,.10);
+      box-shadow: 0 0 0 3px rgba(41,145,94,.10);
     }
 
     .search-icon {
       position: absolute;
-
       right: 17px;
       top: 50%;
-
       transform: translateY(-50%);
-
       font-size: 22px;
-
       color: #23774f;
-
       pointer-events: none;
     }
 
@@ -256,11 +231,8 @@
       display: flex;
       align-items: center;
       gap: 8px;
-
       overflow-x: auto;
-
       padding-bottom: 5px;
-
       scrollbar-width: none;
     }
 
@@ -270,23 +242,12 @@
 
     .chip {
       flex: 0 0 auto;
-
-      border:
-        1px solid
-        #d5e5dc;
-
+      border: 1px solid #d5e5dc;
       background: white;
-
       color: #37644f;
-
-      padding:
-        8px
-        13px;
-
+      padding: 8px 13px;
       border-radius: 30px;
-
       font-size: 12px;
-
       transition: .2s;
     }
 
@@ -302,9 +263,7 @@
 
     .count {
       margin: 15px 3px 12px;
-
       font-size: 12px;
-
       color: #71887c;
     }
 
@@ -314,9 +273,7 @@
 
     .grid {
       display: grid;
-
       grid-template-columns: 1fr;
-
       gap: 16px;
     }
 
@@ -326,91 +283,56 @@
 
     .card {
       background: white;
-
-      border:
-        1px solid
-        #e0ebe5;
-
+      border: 1px solid #e0ebe5;
       border-radius: 22px;
-
       overflow: hidden;
-
       display: grid;
-
-      grid-template-columns:
-        180px
-        minmax(0, 1fr);
-
+      grid-template-columns: 180px minmax(0, 1fr);
       min-height: 180px;
-
-      box-shadow:
-        0 7px 25px
-        rgba(25, 80, 52, .07);
-
-      transition:
-        transform .18s,
-        box-shadow .18s;
-
+      box-shadow: 0 7px 25px rgba(25, 80, 52, .07);
+      transition: transform .18s, box-shadow .18s;
       cursor: pointer;
     }
 
     .card:hover {
       transform: translateY(-2px);
-
-      box-shadow:
-        0 12px 30px
-        rgba(25, 80, 52, .11);
+      box-shadow: 0 12px 30px rgba(25, 80, 52, .11);
     }
 
     .pic {
       position: relative;
-
       min-height: 180px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #edf7f1,
-          #dfeee6
-        );
-
+      background: linear-gradient(
+        135deg,
+        #edf7f1,
+        #dfeee6
+      );
       display: flex;
-
       align-items: center;
       justify-content: center;
-
       overflow: hidden;
     }
 
     .pic img {
       width: 100%;
       height: 100%;
-
       object-fit: cover;
-
       display: block;
     }
 
     .pic-placeholder {
       position: absolute;
-
       inset: 0;
-
       display: flex;
-
       align-items: center;
       justify-content: center;
-
       font-size: 42px;
-
       color: #6a9880;
-
-      background:
-        linear-gradient(
-          135deg,
-          #edf7f1,
-          #dfeee6
-        );
+      background: linear-gradient(
+        135deg,
+        #edf7f1,
+        #dfeee6
+      );
     }
 
     .pic-placeholder.hidden {
@@ -419,66 +341,41 @@
 
     .info {
       padding: 18px 19px;
-
       display: flex;
-
       flex-direction: column;
-
       justify-content: center;
-
       min-width: 0;
     }
 
     .category {
       display: inline-flex;
-
       width: fit-content;
-
       max-width: 100%;
-
       background: #edf7f1;
-
       color: #207149;
-
       border-radius: 30px;
-
-      padding:
-        5px
-        9px;
-
+      padding: 5px 9px;
       font-size: 10px;
-
       margin-bottom: 8px;
-
       white-space: nowrap;
-
       overflow: hidden;
-
       text-overflow: ellipsis;
     }
 
     .name {
       margin: 0;
-
       color: #143e2c;
-
       font-size: 18px;
-
       font-weight: 800;
-
       line-height: 1.5;
     }
 
     .en {
       direction: ltr;
       text-align: right;
-
       color: #7d9187;
-
       font-size: 11px;
-
       margin-top: 3px;
-
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -486,39 +383,24 @@
 
     .spec {
       display: flex;
-
       flex-wrap: wrap;
-
       gap: 6px;
-
       margin-top: 12px;
     }
 
     .spec span {
       background: #f6f9f7;
-
-      border:
-        1px solid
-        #e4ece7;
-
+      border: 1px solid #e4ece7;
       border-radius: 9px;
-
-      padding:
-        6px
-        8px;
-
+      padding: 6px 8px;
       font-size: 10px;
-
       color: #526f61;
     }
 
     .card-arrow {
       margin-top: 12px;
-
       color: #238354;
-
       font-size: 12px;
-
       font-weight: 700;
     }
 
@@ -528,36 +410,21 @@
 
     .loading {
       padding: 45px 20px;
-
       text-align: center;
-
       color: #668274;
-
       background: white;
-
       border-radius: 20px;
-
-      border:
-        1px solid
-        #e0ebe5;
+      border: 1px solid #e0ebe5;
     }
 
     .spinner {
       width: 35px;
       height: 35px;
-
-      border:
-        3px solid
-        #dbe9e1;
-
+      border: 3px solid #dbe9e1;
       border-top-color: #238354;
-
       border-radius: 50%;
-
       margin: 0 auto 14px;
-
-      animation:
-        spin .8s linear infinite;
+      animation: spin .8s linear infinite;
     }
 
     @keyframes spin {
@@ -572,23 +439,13 @@
 
     .error-box {
       display: none;
-
       padding: 18px;
-
       background: #fff6f5;
-
-      border:
-        1px solid
-        #f0d1cd;
-
+      border: 1px solid #f0d1cd;
       color: #9a4338;
-
       border-radius: 17px;
-
       font-size: 13px;
-
       line-height: 1.8;
-
       margin-bottom: 15px;
     }
 
@@ -602,19 +459,11 @@
 
     .empty {
       display: none;
-
       background: white;
-
-      border:
-        1px solid
-        #e0ebe5;
-
+      border: 1px solid #e0ebe5;
       border-radius: 20px;
-
       padding: 45px 20px;
-
       text-align: center;
-
       color: #71887c;
     }
 
@@ -633,16 +482,10 @@
 
     .modal {
       position: fixed;
-
       inset: 0;
-
       z-index: 9999;
-
       display: none;
-
-      background:
-        rgba(0, 0, 0, .52);
-
+      background: rgba(0, 0, 0, .52);
       backdrop-filter: blur(3px);
     }
 
@@ -652,16 +495,10 @@
 
     .sheet {
       position: absolute;
-
-      inset:
-        0;
-
+      inset: 0;
       background: #f4f8f5;
-
       overflow-y: auto;
-
-      animation:
-        sheetIn .25s ease;
+      animation: sheetIn .25s ease;
     }
 
     @keyframes sheetIn {
@@ -678,86 +515,55 @@
 
     .sheet-head {
       position: sticky;
-
       top: 0;
-
       z-index: 10;
-
-      background:
-        linear-gradient(
-          135deg,
-          #0b4b35,
-          #176c49
-        );
-
+      background: linear-gradient(
+        135deg,
+        #0b4b35,
+        #176c49
+      );
       color: white;
-
-      padding:
-        13px
-        15px;
-
+      padding: 13px 15px;
       display: flex;
-
       align-items: center;
-
       gap: 10px;
-
-      box-shadow:
-        0 5px 18px
-        rgba(0,0,0,.13);
+      box-shadow: 0 5px 18px rgba(0,0,0,.13);
     }
 
     .close {
       width: 40px;
       height: 40px;
-
       min-width: 40px;
-
       border: none;
-
       border-radius: 13px;
-
-      background:
-        rgba(255,255,255,.14);
-
+      background: rgba(255,255,255,.14);
       color: white;
-
       font-size: 22px;
-
       line-height: 1;
     }
 
     .sheet-head-title {
       flex: 1;
-
       min-width: 0;
     }
 
     .sheet-head-title strong {
       display: block;
-
       font-size: 14px;
-
       white-space: nowrap;
-
       overflow: hidden;
-
       text-overflow: ellipsis;
     }
 
     .sheet-head-title small {
       display: block;
-
       margin-top: 2px;
-
       opacity: .75;
-
       font-size: 10px;
     }
 
     .sheet-body {
       width: min(1000px, calc(100% - 24px));
-
       margin: 18px auto 45px;
     }
 
@@ -767,140 +573,90 @@
 
     .detail-top {
       background: white;
-
-      border:
-        1px solid
-        #e0ebe5;
-
+      border: 1px solid #e0ebe5;
       border-radius: 23px;
-
       overflow: hidden;
-
       display: grid;
-
-      grid-template-columns:
-        minmax(230px, 36%)
-        1fr;
-
-      box-shadow:
-        0 7px 25px
-        rgba(25, 80, 52, .07);
+      grid-template-columns: minmax(230px, 36%) 1fr;
+      box-shadow: 0 7px 25px rgba(25, 80, 52, .07);
     }
 
     .detail-img-wrap {
       min-height: 320px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #edf7f1,
-          #dcece3
-        );
-
+      background: linear-gradient(
+        135deg,
+        #edf7f1,
+        #dcece3
+      );
       display: flex;
-
       align-items: center;
       justify-content: center;
-
       overflow: hidden;
     }
 
     .detail-img {
       width: 100%;
       height: 100%;
-
       min-height: 320px;
-
       object-fit: cover;
-
       display: block;
     }
 
     .detail-info {
       padding: 25px;
-
       display: flex;
-
       flex-direction: column;
-
       justify-content: center;
     }
 
     .detail-title {
       margin: 0;
-
       font-size: 25px;
-
       line-height: 1.5;
-
       color: #143e2c;
     }
 
     .detail-en {
       direction: ltr;
-
       text-align: right;
-
       color: #83958b;
-
       font-size: 12px;
-
       margin-top: 4px;
     }
 
     .badges {
       display: flex;
-
       flex-wrap: wrap;
-
       gap: 7px;
-
       margin-top: 17px;
     }
 
     .badge {
-      padding:
-        7px
-        10px;
-
+      padding: 7px 10px;
       background: #eef7f2;
-
       color: #27704e;
-
       border-radius: 9px;
-
       font-size: 10px;
     }
 
     .detail-actions {
       display: flex;
-
       flex-wrap: wrap;
-
       gap: 8px;
-
       margin-top: 18px;
     }
 
     .action-btn {
       border: none;
-
       border-radius: 11px;
-
-      padding:
-        10px
-        14px;
-
+      padding: 10px 14px;
       font-size: 12px;
-
       background: #176c49;
-
       color: white;
     }
 
     .action-btn.secondary {
       background: #edf5f0;
-
       color: #246c4b;
     }
 
@@ -910,74 +666,46 @@
 
     .product-details {
       margin-top: 16px;
-
       display: grid;
-
       gap: 13px;
     }
 
     .detail-block {
       background: white;
-
-      border:
-        1px solid
-        #e0ebe5;
-
+      border: 1px solid #e0ebe5;
       border-radius: 19px;
-
       padding: 18px;
-
-      box-shadow:
-        0 5px 18px
-        rgba(25, 80, 52, .045);
+      box-shadow: 0 5px 18px rgba(25, 80, 52, .045);
     }
 
     .detail-block h3 {
-      margin:
-        0
-        0
-        9px;
-
+      margin: 0 0 9px;
       font-size: 14px;
-
       color: #1d6546;
     }
 
     .detail-block p {
       margin: 0;
-
       font-size: 13px;
-
       line-height: 2;
-
       color: #52675c;
-
       white-space: pre-line;
     }
 
     .benefits-list {
       margin: 0;
-
       padding-right: 18px;
-
       color: #52675c;
-
       font-size: 13px;
-
       line-height: 2;
     }
 
     .detail-use {
-      border-right:
-        4px solid
-        #2a8a5b;
+      border-right: 4px solid #2a8a5b;
     }
 
     .warning {
-      border-right:
-        4px solid
-        #d19b37;
-
+      border-right: 4px solid #d19b37;
       background: #fffaf0;
     }
 
@@ -991,84 +719,167 @@
 
     .page-wrap {
       margin-top: 17px;
-
       background: white;
-
-      border:
-        1px solid
-        #e0ebe5;
-
+      border: 1px solid #e0ebe5;
       border-radius: 20px;
-
       padding: 17px;
-
-      box-shadow:
-        0 5px 18px
-        rgba(25, 80, 52, .045);
+      box-shadow: 0 5px 18px rgba(25, 80, 52, .045);
     }
 
     .page-wrap h3 {
-      margin:
-        0
-        0
-        13px;
-
+      margin: 0 0 13px;
       color: #1d6546;
-
       font-size: 14px;
     }
 
     .catalog-help {
       color: #84978d;
-
       font-size: 10px;
-
-      margin:
-        -5px
-        0
-        12px;
+      margin: -5px 0 12px;
     }
 
     .page-img {
       width: 100%;
-
       height: auto;
-
       display: block;
-
       border-radius: 12px;
-
-      border:
-        1px solid
-        #e1e9e4;
-
+      border: 1px solid #e1e9e4;
       cursor: zoom-in;
-
       transition: .25s;
     }
 
     .page-img.zoom {
       width: auto;
-
       max-width: none;
-
       min-width: 100%;
-
       cursor: zoom-out;
     }
 
     .catalog-error {
       padding: 15px;
-
       background: #fff7f5;
-
       border-radius: 12px;
-
       color: #9a4c40;
-
       font-size: 12px;
-
       line-height: 1.8;
+    }
+
+    /* =========================
+       ADMIN PANEL
+    ========================= */
+
+    .admin-intro {
+      background: #edf7f1;
+      border: 1px solid #d8eade;
+      color: #356651;
+      border-radius: 15px;
+      padding: 13px;
+      font-size: 12px;
+      line-height: 1.8;
+      margin-bottom: 14px;
+    }
+
+    .admin-product-card {
+      background: white;
+      border: 1px solid #e0ebe5;
+      border-radius: 18px;
+      padding: 15px;
+      box-shadow: 0 5px 18px rgba(25,80,52,.05);
+    }
+
+    .admin-product-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #173c2c;
+      line-height: 1.6;
+    }
+
+    .admin-product-en {
+      direction: ltr;
+      text-align: right;
+      color: #899a91;
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    .admin-product-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 9px;
+    }
+
+    .admin-meta {
+      background: #f5f9f6;
+      border: 1px solid #e3ece6;
+      border-radius: 8px;
+      padding: 5px 7px;
+      font-size: 9px;
+      color: #61786b;
+    }
+
+    .admin-price-row {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) 105px auto;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .admin-price-input,
+    .admin-currency-input {
+      width: 100%;
+      height: 43px;
+      border: 1px solid #d7e5dd;
+      border-radius: 11px;
+      background: #fff;
+      outline: none;
+      padding: 0 10px;
+      color: #173c2c;
+      font-size: 12px;
+    }
+
+    .admin-price-input:focus,
+    .admin-currency-input:focus {
+      border-color: #29915e;
+      box-shadow: 0 0 0 3px rgba(41,145,94,.09);
+    }
+
+    .admin-save-btn {
+      height: 43px;
+      border: none;
+      border-radius: 11px;
+      background: #176c49;
+      color: white;
+      padding: 0 13px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .admin-save-btn:disabled {
+      opacity: .55;
+      cursor: wait;
+    }
+
+    .admin-message {
+      margin-top: 7px;
+      min-height: 18px;
+      font-size: 10px;
+      color: #27704e;
+    }
+
+    .admin-message.error {
+      color: #a0473c;
+    }
+
+    .admin-empty {
+      background: white;
+      border: 1px solid #e0ebe5;
+      border-radius: 18px;
+      padding: 30px 15px;
+      text-align: center;
+      color: #71887c;
+      font-size: 12px;
     }
 
     /* =========================
@@ -1077,15 +888,9 @@
 
     footer {
       text-align: center;
-
       color: #91a39a;
-
       font-size: 10px;
-
-      margin:
-        25px
-        0
-        35px;
+      margin: 25px 0 35px;
     }
 
     /* =========================
@@ -1095,10 +900,7 @@
     @media (max-width: 620px) {
 
       header {
-        padding:
-          18px
-          14px
-          21px;
+        padding: 18px 14px 21px;
       }
 
       .brand h1 {
@@ -1120,11 +922,12 @@
         width: calc(100% - 18px);
       }
 
-      .card {
-        grid-template-columns:
-          125px
-          minmax(0, 1fr);
+      .admin-button-wrap {
+        width: calc(100% - 18px);
+      }
 
+      .card {
+        grid-template-columns: 125px minmax(0, 1fr);
         min-height: 145px;
       }
 
@@ -1133,9 +936,7 @@
       }
 
       .info {
-        padding:
-          13px
-          12px;
+        padding: 13px 12px;
       }
 
       .name {
@@ -1151,16 +952,12 @@
       }
 
       .spec span {
-        padding:
-          5px
-          6px;
-
+        padding: 5px 6px;
         font-size: 9px;
       }
 
       .card-arrow {
         margin-top: 8px;
-
         font-size: 10px;
       }
 
@@ -1187,14 +984,21 @@
       .sheet-body {
         width: calc(100% - 16px);
       }
+
+      .admin-price-row {
+        grid-template-columns: 1fr 95px;
+      }
+
+      .admin-save-btn {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
     }
 
     @media (min-width: 621px) {
 
       .sheet {
-        inset:
-          2%
-          4%;
+        inset: 2% 4%;
         border-radius: 25px;
         overflow: hidden;
       }
@@ -1219,7 +1023,6 @@
       </div>
 
       <div class="brand-text">
-
         <h1>
           کاتالوگ محصولات مشکفام فارس
         </h1>
@@ -1227,7 +1030,6 @@
         <p>
           معرفی محصولات کودی و تغذیه گیاه
         </p>
-
       </div>
 
     </div>
@@ -1260,6 +1062,22 @@
       <div class="account-status">
         حساب فعال
       </div>
+
+    </div>
+
+    <!-- Admin Button -->
+
+    <div
+      id="adminButtonWrap"
+      class="admin-button-wrap"
+    >
+
+      <button
+        id="adminButton"
+        type="button"
+      >
+        ⚙️ پنل مدیریت
+      </button>
 
     </div>
 
@@ -1372,9 +1190,9 @@
 </div>
 
 
-<!-- =========================
+<!-- =====================================================
      PRODUCT MODAL
-========================= -->
+===================================================== -->
 
 <div
   id="modal"
@@ -1454,12 +1272,10 @@
             -
           </div>
 
-
           <div
             id="detailBadges"
             class="badges"
           ></div>
-
 
           <div class="detail-actions">
 
@@ -1524,6 +1340,81 @@
 </div>
 
 
+<!-- =====================================================
+     ADMIN MODAL
+===================================================== -->
+
+<div
+  id="adminModal"
+  class="modal"
+>
+
+  <div class="sheet">
+
+    <div class="sheet-head">
+
+      <button
+        id="closeAdminModal"
+        class="close"
+        type="button"
+        aria-label="بستن"
+      >
+        ×
+      </button>
+
+      <div class="sheet-head-title">
+
+        <strong>
+          ⚙️ پنل مدیریت
+        </strong>
+
+        <small>
+          مدیریت قیمت پایه محصولات
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <div class="sheet-body">
+
+      <div class="admin-intro">
+        در این بخش می‌توانید قیمت پایه هر محصول را تغییر دهید.
+        قیمت ذخیره‌شده مستقیماً در جدول محصولات ثبت می‌شود.
+      </div>
+
+
+      <div
+        id="adminError"
+        class="error-box"
+      ></div>
+
+
+      <div
+        id="adminLoading"
+        class="loading"
+      >
+
+        <div class="spinner"></div>
+
+        در حال دریافت محصولات...
+
+      </div>
+
+
+      <div
+        id="adminProducts"
+        style="display:grid;gap:12px;"
+      ></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
 <script>
 
   /* =========================================================
@@ -1553,13 +1444,17 @@
   if (tg) {
 
     try {
+
       tg.ready();
       tg.expand();
+
     } catch (e) {
+
       console.warn(
         "Telegram WebApp initialization error:",
         e
       );
+
     }
 
   }
@@ -1576,6 +1471,10 @@
   let activeCategory = "all";
 
   let currentProduct = null;
+
+  let isAdmin = false;
+
+  let adminProducts = [];
 
 
   /* =========================================================
@@ -1649,6 +1548,30 @@
     document.getElementById("videoButton");
 
 
+  /* ADMIN DOM */
+
+  const adminButtonWrap =
+    document.getElementById("adminButtonWrap");
+
+  const adminButton =
+    document.getElementById("adminButton");
+
+  const adminModal =
+    document.getElementById("adminModal");
+
+  const closeAdminModal =
+    document.getElementById("closeAdminModal");
+
+  const adminLoading =
+    document.getElementById("adminLoading");
+
+  const adminProductsContainer =
+    document.getElementById("adminProducts");
+
+  const adminError =
+    document.getElementById("adminError");
+
+
   /* =========================================================
      IMAGE HELPERS
   ========================================================= */
@@ -1662,7 +1585,9 @@
       !Number.isFinite(number) ||
       number <= 0
     ) {
+
       return null;
+
     }
 
     return String(number).padStart(2, "0");
@@ -1679,7 +1604,9 @@
       getProductNumber(product);
 
     if (!number) {
+
       return [];
+
     }
 
     if (type === "product") {
@@ -1709,12 +1636,6 @@
   }
 
 
-  /*
-    تصویر اول از GitHub Pages امتحان می‌شود.
-    اگر در Telegram لود نشد،
-    نسخه raw GitHub امتحان می‌شود.
-  */
-
   function setImageWithFallback(
     img,
     candidates,
@@ -1731,39 +1652,49 @@
     ) {
 
       if (fallbackElement) {
-        fallbackElement.classList.remove("hidden");
+
+        fallbackElement.classList.remove(
+          "hidden"
+        );
+
       }
 
       img.style.display = "none";
 
       return;
-    }
 
+    }
 
     let index = 0;
 
     img.style.display = "block";
 
     if (fallbackElement) {
-      fallbackElement.classList.add("hidden");
+
+      fallbackElement.classList.add(
+        "hidden"
+      );
+
     }
 
 
     function loadNext() {
 
-      if (
-        index >= candidates.length
-      ) {
+      if (index >= candidates.length) {
 
         img.style.display = "none";
 
         if (fallbackElement) {
-          fallbackElement.classList.remove("hidden");
+
+          fallbackElement.classList.remove(
+            "hidden"
+          );
+
         }
 
         return;
-      }
 
+      }
 
       const url =
         candidates[index++];
@@ -1778,7 +1709,11 @@
       img.style.display = "block";
 
       if (fallbackElement) {
-        fallbackElement.classList.add("hidden");
+
+        fallbackElement.classList.add(
+          "hidden"
+        );
+
       }
 
     };
@@ -1796,13 +1731,10 @@
   }
 
 
-  /* =========================================================
-     PRODUCT IMAGE
-  ========================================================= */
-
   function setProductImage(
     img,
-    product
+    product,
+    fallbackElement = null
   ) {
 
     const candidates =
@@ -1813,15 +1745,12 @@
 
     setImageWithFallback(
       img,
-      candidates
+      candidates,
+      fallbackElement
     );
 
   }
 
-
-  /* =========================================================
-     CATALOG IMAGE
-  ========================================================= */
 
   function setCatalogImage(
     img,
@@ -1843,19 +1772,23 @@
 
 
   /* =========================================================
-     AUTHENTICATE TELEGRAM
+     TELEGRAM AUTHENTICATION
   ========================================================= */
 
   async function authenticateTelegram() {
 
     if (!tg) {
-      return null;
-    }
 
+      console.warn(
+        "Telegram WebApp is not available."
+      );
+
+      return null;
+
+    }
 
     const initData =
       tg.initData || "";
-
 
     if (!initData) {
 
@@ -1864,6 +1797,7 @@
       );
 
       return null;
+
     }
 
 
@@ -1894,13 +1828,39 @@
 
       if (
         response.ok &&
-        data &&
-        data.customer
+        data
       ) {
 
-        showAccount(
-          data.customer
-        );
+        if (data.customer) {
+
+          showAccount(
+            data.customer
+          );
+
+        }
+
+        /*
+          Worker مقدار is_admin را
+          بر اساس Telegram ID بررسی‌شده
+          برمی‌گرداند.
+        */
+
+        isAdmin =
+          data.is_admin === true;
+
+        if (isAdmin) {
+
+          adminButtonWrap.classList.add(
+            "show"
+          );
+
+        } else {
+
+          adminButtonWrap.classList.remove(
+            "show"
+          );
+
+        }
 
       }
 
@@ -1931,7 +1891,6 @@
       return;
     }
 
-
     const firstName =
       customer.first_name || "";
 
@@ -1939,8 +1898,7 @@
       customer.last_name || "";
 
     const fullName =
-      `${firstName} ${lastName}`
-        .trim();
+      `${firstName} ${lastName}`.trim();
 
 
     accountName.textContent =
@@ -1956,7 +1914,9 @@
         String(customer.username)
           .replace(/^@/, "");
 
-    } else if (customer.telegram_user_id) {
+    } else if (
+      customer.telegram_user_id
+    ) {
 
       accountUser.textContent =
         "Telegram ID: " +
@@ -1970,7 +1930,9 @@
     }
 
 
-    account.classList.add("show");
+    account.classList.add(
+      "show"
+    );
 
   }
 
@@ -1981,13 +1943,19 @@
 
   async function loadProducts() {
 
-    loading.style.display = "block";
+    loading.style.display =
+      "block";
 
-    productGrid.innerHTML = "";
+    productGrid.innerHTML =
+      "";
 
-    empty.classList.remove("show");
+    empty.classList.remove(
+      "show"
+    );
 
-    errorBox.classList.remove("show");
+    errorBox.classList.remove(
+      "show"
+    );
 
 
     try {
@@ -2024,11 +1992,6 @@
       }
 
 
-      /*
-        Worker ممکن است مستقیماً آرایه بدهد
-        یا داخل products قرار داده باشد.
-      */
-
       if (Array.isArray(data)) {
 
         products = data;
@@ -2054,8 +2017,6 @@
 
       /*
         فقط محصولات فعال نمایش داده شوند.
-        اگر active وجود نداشت،
-        محصول حذف نمی‌شود.
       */
 
       products =
@@ -2085,24 +2046,32 @@
 
       errorBox.innerHTML =
         `
-        <strong>خطا در دریافت محصولات</strong><br>
-        ${escapeHtml(
-          error?.message ||
-          "ارتباط با سرور برقرار نشد."
-        )}
-        <br><br>
-        لطفاً چند لحظه بعد دوباره صفحه را باز کنید.
+          <strong>
+            خطا در دریافت محصولات
+          </strong>
+          <br>
+          ${escapeHtml(
+            error?.message ||
+            "ارتباط با سرور برقرار نشد."
+          )}
+          <br><br>
+          لطفاً چند لحظه بعد دوباره صفحه را باز کنید.
         `;
 
 
-      errorBox.classList.add("show");
+      errorBox.classList.add(
+        "show"
+      );
+
 
       count.textContent =
         "دریافت محصولات ناموفق بود.";
 
+
     } finally {
 
-      loading.style.display = "none";
+      loading.style.display =
+        "none";
 
     }
 
@@ -2132,12 +2101,12 @@
 
     categoryToolbar.innerHTML =
       `
-      <button
-        class="chip active"
-        data-category="all"
-      >
-        همه محصولات
-      </button>
+        <button
+          class="chip active"
+          data-category="all"
+        >
+          همه محصولات
+        </button>
       `;
 
 
@@ -2145,7 +2114,9 @@
       category => {
 
         const button =
-          document.createElement("button");
+          document.createElement(
+            "button"
+          );
 
         button.className =
           "chip";
@@ -2221,7 +2192,7 @@
         button.classList.toggle(
           "active",
           button.dataset.category ===
-            activeCategory
+          activeCategory
         );
 
       }
@@ -2265,34 +2236,27 @@
 
 
           if (!search) {
+
             return true;
+
           }
 
 
-          const searchable = [
-
-            product.name_fa,
-
-            product.name_en,
-
-            product.category,
-
-            product.package,
-
-            product.maker,
-
-            product.intro,
-
-            product.composition,
-
-            product.use_text,
-
-            product.warnings
-
-          ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
+          const searchable =
+            [
+              product.name_fa,
+              product.name_en,
+              product.category,
+              product.package,
+              product.maker,
+              product.intro,
+              product.composition,
+              product.use_text,
+              product.warnings
+            ]
+              .filter(Boolean)
+              .join(" ")
+              .toLowerCase();
 
 
           return searchable.includes(
@@ -2314,9 +2278,12 @@
 
   function renderProducts() {
 
-    productGrid.innerHTML = "";
+    productGrid.innerHTML =
+      "";
 
-    empty.classList.remove("show");
+    empty.classList.remove(
+      "show"
+    );
 
 
     count.textContent =
@@ -2327,7 +2294,9 @@
       filteredProducts.length === 0
     ) {
 
-      empty.classList.add("show");
+      empty.classList.add(
+        "show"
+      );
 
       return;
 
@@ -2353,13 +2322,61 @@
 
 
   /* =========================================================
+     GET BASE PRICE
+  ========================================================= */
+
+  function getProductPrice(product) {
+
+    if (
+      product.price !== undefined &&
+      product.price !== null &&
+      product.price !== ""
+    ) {
+
+      return {
+        price: product.price,
+        currency:
+          product.currency ||
+          product.base_currency ||
+          "تومان"
+      };
+
+    }
+
+
+    if (
+      product.base_price !== undefined &&
+      product.base_price !== null &&
+      product.base_price !== ""
+    ) {
+
+      return {
+        price: product.base_price,
+        currency:
+          product.base_currency ||
+          "تومان"
+      };
+
+    }
+
+
+    return null;
+
+  }
+
+
+  /* =========================================================
      CREATE CARD
   ========================================================= */
 
-  function createProductCard(product) {
+  function createProductCard(
+    product
+  ) {
 
     const card =
-      document.createElement("article");
+      document.createElement(
+        "article"
+      );
 
     card.className =
       "card";
@@ -2368,14 +2385,18 @@
     /* Picture */
 
     const pic =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     pic.className =
       "pic";
 
 
     const img =
-      document.createElement("img");
+      document.createElement(
+        "img"
+      );
 
     img.alt =
       product.name_fa ||
@@ -2383,7 +2404,9 @@
 
 
     const placeholder =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     placeholder.className =
       "pic-placeholder";
@@ -2401,21 +2424,26 @@
 
     setProductImage(
       img,
-      product
+      product,
+      placeholder
     );
 
 
     /* Info */
 
     const info =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     info.className =
       "info";
 
 
     const category =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     category.className =
       "category";
@@ -2426,7 +2454,9 @@
 
 
     const name =
-      document.createElement("h2");
+      document.createElement(
+        "h2"
+      );
 
     name.className =
       "name";
@@ -2437,7 +2467,9 @@
 
 
     const en =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     en.className =
       "en";
@@ -2448,7 +2480,9 @@
 
 
     const specs =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     specs.className =
       "spec";
@@ -2457,7 +2491,9 @@
     if (product.package) {
 
       const span =
-        document.createElement("span");
+        document.createElement(
+          "span"
+        );
 
       span.textContent =
         "📦 " +
@@ -2473,7 +2509,9 @@
     if (product.maker) {
 
       const span =
-        document.createElement("span");
+        document.createElement(
+          "span"
+        );
 
       span.textContent =
         "🏭 " +
@@ -2486,18 +2524,24 @@
     }
 
 
-    if (product.price !== undefined &&
-        product.price !== null &&
-        product.price !== "") {
+    const priceInfo =
+      getProductPrice(
+        product
+      );
+
+
+    if (priceInfo) {
 
       const span =
-        document.createElement("span");
+        document.createElement(
+          "span"
+        );
 
       span.textContent =
         "💰 " +
         formatPrice(
-          product.price,
-          product.currency
+          priceInfo.price,
+          priceInfo.currency
         );
 
       specs.appendChild(
@@ -2508,7 +2552,9 @@
 
 
     const arrow =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     arrow.className =
       "card-arrow";
@@ -2525,6 +2571,7 @@
       name
     );
 
+
     if (product.name_en) {
 
       info.appendChild(
@@ -2533,6 +2580,7 @@
 
     }
 
+
     if (specs.children.length) {
 
       info.appendChild(
@@ -2540,6 +2588,7 @@
       );
 
     }
+
 
     info.appendChild(
       arrow
@@ -2576,7 +2625,9 @@
      OPEN PRODUCT
   ========================================================= */
 
-  function openProduct(product) {
+  function openProduct(
+    product
+  ) {
 
     if (!product) {
       return;
@@ -2626,22 +2677,25 @@
       "📦"
     );
 
+
     addBadge(
       product.maker,
       "🏭"
     );
 
 
-    if (
-      product.price !== undefined &&
-      product.price !== null &&
-      product.price !== ""
-    ) {
+    const priceInfo =
+      getProductPrice(
+        product
+      );
+
+
+    if (priceInfo) {
 
       addBadge(
         formatPrice(
-          product.price,
-          product.currency
+          priceInfo.price,
+          priceInfo.currency
         ),
         "💰"
       );
@@ -2675,11 +2729,6 @@
     );
 
 
-    /*
-      اگر عکس کاتالوگ در هر دو مسیر
-      پیدا نشد، پیام مناسب نمایش بده.
-    */
-
     pageImage.onerror =
       function () {
 
@@ -2699,11 +2748,14 @@
 
     if (
       product.video_url &&
-      String(product.video_url).trim()
+      String(
+        product.video_url
+      ).trim()
     ) {
 
       videoButton.style.display =
         "inline-block";
+
 
       videoButton.onclick =
         function () {
@@ -2734,17 +2786,17 @@
       "hidden";
 
 
-    /*
-      برگشت اسکرول جزئیات به بالا
-    */
-
     const sheet =
       modal.querySelector(
         ".sheet"
       );
 
+
     if (sheet) {
-      sheet.scrollTop = 0;
+
+      sheet.scrollTop =
+        0;
+
     }
 
   }
@@ -2771,10 +2823,13 @@
 
 
     const badge =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     badge.className =
       "badge";
+
 
     badge.textContent =
       icon +
@@ -2793,7 +2848,9 @@
      DETAILS RENDER
   ========================================================= */
 
-  function renderProductDetails(product) {
+  function renderProductDetails(
+    product
+  ) {
 
     productDetails.innerHTML =
       "";
@@ -2806,8 +2863,8 @@
 
 
     /*
-      benefits می‌تواند آرایه باشد
-      یا متن ساده.
+      benefits می‌تواند آرایه
+      یا متن ساده باشد.
     */
 
     if (
@@ -2818,21 +2875,27 @@
     ) {
 
       const block =
-        document.createElement("section");
+        document.createElement(
+          "section"
+        );
 
       block.className =
         "detail-block";
 
 
       const title =
-        document.createElement("h3");
+        document.createElement(
+          "h3"
+        );
 
       title.textContent =
         "مزایا";
 
 
       const list =
-        document.createElement("ul");
+        document.createElement(
+          "ul"
+        );
 
       list.className =
         "benefits-list";
@@ -2844,17 +2907,26 @@
           if (
             benefit === null ||
             benefit === undefined ||
-            String(benefit).trim() === ""
+            String(
+              benefit
+            ).trim() === ""
           ) {
+
             return;
+
           }
 
 
           const li =
-            document.createElement("li");
+            document.createElement(
+              "li"
+            );
 
           li.textContent =
-            String(benefit);
+            String(
+              benefit
+            );
+
 
           list.appendChild(
             li
@@ -2875,6 +2947,7 @@
       productDetails.appendChild(
         block
       );
+
 
     } else {
 
@@ -2906,26 +2979,32 @@
     );
 
 
-    /*
-      اگر هیچ جزئیاتی موجود نبود
-    */
-
     if (
       productDetails.children.length === 0
     ) {
 
       const block =
-        document.createElement("section");
+        document.createElement(
+          "section"
+        );
 
       block.className =
         "detail-block";
 
-      block.innerHTML =
-        `
-        <p>
-          اطلاعات تکمیلی این محصول هنوز ثبت نشده است.
-        </p>
-        `;
+
+      const p =
+        document.createElement(
+          "p"
+        );
+
+      p.textContent =
+        "اطلاعات تکمیلی این محصول هنوز ثبت نشده است.";
+
+
+      block.appendChild(
+        p
+      );
+
 
       productDetails.appendChild(
         block
@@ -2958,7 +3037,9 @@
 
 
     const block =
-      document.createElement("section");
+      document.createElement(
+        "section"
+      );
 
     block.className =
       "detail-block " +
@@ -2966,14 +3047,18 @@
 
 
     const h3 =
-      document.createElement("h3");
+      document.createElement(
+        "h3"
+      );
 
     h3.textContent =
       title;
 
 
     const p =
-      document.createElement("p");
+      document.createElement(
+        "p"
+      );
 
     p.textContent =
       String(text);
@@ -2996,7 +3081,7 @@
 
 
   /* =========================================================
-     CLOSE MODAL
+     CLOSE PRODUCT MODAL
   ========================================================= */
 
   function closeProductModal() {
@@ -3020,37 +3105,12 @@
   );
 
 
-  /*
-    کلیک بیرون از sheet
-  */
-
   modal.addEventListener(
     "click",
     function(event) {
 
       if (
         event.target === modal
-      ) {
-
-        closeProductModal();
-
-      }
-
-    }
-  );
-
-
-  /*
-    کلید Escape
-  */
-
-  document.addEventListener(
-    "keydown",
-    function(event) {
-
-      if (
-        event.key === "Escape" &&
-        modal.classList.contains("show")
       ) {
 
         closeProductModal();
@@ -3144,10 +3204,12 @@
 
 
   /* =========================================================
-     OPEN EXTERNAL URL
+     EXTERNAL URL
   ========================================================= */
 
-  function openExternalUrl(url) {
+  function openExternalUrl(
+    url
+  ) {
 
     if (!url) {
       return;
@@ -3159,7 +3221,7 @@
       if (
         tg &&
         typeof tg.openLink ===
-          "function"
+        "function"
       ) {
 
         tg.openLink(
@@ -3192,7 +3254,9 @@
      ESCAPE HTML
   ========================================================= */
 
-  function escapeHtml(value) {
+  function escapeHtml(
+    value
+  ) {
 
     return String(value)
       .replace(
@@ -3217,6 +3281,832 @@
       );
 
   }
+
+
+  /* =========================================================
+     ADMIN - LOAD PRODUCTS
+  ========================================================= */
+
+  async function loadAdminProducts() {
+
+    if (!isAdmin) {
+
+      return;
+
+    }
+
+
+    adminLoading.style.display =
+      "block";
+
+    adminProductsContainer.innerHTML =
+      "";
+
+    adminError.classList.remove(
+      "show"
+    );
+
+
+    if (!tg || !tg.initData) {
+
+      adminLoading.style.display =
+        "none";
+
+      showAdminError(
+        "اطلاعات ورود تلگرام در دسترس نیست."
+      );
+
+      return;
+
+    }
+
+
+    try {
+
+      const response =
+        await fetch(
+          WORKER_URL +
+          "/api/admin/products",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Accept":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              initData:
+                tg.initData
+            })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data?.message ||
+          data?.error ||
+          "دریافت محصولات مدیریتی ناموفق بود."
+        );
+
+      }
+
+
+      if (
+        !data ||
+        data.ok !== true
+      ) {
+
+        throw new Error(
+          data?.message ||
+          "پاسخ نامعتبر از سرور دریافت شد."
+        );
+
+      }
+
+
+      if (
+        Array.isArray(
+          data.products
+        )
+      ) {
+
+        adminProducts =
+          data.products;
+
+      } else {
+
+        adminProducts =
+          [];
+
+      }
+
+
+      renderAdminProducts();
+
+
+    } catch (error) {
+
+      console.error(
+        "Admin products error:",
+        error
+      );
+
+
+      showAdminError(
+        error?.message ||
+        "ارتباط با سرور برقرار نشد."
+      );
+
+    } finally {
+
+      adminLoading.style.display =
+        "none";
+
+    }
+
+  }
+
+
+  /* =========================================================
+     ADMIN - RENDER PRODUCTS
+  ========================================================= */
+
+  function renderAdminProducts() {
+
+    adminProductsContainer.innerHTML =
+      "";
+
+
+    if (
+      adminProducts.length === 0
+    ) {
+
+      const emptyBox =
+        document.createElement(
+          "div"
+        );
+
+      emptyBox.className =
+        "admin-empty";
+
+      emptyBox.textContent =
+        "محصولی برای مدیریت پیدا نشد.";
+
+      adminProductsContainer.appendChild(
+        emptyBox
+      );
+
+      return;
+
+    }
+
+
+    adminProducts.forEach(
+      product => {
+
+        const card =
+          document.createElement(
+            "div"
+          );
+
+        card.className =
+          "admin-product-card";
+
+
+        const title =
+          document.createElement(
+            "div"
+          );
+
+        title.className =
+          "admin-product-title";
+
+        title.textContent =
+          product.name_fa ||
+          "محصول بدون نام";
+
+
+        const en =
+          document.createElement(
+            "div"
+          );
+
+        en.className =
+          "admin-product-en";
+
+        en.textContent =
+          product.name_en ||
+          "";
+
+
+        const meta =
+          document.createElement(
+            "div"
+          );
+
+        meta.className =
+          "admin-product-meta";
+
+
+        if (product.category) {
+
+          const item =
+            document.createElement(
+              "span"
+            );
+
+          item.className =
+            "admin-meta";
+
+          item.textContent =
+            product.category;
+
+          meta.appendChild(
+            item
+          );
+
+        }
+
+
+        if (product.package) {
+
+          const item =
+            document.createElement(
+              "span"
+            );
+
+          item.className =
+            "admin-meta";
+
+          item.textContent =
+            "📦 " +
+            product.package;
+
+          meta.appendChild(
+            item
+          );
+
+        }
+
+
+        if (product.maker) {
+
+          const item =
+            document.createElement(
+              "span"
+            );
+
+          item.className =
+            "admin-meta";
+
+          item.textContent =
+            "🏭 " +
+            product.maker;
+
+          meta.appendChild(
+            item
+          );
+
+        }
+
+
+        const priceRow =
+          document.createElement(
+            "div"
+          );
+
+        priceRow.className =
+          "admin-price-row";
+
+
+        const priceInput =
+          document.createElement(
+            "input"
+          );
+
+        priceInput.className =
+          "admin-price-input";
+
+        priceInput.type =
+          "number";
+
+        priceInput.min =
+          "0";
+
+        priceInput.step =
+          "any";
+
+        priceInput.inputMode =
+          "decimal";
+
+        priceInput.placeholder =
+          "قیمت پایه";
+
+
+        if (
+          product.base_price !== undefined &&
+          product.base_price !== null
+        ) {
+
+          priceInput.value =
+            product.base_price;
+
+        }
+
+
+        const currencyInput =
+          document.createElement(
+            "input"
+          );
+
+        currencyInput.className =
+          "admin-currency-input";
+
+        currencyInput.type =
+          "text";
+
+        currencyInput.maxLength =
+          20;
+
+        currencyInput.placeholder =
+          "واحد";
+
+        currencyInput.value =
+          product.base_currency ||
+          "تومان";
+
+
+        const saveButton =
+          document.createElement(
+            "button"
+          );
+
+        saveButton.className =
+          "admin-save-btn";
+
+        saveButton.type =
+          "button";
+
+        saveButton.textContent =
+          "💾 ذخیره";
+
+
+        const message =
+          document.createElement(
+            "div"
+          );
+
+        message.className =
+          "admin-message";
+
+
+        saveButton.addEventListener(
+          "click",
+          async function() {
+
+            await updateAdminPrice(
+              product,
+              priceInput,
+              currencyInput,
+              saveButton,
+              message
+            );
+
+          }
+        );
+
+
+        priceRow.appendChild(
+          priceInput
+        );
+
+        priceRow.appendChild(
+          currencyInput
+        );
+
+        priceRow.appendChild(
+          saveButton
+        );
+
+
+        card.appendChild(
+          title
+        );
+
+        if (product.name_en) {
+
+          card.appendChild(
+            en
+          );
+
+        }
+
+        if (meta.children.length) {
+
+          card.appendChild(
+            meta
+          );
+
+        }
+
+        card.appendChild(
+          priceRow
+        );
+
+        card.appendChild(
+          message
+        );
+
+
+        adminProductsContainer.appendChild(
+          card
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     ADMIN - UPDATE PRICE
+  ========================================================= */
+
+  async function updateAdminPrice(
+    product,
+    priceInput,
+    currencyInput,
+    saveButton,
+    message
+  ) {
+
+    if (!isAdmin) {
+
+      return;
+
+    }
+
+
+    const rawPrice =
+      String(
+        priceInput.value || ""
+      ).trim();
+
+
+    const currency =
+      String(
+        currencyInput.value ||
+        "تومان"
+      ).trim();
+
+
+    let basePrice =
+      null;
+
+
+    if (rawPrice !== "") {
+
+      basePrice =
+        Number(rawPrice);
+
+
+      if (
+        !Number.isFinite(
+          basePrice
+        ) ||
+        basePrice < 0
+      ) {
+
+        message.textContent =
+          "قیمت واردشده معتبر نیست.";
+
+        message.classList.add(
+          "error"
+        );
+
+        return;
+
+      }
+
+    }
+
+
+    if (
+      currency.length < 1 ||
+      currency.length > 20
+    ) {
+
+      message.textContent =
+        "واحد پول معتبر نیست.";
+
+      message.classList.add(
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    saveButton.disabled =
+      true;
+
+    saveButton.textContent =
+      "در حال ذخیره...";
+
+    message.textContent =
+      "";
+
+    message.classList.remove(
+      "error"
+    );
+
+
+    try {
+
+      if (!tg || !tg.initData) {
+
+        throw new Error(
+          "اطلاعات ورود تلگرام در دسترس نیست."
+        );
+
+      }
+
+
+      const response =
+        await fetch(
+          WORKER_URL +
+          "/api/admin/update-price",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Accept":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+
+              initData:
+                tg.initData,
+
+              product_id:
+                Number(product.id),
+
+              base_price:
+                basePrice,
+
+              base_currency:
+                currency
+
+            })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data?.message ||
+          data?.error ||
+          "ذخیره قیمت ناموفق بود."
+        );
+
+      }
+
+
+      if (
+        !data ||
+        data.ok !== true
+      ) {
+
+        throw new Error(
+          data?.message ||
+          "پاسخ نامعتبر از سرور دریافت شد."
+        );
+
+      }
+
+
+      /*
+        مقدار محلی پنل را هم به‌روز می‌کنیم.
+      */
+
+      product.base_price =
+        basePrice;
+
+      product.base_currency =
+        currency;
+
+
+      message.textContent =
+        "✓ قیمت با موفقیت ذخیره شد.";
+
+      message.classList.remove(
+        "error"
+      );
+
+
+      /*
+        محصولات صفحه اصلی را هم
+        با قیمت جدید به‌روزرسانی می‌کنیم.
+      */
+
+      const mainProduct =
+        products.find(
+          item =>
+            Number(item.id) ===
+            Number(product.id)
+        );
+
+
+      if (mainProduct) {
+
+        mainProduct.base_price =
+          basePrice;
+
+        mainProduct.base_currency =
+          currency;
+
+      }
+
+
+      applyFilters();
+
+
+    } catch (error) {
+
+      console.error(
+        "Update admin price error:",
+        error
+      );
+
+
+      message.textContent =
+        error?.message ||
+        "ذخیره قیمت انجام نشد.";
+
+      message.classList.add(
+        "error"
+      );
+
+    } finally {
+
+      saveButton.disabled =
+        false;
+
+      saveButton.textContent =
+        "💾 ذخیره";
+
+    }
+
+  }
+
+
+  /* =========================================================
+     ADMIN ERROR
+  ========================================================= */
+
+  function showAdminError(
+    message
+  ) {
+
+    adminError.innerHTML =
+      `
+        <strong>
+          خطا در پنل مدیریت
+        </strong>
+        <br>
+        ${escapeHtml(
+          message
+        )}
+      `;
+
+    adminError.classList.add(
+      "show"
+    );
+
+  }
+
+
+  /* =========================================================
+     ADMIN MODAL
+  ========================================================= */
+
+  async function openAdminPanel() {
+
+    if (!isAdmin) {
+
+      return;
+
+    }
+
+
+    adminModal.classList.add(
+      "show"
+    );
+
+    document.body.style.overflow =
+      "hidden";
+
+
+    const sheet =
+      adminModal.querySelector(
+        ".sheet"
+      );
+
+
+    if (sheet) {
+
+      sheet.scrollTop =
+        0;
+
+    }
+
+
+    await loadAdminProducts();
+
+  }
+
+
+  function closeAdminPanel() {
+
+    adminModal.classList.remove(
+      "show"
+    );
+
+    document.body.style.overflow =
+      "";
+
+  }
+
+
+  adminButton.addEventListener(
+    "click",
+    openAdminPanel
+  );
+
+
+  closeAdminModal.addEventListener(
+    "click",
+    closeAdminPanel
+  );
+
+
+  adminModal.addEventListener(
+    "click",
+    function(event) {
+
+      if (
+        event.target ===
+        adminModal
+      ) {
+
+        closeAdminPanel();
+
+      }
+
+    }
+  );
+
+
+  /* =========================================================
+     ESCAPE KEY
+  ========================================================= */
+
+  document.addEventListener(
+    "keydown",
+    function(event) {
+
+      if (
+        event.key !== "Escape"
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        modal.classList.contains(
+          "show"
+        )
+      ) {
+
+        closeProductModal();
+
+      }
+
+
+      if (
+        adminModal.classList.contains(
+          "show"
+        )
+      ) {
+
+        closeAdminPanel();
+
+      }
+
+    }
+  );
 
 
   /* =========================================================

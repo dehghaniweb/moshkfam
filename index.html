@@ -4,111 +4,262 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#166534">
+
 <title>مشکفام فارس</title>
-<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet" href="style.css?v=20260912-2">
+
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
+
 <body>
+
 <div class="app">
 
 <header class="header">
+
   <div class="brand">
-    <img src="images/logo.png" onerror="this.style.display='none'">
+
+    <img
+      src="images/logo.png"
+      onerror="this.style.display='none'"
+    >
+
     <div>
       <h1>🌱 مشکفام فارس</h1>
       <p>محصولات کشاورزی و کودهای تخصصی</p>
     </div>
+
   </div>
 
   <div id="account" class="account hidden">
+
     <div class="account-main">
+
       <div class="avatar">👤</div>
+
       <div>
         <strong id="accountName">کاربر</strong>
         <span id="accountUser"></span>
       </div>
+
     </div>
+
     <div id="accountInfo"></div>
+
   </div>
 
-  <button id="adminButton" class="admin-button hidden">⚙️ پنل مدیریت</button>
+  <button
+    id="adminButton"
+    class="admin-button hidden">
+    ⚙️ پنل مدیریت
+  </button>
+
 </header>
+
 
 <main>
 
 <section class="welcome">
+
   <h2>محصولات مشکفام فارس</h2>
-  <p>محصول موردنظر خود را جستجو و مشخصات، قیمت و اطلاعات آن را مشاهده کنید.</p>
+
+  <p>
+    محصول موردنظر خود را جستجو و مشخصات، قیمت و اطلاعات آن را مشاهده کنید.
+  </p>
+
 </section>
 
+
 <div class="search-box">
-  <input id="searchInput" type="search" placeholder="🔎 جستجوی محصول...">
+
+  <input
+    id="searchInput"
+    type="search"
+    placeholder="🔎 جستجوی محصول..."
+  >
+
 </div>
 
-<div id="categories" class="categories"></div>
+
+<div
+  id="categories"
+  class="categories">
+</div>
+
 
 <div class="products-head">
+
   <strong>محصولات</strong>
-  <span id="productCount">0 محصول</span>
+
+  <span id="productCount">
+    0 محصول
+  </span>
+
 </div>
 
-<div id="loading" class="message">در حال دریافت محصولات...</div>
-<div id="error" class="message error hidden"></div>
-<div id="empty" class="message hidden">محصولی پیدا نشد.</div>
 
-<div id="productGrid" class="product-grid"></div>
+<div
+  id="loading"
+  class="message">
+  در حال دریافت محصولات...
+</div>
+
+
+<div
+  id="error"
+  class="message error hidden">
+</div>
+
+
+<div
+  id="empty"
+  class="message hidden">
+  محصولی پیدا نشد.
+</div>
+
+
+<div
+  id="productGrid"
+  class="product-grid">
+</div>
 
 </main>
 
+
 <footer>
+
   <strong>🌱 مشکفام فارس</strong>
-  <span>تولید و عرضه محصولات تخصصی کشاورزی</span>
+
+  <span>
+    تولید و عرضه محصولات تخصصی کشاورزی
+  </span>
+
 </footer>
 
 </div>
 
-<div id="modal" class="modal hidden">
-  <div class="modal-backdrop" onclick="closeModal()"></div>
-  <div class="modal-card">
-    <button class="close" onclick="closeModal()">×</button>
-    <div id="modalContent"></div>
+
+<!-- Product Modal -->
+
+<div
+  id="modal"
+  class="modal hidden">
+
+  <div
+    class="modal-backdrop"
+    onclick="closeModal()">
   </div>
+
+  <div class="modal-card">
+
+    <button
+      class="close"
+      onclick="closeModal()">
+      ×
+    </button>
+
+    <div id="modalContent"></div>
+
+  </div>
+
 </div>
 
-<div id="adminModal" class="modal hidden">
-  <div class="modal-backdrop" onclick="closeAdmin()"></div>
+
+<!-- Admin Modal -->
+
+<div
+  id="adminModal"
+  class="modal hidden">
+
+  <div
+    class="modal-backdrop"
+    onclick="closeAdmin()">
+  </div>
+
   <div class="modal-card admin-card">
-    <button class="close" onclick="closeAdmin()">×</button>
+
+    <button
+      class="close"
+      onclick="closeAdmin()">
+      ×
+    </button>
+
 
     <h2>⚙️ پنل مدیریت</h2>
-    <div id="adminError" class="message error hidden"></div>
-    <div id="adminLoading" class="message">در حال دریافت اطلاعات...</div>
+
+
+    <div
+      id="adminError"
+      class="message error hidden">
+    </div>
+
+
+    <div
+      id="adminLoading"
+      class="message">
+      در حال دریافت اطلاعات...
+    </div>
+
 
     <section class="admin-section">
+
       <h3>👤 اطلاعات حساب</h3>
-      <div id="adminAccountInfo" class="info-box"></div>
+
+      <div
+        id="adminAccountInfo"
+        class="info-box">
+      </div>
+
     </section>
+
 
     <section class="admin-section">
+
       <h3>📦 مدیریت محصولات</h3>
+
       <div id="adminProducts"></div>
+
     </section>
 
-    <section id="customerSection" class="admin-section">
+
+    <section
+      id="customerSection"
+      class="admin-section">
+
       <h3>👥 قیمت اختصاصی مشتری</h3>
 
+
       <select id="customerSelect">
-        <option value="">انتخاب مشتری</option>
+
+        <option value="">
+          انتخاب مشتری
+        </option>
+
       </select>
 
-      <div id="customerInfo" class="customer-info hidden"></div>
 
-      <div id="customerPrices" class="customer-prices"></div>
+      <div
+        id="customerInfo"
+        class="customer-info hidden">
+      </div>
+
+
+      <div
+        id="customerPrices"
+        class="customer-prices">
+      </div>
+
     </section>
 
   </div>
+
 </div>
 
-<script src="app.js"></script>
+
+<!-- مهم: نسخه جدید JavaScript -->
+
+<script src="app.js?v=20260912-2"></script>
+
 </body>
 </html>

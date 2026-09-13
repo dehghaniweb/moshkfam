@@ -25,6 +25,13 @@
 >
 
 <meta name="theme-color" content="#166534">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="مشکفام فارس">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
 <title>مشکفام فارس</title>
 
@@ -131,6 +138,15 @@
   </div>
 
 
+  <div class="login-box" id="loginBox">
+    <div class="login-fields">
+      <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username">
+      <input id="loginPassword" type="password" placeholder="رمز عبور" autocomplete="current-password">
+      <button id="loginButton" type="button">🔐 ورود</button>
+    </div>
+    <div id="loginMessage" class="login-message"></div>
+  </div>
+
   <div class="header-actions">
     <button
       id="adminButton"
@@ -139,6 +155,8 @@
     >
       ⚙️ پنل مدیریت
     </button>
+
+    <button id="logoutButton" class="logout-button hidden" type="button">خروج</button>
 
     <button
       id="customerButton"
@@ -231,15 +249,10 @@
 
 
 <footer>
-
-  <strong>
-    🌱 مشکفام فارس
-  </strong>
-
-  <span>
-    تولید و عرضه محصولات تخصصی کشاورزی
-  </span>
-
+  <strong id="footerCompanyName">🌱 مشکفام فارس</strong>
+  <span id="footerText">تولید و عرضه محصولات تخصصی کشاورزی</span>
+  <span id="footerPhone"></span>
+  <span id="footerAddress"></span>
 </footer>
 
 
@@ -350,14 +363,48 @@
 
     <section class="admin-section">
 
-      <h3>
-        📦 مدیریت محصولات
-      </h3>
-
+      <h3>📦 مدیریت محصولات</h3>
+      <div class="admin-create-product">
+        <h4>➕ افزودن محصول جدید</h4>
+        <div class="admin-edit-grid">
+          <label>نام فارسی<input id="newProductNameFa"></label>
+          <label>نام انگلیسی<input id="newProductNameEn"></label>
+          <label>دسته‌بندی<input id="newProductCategory"></label>
+          <label>بسته‌بندی<input id="newProductPackage"></label>
+          <label>سازنده<input id="newProductMaker"></label>
+          <label>قیمت پایه<input id="newProductPrice" type="number"></label>
+        </div>
+        <button class="admin-primary" onclick="createProduct()">➕ ایجاد محصول</button>
+      </div>
       <div id="adminProducts"></div>
 
     </section>
 
+
+    <section class="admin-section">
+      <h3>👥 مدیریت کاربران نماینده</h3>
+      <div class="admin-create-user">
+        <div class="admin-edit-grid">
+          <label>نام<input id="newUserFirstName"></label>
+          <label>نام خانوادگی<input id="newUserLastName"></label>
+          <label>نام کاربری<input id="newUserUsername" autocomplete="off"></label>
+          <label>رمز عبور<input id="newUserPassword" type="password" autocomplete="new-password"></label>
+        </div>
+        <button class="admin-primary" onclick="createCustomerUser()">➕ افزودن نماینده</button>
+      </div>
+      <div id="adminUsers"></div>
+    </section>
+
+    <section class="admin-section">
+      <h3>⚙️ اطلاعات پایین صفحه</h3>
+      <div class="admin-edit-grid">
+        <label>نام شرکت<input id="settingCompanyName"></label>
+        <label>تلفن<input id="settingPhone"></label>
+        <label class="admin-edit-grid-wide-label">متن زیر نام شرکت<textarea id="settingFooterText"></textarea></label>
+        <label class="admin-edit-grid-wide-label">آدرس<textarea id="settingAddress"></textarea></label>
+      </div>
+      <button class="admin-primary" onclick="saveSiteSettings()">💾 ذخیره اطلاعات شرکت</button>
+    </section>
 
     <section class="admin-section">
       <h3>🛒 سفارش‌ها و یادداشت‌های مشتریان</h3>

@@ -92,8 +92,8 @@
   <div class="brand">
 
     <img
-      src="images/logo.png"
-      onerror="this.style.display='none'"
+      src="Images/logo.png"
+      onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='images/logo.png';}else{this.style.display='none';}"
       alt="مشکفام فارس"
     >
 

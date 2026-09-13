@@ -1,5 +1,5 @@
-const CACHE = "moshkfam-shell-v1";
-const SHELL = ["./", "./index.html", "./style.css", "./app.js", "./manifest.json", "./images/logo.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/favicon-64.png", "./icons/apple-touch-icon.png"];
+const CACHE = "moshkfam-shell-v2";
+const SHELL = ["./", "./index.html", "./style.css", "./app.js", "./manifest.json", "./images/logo.png", "./Images/logo.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/favicon-64.png", "./icons/apple-touch-icon.png"];
 self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener("activate", event => event.waitUntil(self.clients.claim()));
 self.addEventListener("fetch", event => {

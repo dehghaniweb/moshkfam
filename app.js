@@ -1,0 +1,1509 @@
+"use strict";
+
+/* =========================================================
+   MOSHKFAM FARs - app.js
+   نسخه نهایی
+   - ضد کش خودکار
+   - سازگار با Web و Telegram WebApp
+   - محصولات
+   - جستجو و دسته‌بندی
+   - احراز هویت تلگرام
+   - پنل مدیریت
+   - قیمت اختصاصی مشتری
+   - ویدئو و فایل‌ها
+========================================================= */
+
+const WORKER_URL =
+  "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
+
+const tg =
+  window.Telegram && window.Telegram.WebApp
+    ? window.Telegram.WebApp
+    : null;
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let products = [];
+let categories = [];
+let activeCategory = "";
+let currentUser = null;
+let isAdmin = false;
+let selectedCustomer = null;
+
+
+/* =========================================================
+   TELEGRAM INIT
+========================================================= */
+
+if (tg) {
+  try {
+    tg.ready();
+    tg.expand();
+  } catch (e) {
+    console.warn("Telegram init:", e);
+  }
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatNumber(value) {
+  const n = Number(value);
+
+  if (!Number.isFinite(n)) {
+    return "";
+  }
+
+  return new Intl.NumberFormat("fa-IR").format(n);
+}
+
+function formatDate(value) {
+  if (!value) return "";
+
+  try {
+    return new Intl.DateTimeFormat("fa-IR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
+}
+
+function getPriceText(product) {
+  if (
+    product &&
+    product.base_price !== null &&
+    product.base_price !== undefined &&
+    product.base_price !== ""
+  ) {
+    return `
+      <div class="price">
+        ${formatNumber(product.base_price)}
+        ${escapeHtml(product.base_currency || "تومان")}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="price private-price">
+      برای اطلاع از قیمت تماس بگیرید
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   API - AUTOMATIC NO CACHE
+========================================================= */
+
+function buildApiUrl(path) {
+  const separator = path.includes("?") ? "&" : "?";
+  return (
+    WORKER_URL +
+    path +
+    separator +
+    "_nocache=" +
+    Date.now()
+  );
+}
+
+async function apiRequest(path, options = {}) {
+  const headers = {
+    ...(options.headers || {})
+  };
+
+  if (tg && tg.initData) {
+    headers["X-Telegram-Init-Data"] = tg.initData;
+  }
+
+  const response = await fetch(buildApiUrl(path), {
+    ...options,
+    cache: "no-store",
+    headers
+  });
+
+  const text = await response.text();
+
+  let data = null;
+
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text;
+  }
+
+  if (!response.ok) {
+    const message =
+      data &&
+      typeof data === "object" &&
+      data.error
+        ? data.error
+        : `HTTP ${response.status}`;
+
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+async function get(path) {
+  return apiRequest(path, {
+    method: "GET"
+  });
+}
+
+async function postJson(path, body) {
+  return apiRequest(path, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body || {})
+  });
+}
+
+
+/* =========================================================
+   UI MESSAGE
+========================================================= */
+
+function showError(message) {
+  const el = $("error");
+
+  if (!el) return;
+
+  el.textContent = message || "خطایی رخ داد.";
+  el.classList.remove("hidden");
+}
+
+function hideError() {
+  const el = $("error");
+
+  if (el) {
+    el.classList.add("hidden");
+  }
+}
+
+
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
+
+async function authenticate() {
+  if (!tg || !tg.initData) {
+    return;
+  }
+
+  try {
+    const result = await postJson("/api/telegram-auth", {
+      initData: tg.initData
+    });
+
+    if (result && result.user) {
+      currentUser = result.user;
+    }
+
+    if (result && result.isAdmin) {
+      isAdmin = true;
+    }
+
+    updateAccountUI();
+
+  } catch (error) {
+    console.warn("Telegram authentication failed:", error);
+  }
+}
+
+async function loadCurrentUser() {
+  if (!tg || !tg.initData) {
+    return;
+  }
+
+  try {
+    const result = await postJson("/api/whoami", {
+      initData: tg.initData
+    });
+
+    if (result && result.user) {
+      currentUser = result.user;
+    }
+
+    if (result && typeof result.isAdmin === "boolean") {
+      isAdmin = result.isAdmin;
+    }
+
+    updateAccountUI();
+
+  } catch (error) {
+    console.warn("whoami:", error);
+  }
+}
+
+
+/* =========================================================
+   ACCOUNT UI
+========================================================= */
+
+function updateAccountUI() {
+  const account = $("account");
+  const adminButton = $("adminButton");
+
+  if (!currentUser) {
+    if (account) {
+      account.classList.add("hidden");
+    }
+
+    if (adminButton) {
+      adminButton.classList.add("hidden");
+    }
+
+    return;
+  }
+
+  if (account) {
+    account.classList.remove("hidden");
+  }
+
+  const name =
+    [
+      currentUser.first_name,
+      currentUser.last_name
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    currentUser.username ||
+    "کاربر";
+
+  const username =
+    currentUser.username
+      ? "@" + currentUser.username
+      : "";
+
+  if ($("accountName")) {
+    $("accountName").textContent = name;
+  }
+
+  if ($("accountUser")) {
+    $("accountUser").textContent = username;
+  }
+
+  if ($("accountInfo")) {
+    $("accountInfo").textContent =
+      isAdmin || currentUser.role === "admin"
+        ? "مدیر سیستم"
+        : "مشتری";
+  }
+
+  if (adminButton) {
+    if (isAdmin) {
+      adminButton.classList.remove("hidden");
+    } else {
+      adminButton.classList.add("hidden");
+    }
+  }
+}
+
+
+/* =========================================================
+   PRODUCTS
+========================================================= */
+
+async function loadProducts() {
+  const loading = $("loading");
+
+  if (loading) {
+    loading.classList.remove("hidden");
+    loading.textContent = "در حال دریافت محصولات...";
+  }
+
+  hideError();
+
+  try {
+    const result = await get("/api/products");
+
+    if (Array.isArray(result)) {
+      products = result;
+    } else if (
+      result &&
+      Array.isArray(result.products)
+    ) {
+      products = result.products;
+    } else {
+      products = [];
+    }
+
+    buildCategories();
+    renderCategories();
+    renderProducts();
+
+  } catch (error) {
+    console.error("Products error:", error);
+
+    products = [];
+
+    showError(
+      "❌ دریافت محصولات انجام نشد. اتصال اینترنت یا سرور را بررسی کنید."
+    );
+
+  } finally {
+    if (loading) {
+      loading.classList.add("hidden");
+    }
+  }
+}
+
+
+/* =========================================================
+   CATEGORIES
+========================================================= */
+
+function buildCategories() {
+  const set = new Set();
+
+  products.forEach(product => {
+    if (product.category) {
+      set.add(String(product.category).trim());
+    }
+  });
+
+  categories = Array.from(set);
+}
+
+function renderCategories() {
+  const container = $("categories");
+
+  if (!container) return;
+
+  let html = `
+    <button
+      class="category-circle ${
+        activeCategory === "" ? "active" : ""
+      }"
+      data-category=""
+    >
+      همه
+    </button>
+  `;
+
+  categories.forEach(category => {
+    html += `
+      <button
+        class="category-circle ${
+          activeCategory === category ? "active" : ""
+        }"
+        data-category="${escapeHtml(category)}"
+      >
+        ${escapeHtml(category)}
+      </button>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  container
+    .querySelectorAll(".category-circle")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        activeCategory =
+          button.dataset.category || "";
+
+        renderCategories();
+        renderProducts();
+      });
+    });
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+function getFilteredProducts() {
+  const input = $("searchInput");
+
+  const query = input
+    ? input.value.trim().toLowerCase()
+    : "";
+
+  return products.filter(product => {
+    const categoryOK =
+      !activeCategory ||
+      String(product.category || "") ===
+        activeCategory;
+
+    if (!categoryOK) {
+      return false;
+    }
+
+    if (!query) {
+      return true;
+    }
+
+    const searchable = [
+      product.name_fa,
+      product.name_en,
+      product.category,
+      product.package,
+      product.maker,
+      product.intro,
+      product.composition,
+      product.use_text,
+      product.warnings
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return searchable.includes(query);
+  });
+}
+
+
+/* =========================================================
+   PRODUCT CARDS
+========================================================= */
+
+function renderProducts() {
+  const grid = $("productGrid");
+  const empty = $("empty");
+  const count = $("productCount");
+
+  if (!grid) return;
+
+  const filtered = getFilteredProducts();
+
+  if (count) {
+    count.textContent =
+      `${formatNumber(filtered.length)} محصول`;
+  }
+
+  if (!filtered.length) {
+    grid.innerHTML = "";
+
+    if (empty) {
+      empty.classList.remove("hidden");
+    }
+
+    return;
+  }
+
+  if (empty) {
+    empty.classList.add("hidden");
+  }
+
+  grid.innerHTML = filtered
+    .map(renderProductCard)
+    .join("");
+}
+
+function renderProductCard(product) {
+  const id = product.id;
+
+  const name =
+    product.name_fa ||
+    product.name_en ||
+    "محصول";
+
+  const imageUrl =
+    product.image_url || "";
+
+  return `
+    <article
+      class="product-card"
+      data-product-id="${escapeHtml(id)}"
+      role="button"
+      tabindex="0"
+      onclick="openProduct(${Number(id)})"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProduct(${Number(id)})}"
+    >
+
+      <div class="product-image">
+
+        ${
+          imageUrl
+            ? `
+              <img
+                src="${escapeHtml(imageUrl)}"
+                alt="${escapeHtml(name)}"
+                loading="lazy"
+                onerror="
+                  this.style.display='none';
+                  this.parentElement.classList.add('image-error');
+                "
+              >
+            `
+            : `
+              <div class="no-image">
+                🌱
+              </div>
+            `
+        }
+
+      </div>
+
+      <div class="product-body">
+
+        <h3>
+          ${escapeHtml(name)}
+        </h3>
+
+        ${
+          product.name_en
+            ? `
+              <div class="product-en">
+                ${escapeHtml(product.name_en)}
+              </div>
+            `
+            : ""
+        }
+
+        ${
+          product.category
+            ? `
+              <div class="product-category">
+                ${escapeHtml(product.category)}
+              </div>
+            `
+            : ""
+        }
+
+        ${
+          product.package
+            ? `
+              <div class="product-package">
+                📦 ${escapeHtml(product.package)}
+              </div>
+            `
+            : ""
+        }
+
+        ${getPriceText(product)}
+
+      </div>
+    </article>
+  `;
+}
+
+
+/* =========================================================
+   PRODUCT MODAL
+========================================================= */
+
+function openProduct(id) {
+  const product = products.find(
+    p => Number(p.id) === Number(id)
+  );
+
+  if (!product) {
+    return;
+  }
+
+  const modal = $("modal");
+  const content = $("modalContent");
+
+  if (!modal || !content) {
+    return;
+  }
+
+  const name =
+    product.name_fa ||
+    product.name_en ||
+    "محصول";
+
+  let html = `
+    <div class="product-detail">
+      <button class="back-product" onclick="closeModal()">← بازگشت به محصولات</button>
+
+      ${
+        product.image_url
+          ? `
+            <img
+              class="detail-image"
+              src="${escapeHtml(product.image_url)}"
+              alt="${escapeHtml(name)}"
+            >
+          `
+          : ""
+      }
+
+      <h2>
+        ${escapeHtml(name)}
+      </h2>
+
+      ${
+        product.name_en
+          ? `
+            <div class="detail-en">
+              ${escapeHtml(product.name_en)}
+            </div>
+          `
+          : ""
+      }
+
+      ${getPriceText(product)}
+
+      ${
+        product.category
+          ? `
+            <div class="detail-row">
+              <strong>دسته‌بندی:</strong>
+              <span>${escapeHtml(product.category)}</span>
+            </div>
+          `
+          : ""
+      }
+
+      ${
+        product.package
+          ? `
+            <div class="detail-row">
+              <strong>بسته‌بندی:</strong>
+              <span>${escapeHtml(product.package)}</span>
+            </div>
+          `
+          : ""
+      }
+
+      ${
+        product.maker
+          ? `
+            <div class="detail-row">
+              <strong>تولیدکننده:</strong>
+              <span>${escapeHtml(product.maker)}</span>
+            </div>
+          `
+          : ""
+      }
+
+      ${
+        product.intro
+          ? `
+            <section class="detail-section">
+              <h3>معرفی محصول</h3>
+              <p>${escapeHtml(product.intro)}</p>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        product.composition
+          ? `
+            <section class="detail-section">
+              <h3>ترکیبات</h3>
+              <p>${escapeHtml(product.composition)}</p>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        product.benefits &&
+        Array.isArray(product.benefits) &&
+        product.benefits.length
+          ? `
+            <section class="detail-section">
+              <h3>مزایا</h3>
+              <ul>
+                ${product.benefits
+                  .map(
+                    item =>
+                      `<li>${escapeHtml(item)}</li>`
+                  )
+                  .join("")}
+              </ul>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        product.use_text
+          ? `
+            <section class="detail-section">
+              <h3>نحوه مصرف</h3>
+              <p>${escapeHtml(product.use_text)}</p>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        product.warnings
+          ? `
+            <section class="detail-section warning">
+              <h3>⚠️ هشدارها</h3>
+              <p>${escapeHtml(product.warnings)}</p>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        product.video_url
+          ? `
+            <div class="video-box">
+              <video
+                controls
+                playsinline
+                preload="metadata"
+                src="${escapeHtml(product.video_url)}"
+              ></video>
+            </div>
+          `
+          : ""
+      }
+
+
+      ${
+        product.catalog_pdf_url
+          ? `
+            <div class="detail-actions">
+              <a
+                href="${escapeHtml(product.catalog_pdf_url)}"
+                target="_blank"
+                rel="noopener"
+                class="catalog-button"
+              >
+                📄 مشاهده کاتالوگ
+              </a>
+            </div>
+          `
+          : ""
+      }
+
+
+    </div>
+  `;
+
+  content.innerHTML = html;
+
+  modal.classList.remove("hidden");
+
+  if (tg && tg.BackButton) {
+    try {
+      tg.BackButton.show();
+    } catch (e) {}
+  }
+}
+
+function closeModal() {
+  const modal = $("modal");
+
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+
+  if (tg && tg.BackButton) {
+    try {
+      tg.BackButton.hide();
+    } catch (e) {}
+  }
+}
+
+
+/* =========================================================
+   ADMIN
+========================================================= */
+
+function openAdmin() {
+  if (!isAdmin) {
+    return;
+  }
+
+  const modal = $("adminModal");
+
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+
+  loadAdminData();
+}
+
+function closeAdmin() {
+  const modal = $("adminModal");
+
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
+
+async function loadAdminData() {
+  const loading = $("adminLoading");
+  const error = $("adminError");
+
+  if (loading) {
+    loading.classList.remove("hidden");
+  }
+
+  if (error) {
+    error.classList.add("hidden");
+  }
+
+  try {
+    await Promise.all([
+      loadAdminProducts(),
+      loadCustomers()
+    ]);
+
+    renderAdminAccount();
+
+  } catch (e) {
+    console.error(e);
+
+    if (error) {
+      error.textContent =
+        "❌ دریافت اطلاعات مدیریت انجام نشد.";
+      error.classList.remove("hidden");
+    }
+
+  } finally {
+    if (loading) {
+      loading.classList.add("hidden");
+    }
+  }
+}
+
+function renderAdminAccount() {
+  const el = $("adminAccountInfo");
+
+  if (!el) return;
+
+  if (!currentUser) {
+    el.innerHTML = "کاربر وارد نشده است.";
+    return;
+  }
+
+  const name =
+    [
+      currentUser.first_name,
+      currentUser.last_name
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    currentUser.username ||
+    "کاربر";
+
+  el.innerHTML = `
+    <div>
+      <strong>نام:</strong>
+      ${escapeHtml(name)}
+    </div>
+
+    ${
+      currentUser.username
+        ? `
+          <div>
+            <strong>Username:</strong>
+            @${escapeHtml(currentUser.username)}
+          </div>
+        `
+        : ""
+    }
+
+    <div>
+      <strong>نقش:</strong>
+      ${escapeHtml(currentUser.role || "customer")}
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   ADMIN PRODUCTS
+========================================================= */
+
+async function loadAdminProducts() {
+  const container = $("adminProducts");
+  if (!container) return;
+
+  try {
+    const result = await postJson("/api/admin/products", {});
+    const list = Array.isArray(result)
+      ? result
+      : (Array.isArray(result?.products) ? result.products : products);
+
+    container.innerHTML = list.map(product => {
+      const id = Number(product.id);
+      const nameFa = product.name_fa || "";
+      const nameEn = product.name_en || "";
+      const benefits = Array.isArray(product.benefits)
+        ? product.benefits.join("\n")
+        : (product.benefits || "");
+      return `
+        <div class="admin-product">
+          <div class="admin-product-title">
+            <strong>${escapeHtml(nameFa || nameEn || "محصول")}</strong>
+            <small>ID: ${escapeHtml(id)}</small>
+          </div>
+
+          <div class="admin-edit-grid">
+            <label>نام فارسی<input id="namefa-${id}" value="${escapeHtml(nameFa)}"></label>
+            <label>نام انگلیسی<input id="nameen-${id}" value="${escapeHtml(nameEn)}"></label>
+            <label>دسته‌بندی<input id="category-${id}" value="${escapeHtml(product.category || "")}"></label>
+            <label>بسته‌بندی<input id="package-${id}" value="${escapeHtml(product.package || "")}"></label>
+            <label>سازنده<input id="maker-${id}" value="${escapeHtml(product.maker || "")}"></label>
+            <label>قیمت پایه<input type="number" id="price-${id}" value="${product.base_price ?? ""}" placeholder="قیمت پایه"></label>
+          </div>
+
+          <div class="admin-edit-grid admin-edit-grid-wide">
+            <label>معرفی<textarea id="intro-${id}">${escapeHtml(product.intro || "")}</textarea></label>
+            <label>ترکیبات<textarea id="composition-${id}">${escapeHtml(product.composition || "")}</textarea></label>
+            <label>نحوه مصرف<textarea id="use-${id}">${escapeHtml(product.use_text || "")}</textarea></label>
+            <label>هشدارها<textarea id="warnings-${id}">${escapeHtml(product.warnings || "")}</textarea></label>
+            <label>مزایا (هر مورد در یک خط)<textarea id="benefits-${id}">${escapeHtml(benefits)}</textarea></label>
+          </div>
+
+          <label class="admin-active">
+            <input type="checkbox" id="active-${id}" ${product.active !== false ? "checked" : ""}>
+            محصول فعال و قابل نمایش برای مشتریان
+          </label>
+
+          <button onclick="saveProduct(${id})">💾 ذخیره اطلاعات محصول</button>
+
+          <div class="admin-media-grid">
+            <div class="admin-media-box">
+              <label>🖼️ تصویر جدید<input type="file" id="image-${id}" accept="image/*"></label>
+              <button onclick="uploadProductImage(${id})">آپلود / جایگزینی تصویر</button>
+              ${product.image_url ? `<button class="danger" onclick="removeProductImage(${id})">بایگانی تصویر فعلی</button>` : ""}
+            </div>
+            <div class="admin-media-box">
+              <label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label>
+              <button onclick="uploadProductVideo(${id})">آپلود / جایگزینی ویدئو</button>
+              ${product.video_url ? `<button class="danger" onclick="removeProductVideo(${id})">بایگانی ویدئو</button>` : ""}
+            </div>
+            <div class="admin-media-box">
+              <label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label>
+              <button onclick="uploadProductCatalog(${id})">آپلود / جایگزینی کاتالوگ</button>
+              ${product.catalog_pdf_url ? `<button class="danger" onclick="removeProductCatalog(${id})">بایگانی کاتالوگ</button>` : ""}
+            </div>
+          </div>
+        </div>`;
+    }).join("");
+  } catch (error) {
+    console.error("Admin products:", error);
+    container.innerHTML = `<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>`;
+  }
+}
+
+async function saveProduct(productId) {
+  const id = Number(productId);
+  const value = id => $(id);
+  const benefitsText = value(`benefits-${id}`)?.value || "";
+  const benefits = benefitsText.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  const payload = {
+    product_id: id,
+    name_fa: value(`namefa-${id}`)?.value.trim() || "",
+    name_en: value(`nameen-${id}`)?.value.trim() || "",
+    category: value(`category-${id}`)?.value.trim() || "",
+    package: value(`package-${id}`)?.value.trim() || "",
+    maker: value(`maker-${id}`)?.value.trim() || "",
+    intro: value(`intro-${id}`)?.value || "",
+    composition: value(`composition-${id}`)?.value || "",
+    use_text: value(`use-${id}`)?.value || "",
+    warnings: value(`warnings-${id}`)?.value || "",
+    benefits,
+    active: !!value(`active-${id}`)?.checked,
+    base_price: (value(`price-${id}`)?.value.trim() || "") === "" ? null : Number(value(`price-${id}`).value),
+    base_currency: "تومان"
+  };
+
+  try {
+    await postJson("/api/admin/update-product", payload);
+    alert("✅ اطلاعات محصول ذخیره شد.");
+    await loadProducts();
+    await loadAdminProducts();
+  } catch (error) {
+    alert("❌ خطا در ذخیره محصول:\n" + error.message);
+  }
+}
+
+async function uploadProductImage(productId) {
+  const input = $(`image-${Number(productId)}`);
+  if (!input?.files?.length) return alert("لطفاً تصویر را انتخاب کنید.");
+  const fd = new FormData();
+  fd.append("product_id", String(productId));
+  fd.append("file", input.files[0], input.files[0].name);
+  try {
+    await apiRequest("/api/admin/upload-image", { method:"POST", body:fd });
+    alert("✅ تصویر جدید ثبت شد. تصویر قبلی به old منتقل شد.");
+    await loadProducts(); await loadAdminProducts();
+  } catch(e) { alert("❌ خطا در تصویر:\n" + e.message); }
+}
+
+async function removeProductImage(productId) {
+  if (!confirm("تصویر فعلی به پوشه old منتقل و از محصول خارج شود؟")) return;
+  try {
+    await postJson("/api/admin/remove-image", {product_id:Number(productId)});
+    alert("✅ تصویر بایگانی شد.");
+    await loadProducts(); await loadAdminProducts();
+  } catch(e) { alert("❌ خطا در تصویر:\n" + e.message); }
+}
+
+async function uploadProductCatalog(productId) {
+  const input = $(`catalog-${Number(productId)}`);
+  if (!input?.files?.length) return alert("لطفاً کاتالوگ را انتخاب کنید.");
+  const fd = new FormData(); fd.append("product_id", String(productId)); fd.append("file", input.files[0], input.files[0].name);
+  try {
+    await apiRequest("/api/admin/upload-catalog", {method:"POST", body:fd});
+    alert("✅ کاتالوگ جدید ثبت شد. کاتالوگ قبلی به old منتقل شد.");
+    await loadProducts(); await loadAdminProducts();
+  } catch(e) { alert("❌ خطا در کاتالوگ:\n" + e.message); }
+}
+
+async function removeProductCatalog(productId) {
+  if (!confirm("کاتالوگ فعلی به پوشه old منتقل و از محصول خارج شود؟")) return;
+  try {
+    await postJson("/api/admin/remove-catalog", {product_id:Number(productId)});
+    alert("✅ کاتالوگ بایگانی شد.");
+    await loadProducts(); await loadAdminProducts();
+  } catch(e) { alert("❌ خطا در کاتالوگ:\n" + e.message); }
+}
+
+async function updateProductPrice(productId) {
+  const input =
+    $(`price-${Number(productId)}`);
+
+  if (!input) return;
+
+  const value = input.value.trim();
+
+  try {
+    await postJson(
+      "/api/admin/update-price",
+      {
+        product_id: Number(productId),
+        price:
+          value === ""
+            ? null
+            : Number(value),
+        currency: "تومان"
+      }
+    );
+
+    alert("✅ قیمت ذخیره شد.");
+
+    await loadProducts();
+    await loadAdminProducts();
+
+  } catch (error) {
+    alert(
+      "❌ خطا در ذخیره قیمت:\n" +
+      error.message
+    );
+  }
+}
+
+
+/* =========================================================
+   VIDEO
+========================================================= */
+
+async function uploadProductVideo(productId) {
+  const input =
+    $(`video-${Number(productId)}`);
+
+  if (!input || !input.files.length) {
+    alert("لطفاً یک فایل ویدئو انتخاب کنید.");
+    return;
+  }
+
+  const file = input.files[0];
+
+  if (file.size > 100 * 1024 * 1024) {
+    alert("❌ حجم ویدئو نباید بیشتر از 100MB باشد.");
+    return;
+  }
+
+  const formData = new FormData();
+
+  formData.append(
+    "product_id",
+    String(productId)
+  );
+
+  formData.append(
+    "file",
+    file,
+    file.name
+  );
+
+  try {
+    await apiRequest(
+      "/api/admin/upload-video",
+      {
+        method: "POST",
+        body: formData
+      }
+    );
+
+    alert("✅ ویدئو با موفقیت آپلود شد.");
+
+    await loadProducts();
+    await loadAdminProducts();
+
+  } catch (error) {
+    alert(
+      "❌ خطا در آپلود ویدئو:\n" +
+      error.message
+    );
+  }
+}
+
+async function removeProductVideo(productId) {
+  if (
+    !confirm(
+      "آیا از حذف ویدئوی این محصول مطمئن هستید؟"
+    )
+  ) {
+    return;
+  }
+
+  try {
+    await postJson(
+      "/api/admin/remove-video",
+      {
+        product_id: Number(productId)
+      }
+    );
+
+    alert("✅ ویدئو حذف شد.");
+
+    await loadProducts();
+    await loadAdminProducts();
+
+  } catch (error) {
+    alert(
+      "❌ خطا در حذف ویدئو:\n" +
+      error.message
+    );
+  }
+}
+
+
+/* =========================================================
+   CUSTOMERS
+========================================================= */
+
+async function loadCustomers() {
+  const select = $("customerSelect");
+
+  if (!select) return;
+
+  try {
+    const result =
+      await postJson(
+        "/api/admin/customers",
+        {}
+      );
+
+    const customers =
+      Array.isArray(result)
+        ? result
+        : Array.isArray(result?.customers)
+          ? result.customers
+          : [];
+
+    select.innerHTML =
+      `<option value="">انتخاب مشتری</option>`;
+
+    customers.forEach(customer => {
+
+      const name =
+        [
+          customer.first_name,
+          customer.last_name
+        ]
+          .filter(Boolean)
+          .join(" ") ||
+        customer.username ||
+        `مشتری ${customer.id}`;
+
+      const option =
+        document.createElement("option");
+
+      option.value = customer.id;
+
+      option.textContent =
+        customer.username
+          ? `${name} (@${customer.username})`
+          : name;
+
+      option.dataset.customer =
+        JSON.stringify(customer);
+
+      select.appendChild(option);
+    });
+
+  } catch (error) {
+    console.error("Customers:", error);
+  }
+}
+
+async function loadCustomerPrices(customerId) {
+  const container = $("customerPrices");
+  const info = $("customerInfo");
+  if (!container) return;
+
+  container.innerHTML = `<div class="message">در حال دریافت قیمت‌ها...</div>`;
+
+  try {
+    const result = await postJson("/api/admin/customer-prices", { customer_id: customerId });
+    const prices = Array.isArray(result) ? result : (Array.isArray(result?.prices) ? result.prices : []);
+    const priceMap = new Map(prices.map(item => [Number(item.product_id), item]));
+
+    if (info) {
+      const opt = $("customerSelect")?.selectedOptions?.[0];
+      const customer = opt?.dataset?.customer ? JSON.parse(opt.dataset.customer) : null;
+      info.innerHTML = customer ? `
+        <strong>مشتری:</strong> ${escapeHtml([customer.first_name, customer.last_name].filter(Boolean).join(" ") || customer.username || "مشتری")}
+        ${customer.telegram_user_id ? `<span> | Telegram ID: ${escapeHtml(customer.telegram_user_id)}</span>` : ""}
+      ` : "";
+      info.classList.remove("hidden");
+    }
+
+    if (!products.length) {
+      container.innerHTML = `<div class="message">محصولی برای قیمت‌گذاری وجود ندارد.</div>`;
+      return;
+    }
+
+    container.innerHTML = products.map(product => {
+      const pid = Number(product.id);
+      const item = priceMap.get(pid);
+      return `
+        <div class="customer-price-row">
+          <div>${escapeHtml(product.name_fa || product.name_en || `محصول ${pid}`)}</div>
+          <input type="number" id="customer-price-${pid}" value="${item?.price ?? ""}" placeholder="قیمت اختصاصی (خالی = حذف)">
+          <button onclick="setCustomerPrice('${escapeHtml(customerId)}', ${pid})">ذخیره</button>
+        </div>`;
+    }).join("");
+  } catch (error) {
+    container.innerHTML = `<div class="message error">خطا در دریافت قیمت مشتری.</div>`;
+  }
+}
+
+async function setCustomerPrice(
+  customerId,
+  productId
+) {
+  const input =
+    $(
+      `customer-price-${Number(productId)}`
+    );
+
+  if (!input) return;
+
+  const value = input.value.trim();
+
+  try {
+    await postJson(
+      "/api/admin/set-customer-price",
+      {
+        customer_id: customerId,
+        product_id: Number(productId),
+        price:
+          value === ""
+            ? null
+            : Number(value),
+        currency: "تومان"
+      }
+    );
+
+    alert("✅ قیمت اختصاصی ذخیره شد.");
+
+    await loadCustomerPrices(customerId);
+
+  } catch (error) {
+    alert(
+      "❌ خطا در ذخیره قیمت مشتری:\n" +
+      error.message
+    );
+  }
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    const search =
+      $("searchInput");
+
+    if (search) {
+      search.addEventListener(
+        "input",
+        () => {
+          renderProducts();
+        }
+      );
+    }
+
+    const adminButton =
+      $("adminButton");
+
+    if (adminButton) {
+      adminButton.addEventListener(
+        "click",
+        openAdmin
+      );
+    }
+
+    const customerSelect =
+      $("customerSelect");
+
+    if (customerSelect) {
+      customerSelect.addEventListener(
+        "change",
+        () => {
+
+          selectedCustomer =
+            customerSelect.value || null;
+
+          if (selectedCustomer) {
+            loadCustomerPrices(
+              selectedCustomer
+            );
+          } else {
+
+            const info =
+              $("customerInfo");
+
+            const prices =
+              $("customerPrices");
+
+            if (info) {
+              info.classList.add("hidden");
+            }
+
+            if (prices) {
+              prices.innerHTML = "";
+            }
+          }
+        }
+      );
+    }
+
+    /* Telegram Back Button */
+    if (tg && tg.BackButton) {
+
+      tg.BackButton.onClick(() => {
+
+        const modal =
+          $("modal");
+
+        const adminModal =
+          $("adminModal");
+
+        if (
+          modal &&
+          !modal.classList.contains("hidden")
+        ) {
+          closeModal();
+          return;
+        }
+
+        if (
+          adminModal &&
+          !adminModal.classList.contains("hidden")
+        ) {
+          closeAdmin();
+
+          try {
+            tg.BackButton.hide();
+          } catch (e) {}
+
+          return;
+        }
+      });
+    }
+  }
+);
+
+
+/* =========================================================
+   INITIAL LOAD
+========================================================= */
+
+(async function init() {
+
+  try {
+    await authenticate();
+  } catch (error) {
+    console.error(
+      "Authentication init:",
+      error
+    );
+  }
+
+  try {
+    await loadCurrentUser();
+  } catch (error) {
+    console.error(
+      "User init:",
+      error
+    );
+  }
+
+  await loadProducts();
+
+})();
+
+
+/* =========================================================
+   GLOBAL FUNCTIONS
+   برای onclick های داخل HTML
+========================================================= */
+
+window.openProduct =
+  openProduct;
+
+window.closeModal =
+  closeModal;
+
+window.openAdmin =
+  openAdmin;
+
+window.closeAdmin =
+  closeAdmin;
+
+window.updateProductPrice = updateProductPrice;
+window.uploadProductImage = uploadProductImage;
+window.removeProductImage = removeProductImage;
+window.uploadProductCatalog = uploadProductCatalog;
+window.removeProductCatalog = removeProductCatalog;
+
+window.uploadProductVideo =
+  uploadProductVideo;
+
+window.removeProductVideo =
+  removeProductVideo;
+
+window.loadCustomerPrices =
+  loadCustomerPrices;
+
+window.setCustomerPrice =
+  setCustomerPrice;

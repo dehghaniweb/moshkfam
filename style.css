@@ -485,15 +485,8 @@ main{
    PRODUCT INFO
 ========================= */
 
-.product-info{
-  padding:30px 30px 30px 30px;
-
-  display:flex;
-  flex-direction:column;
-
-  gap:7px;
-
-  flex:1;
+.product-info {
+  padding: 30px 35px 32px 25px !important;
 }
 
 .product-info h3{

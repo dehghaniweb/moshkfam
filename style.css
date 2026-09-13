@@ -106,6 +106,9 @@ button{
 
 .account{
   display:flex;
+  flex:0 0 auto;
+  position:relative;
+  z-index:2;
   align-items:center;
   gap:10px;
 
@@ -487,6 +490,31 @@ main{
 
 .product-info {
   padding: 30px 35px 32px 25px !important;
+}
+
+/* Actual product card content uses .product-body. */
+.product-body {
+  padding: 22px 20px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-width:0;
+}
+
+.product-body h3 {
+  margin:0;
+  padding:0 2px;
+  color:#166534;
+  font-size:16px;
+  line-height:1.8;
+  font-weight:bold;
+}
+
+.product-en {
+  color:#374151;
+  font-size:13px;
+  line-height:1.7;
+  padding:0 2px;
 }
 
 .product-info h3{
@@ -1472,4 +1500,52 @@ header,
 }
 @media(max-width:520px){
   .product-info{padding:18px 20px 20px !important;gap:9px !important}
+}
+
+
+/* =========================
+   MOBILE HEADER / ACCOUNT
+========================= */
+@media (max-width: 700px){
+  .header{
+    padding:10px 12px;
+    gap:8px;
+    align-items:center;
+  }
+  .brand{
+    flex:1 1 auto;
+    min-width:0;
+  }
+  .brand img{width:42px;height:42px;border-radius:11px;}
+  .brand h1{font-size:16px;}
+  .brand p{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .account{
+    max-width:48vw;
+    padding:6px 8px;
+  }
+  .account-main{min-width:0;}
+  .account-main > div:last-child{min-width:0;}
+  .account strong,.account span{
+    max-width:26vw;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  #accountInfo{display:none;}
+  .admin-button{
+    padding:8px 9px;
+    font-size:11px;
+    white-space:nowrap;
+  }
+  main{padding:18px 12px 32px;}
+}
+
+@media (max-width: 460px){
+  .brand p{display:none;}
+  .account{max-width:42vw;}
+  .account .avatar{width:30px;height:30px;font-size:16px;}
+  .account strong,.account span{max-width:24vw;font-size:10px;}
+  .admin-button{font-size:10px;padding:7px 8px;}
+  .product-grid{gap:10px;}
+  .product-body{padding:20px 16px 22px;}
 }

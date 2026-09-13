@@ -212,6 +212,13 @@ function hideError() {
 ========================================================= */
 
 async function authenticate() {
+  // Telegram exposes the user locally before the API call finishes.
+  // Use it immediately so the identity stays visible at the top.
+  if (tg?.initDataUnsafe?.user) {
+    currentUser = tg.initDataUnsafe.user;
+    updateAccountUI();
+  }
+
   if (!tg || !tg.initData) {
     return;
   }
@@ -1374,9 +1381,7 @@ async function setCustomerPrice(
    EVENTS
 ========================================================= */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
+function setupEvents() {
 
     const search =
       $("searchInput");
@@ -1468,8 +1473,11 @@ document.addEventListener(
         }
       });
     }
-  }
-);
+}
+
+// app.js is loaded dynamically, so DOMContentLoaded may already have fired.
+// Bind events immediately because the document elements already exist.
+setupEvents();
 
 
 function finishBootLoader() {

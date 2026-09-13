@@ -836,18 +836,36 @@ function closeModal() {
    ADMIN
 ========================================================= */
 
-function openAdmin() {
-  if (!isAdmin) {
-    return;
-  }
-
+async function openAdmin() {
   const modal = $("adminModal");
+  const error = $("adminError");
 
   if (!modal) return;
 
   modal.classList.remove("hidden");
 
-  loadAdminData();
+  if (error) {
+    error.classList.add("hidden");
+    error.textContent = "";
+  }
+
+  // Refresh authentication before opening the management data.
+  try {
+    await loadCurrentUser();
+  } catch (e) {
+    console.warn("Admin authentication refresh:", e);
+  }
+
+  if (!isAdmin) {
+    if (error) {
+      error.textContent =
+        "❌ این حساب به پنل مدیریت دسترسی ندارد. لطفاً سامانه را از داخل ربات تلگرام و با حساب مدیر باز کنید.";
+      error.classList.remove("hidden");
+    }
+    return;
+  }
+
+  await loadAdminData();
 }
 
 function closeAdmin() {
@@ -1454,6 +1472,18 @@ document.addEventListener(
 );
 
 
+function finishBootLoader() {
+  const app = document.querySelector(".app");
+  const loader = document.getElementById("bootLoader");
+
+  if (app) app.style.visibility = "visible";
+
+  if (loader) {
+    loader.classList.add("hide");
+    setTimeout(() => loader.remove(), 300);
+  }
+}
+
 /* =========================================================
    INITIAL LOAD
 ========================================================= */
@@ -1478,7 +1508,11 @@ document.addEventListener(
     );
   }
 
-  await loadProducts();
+  try {
+    await loadProducts();
+  } finally {
+    finishBootLoader();
+  }
 
 })();
 

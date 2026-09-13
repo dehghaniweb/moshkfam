@@ -1459,3 +1459,24 @@ header,
     padding: 34px 34px 56px !important;
   }
 }
+
+
+/* Product card text spacing - final */
+.product-info{
+  padding:20px 22px 22px !important;
+  gap:10px !important;
+}
+.product-info h3{
+  margin:0 0 4px !important;
+  padding:0 !important;
+}
+.product-package,.product-maker{
+  margin-top:2px !important;
+}
+.price,.private-price{
+  margin-top:5px !important;
+  padding-top:10px !important;
+}
+@media(max-width:520px){
+  .product-info{padding:18px 20px 20px !important;gap:9px !important}
+}

@@ -212,13 +212,6 @@ function hideError() {
 ========================================================= */
 
 async function authenticate() {
-  // Telegram exposes the user locally before the API call finishes.
-  // Use it immediately so the identity stays visible at the top.
-  if (tg?.initDataUnsafe?.user) {
-    currentUser = tg.initDataUnsafe.user;
-    updateAccountUI();
-  }
-
   if (!tg || !tg.initData) {
     return;
   }
@@ -323,11 +316,21 @@ function updateAccountUI() {
         : "مشتری";
   }
 
+  const customerButton = $("customerButton");
+
   if (adminButton) {
     if (isAdmin) {
       adminButton.classList.remove("hidden");
     } else {
       adminButton.classList.add("hidden");
+    }
+  }
+
+  if (customerButton) {
+    if (isAdmin) {
+      customerButton.classList.add("hidden");
+    } else {
+      customerButton.classList.remove("hidden");
     }
   }
 }
@@ -898,7 +901,8 @@ async function loadAdminData() {
   try {
     await Promise.all([
       loadAdminProducts(),
-      loadCustomers()
+      loadCustomers(),
+      loadAdminRequests()
     ]);
 
     renderAdminAccount();
@@ -958,7 +962,7 @@ function renderAdminAccount() {
 
     <div>
       <strong>نقش:</strong>
-      ${escapeHtml(currentUser.role || "customer")}
+      ${escapeHtml(isAdmin ? "admin" : (currentUser.role || "customer"))}
     </div>
   `;
 }
@@ -1378,10 +1382,96 @@ async function setCustomerPrice(
 
 
 /* =========================================================
+   CUSTOMER ORDER / NOTE
+========================================================= */
+
+function openCustomerRequest() {
+  const modal = $("customerRequestModal");
+  if (!modal) return;
+  modal.classList.remove("hidden");
+}
+
+function closeCustomerRequest() {
+  const modal = $("customerRequestModal");
+  if (modal) modal.classList.add("hidden");
+}
+
+async function submitCustomerRequest() {
+  const input = $("customerRequestText");
+  const typeInput = $("customerRequestType");
+  const text = input ? input.value.trim() : "";
+  const type = typeInput?.value === "note" ? "note" : "order";
+
+  if (!text) {
+    alert("لطفاً متن سفارش یا یادداشت را بنویسید.");
+    return;
+  }
+
+  try {
+    await postJson("/api/customer/request", { type, text });
+    input.value = "";
+    closeCustomerRequest();
+    if (tg && typeof tg.showPopup === "function") {
+      tg.showPopup({title:"ثبت شد", message:type === "note" ? "یادداشت شما با موفقیت ثبت شد." : "سفارش شما با موفقیت ثبت شد.", buttons:[{type:"ok"}]});
+    } else {
+      alert(type === "note" ? "✅ یادداشت ثبت شد." : "✅ سفارش ثبت شد.");
+    }
+  } catch (error) {
+    alert("❌ ثبت درخواست انجام نشد:\n" + error.message);
+  }
+}
+
+async function loadAdminRequests() {
+  const container = $("adminRequests");
+  if (!container) return;
+  container.innerHTML = `<div class="message">در حال دریافت سفارش‌ها و یادداشت‌ها...</div>`;
+
+  try {
+    const result = await postJson("/api/admin/customer-requests", {});
+    const requests = Array.isArray(result) ? result : (result?.requests || []);
+    if (!requests.length) {
+      container.innerHTML = `<div class="message">هنوز سفارش یا یادداشتی ثبت نشده است.</div>`;
+      return;
+    }
+
+    const statusLabels = {new:"جدید",seen:"دیده شد",in_progress:"در حال بررسی",done:"انجام شد",cancelled:"لغو شد"};
+    container.innerHTML = requests.map(r => {
+      const c = r.customers || {};
+      const name = [c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "مشتری";
+      const username = c.username ? `@${escapeHtml(c.username)}` : "";
+      const typeLabel = r.request_type === "note" ? "📝 یادداشت" : "🛒 سفارش";
+      const date = r.created_at ? new Date(r.created_at).toLocaleString("fa-IR") : "";
+      return `<div class="admin-request-card">
+        <div class="admin-request-head"><strong>${typeLabel}</strong><span>${escapeHtml(date)}</span></div>
+        <div class="admin-request-customer">👤 ${escapeHtml(name)} ${username ? `(${username})` : ""} <small>ID: ${escapeHtml(c.telegram_user_id || r.telegram_user_id || "-")}</small></div>
+        <div class="admin-request-text">${escapeHtml(r.text || "")}</div>
+        <div class="admin-request-actions">
+          <select onchange="updateCustomerRequestStatus(${Number(r.id)}, this.value)">
+            ${Object.entries(statusLabels).map(([key,label]) => `<option value="${key}" ${r.status===key?"selected":""}>${label}</option>`).join("")}
+          </select>
+        </div>
+      </div>`;
+    }).join("");
+  } catch (error) {
+    container.innerHTML = `<div class="message error">خطا در دریافت سفارش‌ها و یادداشت‌ها.<br>${escapeHtml(error.message || "")}</div>`;
+  }
+}
+
+async function updateCustomerRequestStatus(id, status) {
+  try {
+    await postJson("/api/admin/update-request-status", {id:Number(id), status});
+    await loadAdminRequests();
+  } catch (error) {
+    alert("❌ تغییر وضعیت انجام نشد:\n" + error.message);
+  }
+}
+
+/* =========================================================
    EVENTS
 ========================================================= */
 
 function setupEvents() {
+
 
     const search =
       $("searchInput");
@@ -1403,6 +1493,11 @@ function setupEvents() {
         "click",
         openAdmin
       );
+    }
+
+    const customerButton = $("customerButton");
+    if (customerButton) {
+      customerButton.addEventListener("click", openCustomerRequest);
     }
 
     const customerSelect =
@@ -1473,10 +1568,9 @@ function setupEvents() {
         }
       });
     }
+
 }
 
-// app.js is loaded dynamically, so DOMContentLoaded may already have fired.
-// Bind events immediately because the document elements already exist.
 setupEvents();
 
 
@@ -1559,3 +1653,7 @@ window.loadCustomerPrices =
 
 window.setCustomerPrice =
   setCustomerPrice;
+window.openCustomerRequest = openCustomerRequest;
+window.closeCustomerRequest = closeCustomerRequest;
+window.submitCustomerRequest = submitCustomerRequest;
+window.updateCustomerRequestStatus = updateCustomerRequestStatus;

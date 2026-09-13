@@ -131,12 +131,23 @@
   </div>
 
 
-  <button
-    id="adminButton"
-    class="admin-button hidden"
-  >
-    ⚙️ پنل مدیریت
-  </button>
+  <div class="header-actions">
+    <button
+      id="adminButton"
+      class="admin-button hidden"
+      type="button"
+    >
+      ⚙️ پنل مدیریت
+    </button>
+
+    <button
+      id="customerButton"
+      class="customer-button hidden"
+      type="button"
+    >
+      📝 ثبت سفارش / یادداشت
+    </button>
+  </div>
 
 </header>
 
@@ -264,6 +275,23 @@
 </div>
 
 
+<!-- CUSTOMER REQUEST MODAL -->
+<div id="customerRequestModal" class="modal hidden">
+  <div class="modal-backdrop" onclick="closeCustomerRequest()"></div>
+  <div class="modal-card customer-request-card">
+    <button class="close" onclick="closeCustomerRequest()">×</button>
+    <h2>📝 ثبت سفارش / یادداشت</h2>
+    <p class="request-help">درخواست، سفارش یا توضیح خود را برای مشکفام فارس بنویسید.</p>
+    <select id="customerRequestType" class="request-type">
+      <option value="order">🛒 سفارش</option>
+      <option value="note">📝 یادداشت</option>
+    </select>
+    <textarea id="customerRequestText" class="customer-request-text" placeholder="مثلاً: ۱۰ کیلو هیومیک می‌خواهم..." rows="7"></textarea>
+    <button class="admin-primary request-submit" onclick="submitCustomerRequest()">📨 آماده ارسال</button>
+  </div>
+</div>
+
+
 <!-- ADMIN MODAL -->
 
 <div
@@ -328,6 +356,12 @@
 
       <div id="adminProducts"></div>
 
+    </section>
+
+
+    <section class="admin-section">
+      <h3>🛒 سفارش‌ها و یادداشت‌های مشتریان</h3>
+      <div id="adminRequests"></div>
     </section>
 
 

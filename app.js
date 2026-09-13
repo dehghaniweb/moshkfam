@@ -106,7 +106,7 @@ function getPriceText(product) {
 
   return `
     <div class="price private-price">
-      برای اطلاع از قیمت تماس بگیرید
+      برای اطلاع از قیمت تماس بگیرید.
     </div>
   `;
 }
@@ -131,6 +131,12 @@ async function apiRequest(path, options = {}) {
   const headers = {
     ...(options.headers || {})
   };
+
+  // Telegram WebApp authentication header
+  // Worker validates this signed initData before allowing admin/customer actions.
+  if (tg && tg.initData) {
+    headers["X-Telegram-Init-Data"] = tg.initData;
+  }
 
   if (tg && tg.initData) {
     headers["X-Telegram-Init-Data"] = tg.initData;
@@ -778,16 +784,24 @@ function openProduct(id) {
       ${
         product.catalog_pdf_url
           ? `
-            <div class="detail-actions">
+            <section class="catalog-section">
+              <h3>📄 کاتالوگ</h3>
+              <div class="catalog-frame-wrap">
+                <iframe
+                  src="${escapeHtml(product.catalog_pdf_url)}"
+                  title="کاتالوگ ${escapeHtml(product.name_fa || "محصول")}"
+                  loading="lazy"
+                ></iframe>
+              </div>
               <a
                 href="${escapeHtml(product.catalog_pdf_url)}"
                 target="_blank"
                 rel="noopener"
-                class="catalog-button"
+                class="catalog-fallback"
               >
-                📄 مشاهده کاتالوگ
+                باز کردن کاتالوگ در صفحه جداگانه
               </a>
-            </div>
+            </section>
           `
           : ""
       }

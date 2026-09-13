@@ -1318,3 +1318,70 @@ footer strong{
 @media (max-width:800px) {
   .admin-edit-grid, .admin-edit-grid-wide { grid-template-columns:1fr; }
 }
+
+
+/* Final layout fixes */
+main,
+header,
+.welcome,
+.search-box,
+.categories,
+.products-head,
+#productGrid,
+#loading,
+#error,
+#empty {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.welcome,
+.search-box,
+.products-head,
+#productGrid,
+#loading,
+#error,
+#empty {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.catalog-section {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(0,0,0,.10);
+}
+
+.catalog-frame-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.catalog-frame-wrap iframe {
+  display: block;
+  width: 100%;
+  min-height: 70vh;
+  border: 0;
+  background: #fff;
+}
+
+.catalog-fallback {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+@media (min-width: 768px) {
+  main,
+  header {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+

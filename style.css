@@ -1385,3 +1385,77 @@ header,
   }
 }
 
+
+
+/* Product detail text spacing / readability */
+.product-detail {
+  padding: 18px 16px 32px;
+}
+
+.product-detail .detail-section {
+  margin: 18px 8px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  line-height: 2;
+  overflow-wrap: anywhere;
+}
+
+.product-detail .detail-section h3 {
+  margin: 0 0 12px;
+}
+
+.product-detail .detail-section p,
+.product-detail .detail-section li {
+  margin: 0;
+  padding: 0;
+  line-height: 2.05;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .product-detail {
+    padding: 24px 28px 40px;
+  }
+
+  .product-detail .detail-section {
+    margin: 22px 14px;
+    padding: 18px 24px;
+  }
+}
+
+
+/* Final home-page spacing improvement */
+@media (max-width: 767px) {
+  main {
+    padding: 30px 22px 50px !important;
+  }
+
+  header {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .welcome,
+  .search-box,
+  .categories,
+  .products-head,
+  #productGrid,
+  #loading,
+  #error,
+  #empty {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .welcome {
+    margin-top: 6px;
+    margin-bottom: 24px;
+    padding: 22px 18px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  main {
+    padding: 34px 34px 56px !important;
+  }
+}

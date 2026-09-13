@@ -138,10 +138,6 @@ async function apiRequest(path, options = {}) {
     headers["X-Telegram-Init-Data"] = tg.initData;
   }
 
-  if (tg && tg.initData) {
-    headers["X-Telegram-Init-Data"] = tg.initData;
-  }
-
   const response = await fetch(buildApiUrl(path), {
     ...options,
     cache: "no-store",

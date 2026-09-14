@@ -13,6 +13,34 @@
    - ویدئو و فایل‌ها
 ========================================================= */
 
+/* =========================================================
+   MOSHKFAM - FORCE CACHE CLEAR (App.js only)
+   ========================================================= */
+(async function forceClearCacheFromApp() {
+  try {
+    const version = "moshkfam-app-20260914-02";
+    const flag = "moshkfam_cache_cleared_" + version;
+
+    if (sessionStorage.getItem(flag)) return;
+    sessionStorage.setItem(flag, "1");
+
+    if ("caches" in window) {
+      const names = await caches.keys();
+      await Promise.all(names.map(name => caches.delete(name)));
+    }
+
+    if ("serviceWorker" in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(reg => reg.unregister()));
+    }
+
+    // اجرای دوباره App.js از نسخه تازه
+    window.location.reload();
+  } catch (e) {
+    console.warn("Cache clear:", e);
+  }
+})();
+
 const WORKER_URL =
   "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
 
@@ -1413,11 +1441,8 @@ async function setCustomerPrice(
 }
 
 
-/* Moshkfam order-fix build: 2026-09-14 */
-
 /* =========================================================
-   CUSTOMER ORDER / NOTE — WebApp compatible
-
+   CUSTOMER ORDER / NOTE
 ========================================================= */
 
 function openCustomerRequest() {

@@ -137,12 +137,8 @@ async function apiRequest(path, options = {}) {
   if (tg && tg.initData) {
     headers["X-Telegram-Init-Data"] = tg.initData;
   }
-
   const sessionToken = getStoredToken();
-
-  if (sessionToken) {
-    headers["Authorization"] = "Bearer " + sessionToken;
-  }
+  if (sessionToken) headers["Authorization"] = "Bearer " + sessionToken;
 
   const response = await fetch(buildApiUrl(path), {
     ...options,
@@ -216,466 +212,23 @@ function hideError() {
 /* =========================================================
    WEB / ANDROID LOGIN SESSION
 ========================================================= */
-
-function getStoredToken() {
-  try {
-    return localStorage.getItem("moshkfam_session") || "";
-  } catch {
-    return "";
-  }
+function getStoredToken(){try{return localStorage.getItem("moshkfam_session")||"";}catch{return "";}}
+function setStoredToken(t){try{if(t)localStorage.setItem("moshkfam_session",t);else localStorage.removeItem("moshkfam_session");}catch{}}
+async function loginWithUsernamePassword(){
+  const username=$("loginUsername")?.value.trim()||"", password=$("loginPassword")?.value||"", msg=$("loginMessage");
+  if(!username||!password){if(msg)msg.textContent="نام کاربری و رمز عبور را وارد کنید.";return;}
+  if(msg)msg.textContent="در حال ورود...";
+  try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=false;if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();await loadProducts();}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
 }
-
-function setStoredToken(t) {
-  try {
-    if (t) {
-      localStorage.setItem("moshkfam_session", t);
-    } else {
-      localStorage.removeItem("moshkfam_session");
-    }
-  } catch {}
-}
-
-async function loginWithUsernamePassword() {
-  const username =
-    $("loginUsername")?.value.trim() || "";
-
-  const password =
-    $("loginPassword")?.value || "";
-
-  const msg = $("loginMessage");
-
-  if (!username || !password) {
-    if (msg) {
-      msg.textContent =
-        "نام کاربری و رمز عبور را وارد کنید.";
-    }
-
-    return;
-  }
-
-  if (msg) {
-    msg.textContent = "در حال ورود...";
-  }
-
-  try {
-    const r = await postJson(
-      "/api/login",
-      {
-        username,
-        password
-      }
-    );
-
-    setStoredToken(r.token);
-
-    currentUser = r.user || null;
-    isAdmin = false;
-
-    if ($("loginPassword")) {
-      $("loginPassword").value = "";
-    }
-
-    if (msg) {
-      msg.textContent =
-        "✅ ورود با موفقیت انجام شد.";
-    }
-
-    updateAccountUI();
-
-    await loadProducts();
-
-  } catch (e) {
-    if (msg) {
-      msg.textContent =
-        e.message || "ورود انجام نشد.";
-    }
-  }
-}
-
-async function loadWebSession() {
-  const t = getStoredToken();
-
-  if (!t) return;
-
-  try {
-    const r = await apiRequest(
-      "/api/session",
-      {
-        method: "GET"
-      }
-    );
-
-    if (
-      r?.authenticated &&
-      r.user
-    ) {
-      currentUser = r.user;
-      isAdmin = false;
-
-      updateAccountUI();
-
-    } else {
-      setStoredToken("");
-    }
-
-  } catch {
-    setStoredToken("");
-  }
-}
-
-async function logoutUser() {
-  try {
-    await apiRequest(
-      "/api/logout",
-      {
-        method: "POST"
-      }
-    );
-  } catch {}
-
-  setStoredToken("");
-
-  currentUser = null;
-  isAdmin = false;
-
-  updateAccountUI();
-
-  await loadProducts();
-}
-
-async function loadSiteSettings() {
-  try {
-    const r =
-      await get("/api/site-settings");
-
-    const st =
-      r?.settings || {};
-
-    if ($("footerCompanyName")) {
-      $("footerCompanyName").textContent =
-        "🌱 " +
-        (st.company_name ||
-          "مشکفام فارس");
-    }
-
-    if ($("footerText")) {
-      $("footerText").textContent =
-        st.footer_text || "";
-    }
-
-    if ($("footerPhone")) {
-      $("footerPhone").textContent =
-        st.phone
-          ? "☎️ " + st.phone
-          : "";
-    }
-
-    if ($("footerAddress")) {
-      $("footerAddress").textContent =
-        st.address
-          ? "📍 " + st.address
-          : "";
-    }
-
-    if ($("settingCompanyName")) {
-      $("settingCompanyName").value =
-        st.company_name ||
-        "مشکفام فارس";
-    }
-
-    if ($("settingFooterText")) {
-      $("settingFooterText").value =
-        st.footer_text || "";
-    }
-
-    if ($("settingPhone")) {
-      $("settingPhone").value =
-        st.phone || "";
-    }
-
-    if ($("settingAddress")) {
-      $("settingAddress").value =
-        st.address || "";
-    }
-
-  } catch (e) {
-    console.warn(
-      "Settings:",
-      e
-    );
-  }
-}
-
-async function saveSiteSettings() {
-  try {
-    await postJson(
-      "/api/admin/site-settings",
-      {
-        company_name:
-          $("settingCompanyName")
-            ?.value.trim() ||
-          "مشکفام فارس",
-
-        footer_text:
-          $("settingFooterText")
-            ?.value || "",
-
-        phone:
-          $("settingPhone")
-            ?.value.trim() || "",
-
-        address:
-          $("settingAddress")
-            ?.value || ""
-      }
-    );
-
-    await loadSiteSettings();
-
-    alert(
-      "✅ اطلاعات پایین صفحه ذخیره شد."
-    );
-
-  } catch (e) {
-    alert(
-      "❌ ذخیره تنظیمات انجام نشد:\n" +
-      e.message
-    );
-  }
-}
-
-async function createProduct() {
-  const p = {
-    name_fa:
-      $("newProductNameFa")
-        ?.value.trim(),
-
-    name_en:
-      $("newProductNameEn")
-        ?.value.trim(),
-
-    category:
-      $("newProductCategory")
-        ?.value.trim(),
-
-    package:
-      $("newProductPackage")
-        ?.value.trim(),
-
-    maker:
-      $("newProductMaker")
-        ?.value.trim(),
-
-    base_price:
-      $("newProductPrice")
-        ?.value.trim() || null
-  };
-
-  if (!p.name_fa) {
-    alert(
-      "نام فارسی محصول را وارد کنید."
-    );
-
-    return;
-  }
-
-  try {
-    await postJson(
-      "/api/admin/create-product",
-      p
-    );
-
-    alert(
-      "✅ محصول جدید ایجاد شد."
-    );
-
-    [
-      "newProductNameFa",
-      "newProductNameEn",
-      "newProductCategory",
-      "newProductPackage",
-      "newProductMaker",
-      "newProductPrice"
-    ].forEach(id => {
-      if ($(id)) {
-        $(id).value = "";
-      }
-    });
-
-    await loadProducts();
-    await loadAdminProducts();
-
-  } catch (e) {
-    alert(
-      "❌ افزودن محصول انجام نشد:\n" +
-      e.message
-    );
-  }
-}
-
-async function deleteProduct(id) {
-  if (
-    !confirm(
-      "آیا از حذف کامل این محصول مطمئن هستید؟"
-    )
-  ) {
-    return;
-  }
-
-  try {
-    await postJson(
-      "/api/admin/delete-product",
-      {
-        product_id: Number(id)
-      }
-    );
-
-    alert(
-      "✅ محصول حذف شد."
-    );
-
-    await loadProducts();
-    await loadAdminProducts();
-
-  } catch (e) {
-    alert(
-      "❌ حذف محصول انجام نشد:\n" +
-      e.message
-    );
-  }
-}
-
-async function createCustomerUser() {
-  const p = {
-    first_name:
-      $("newUserFirstName")
-        ?.value.trim(),
-
-    last_name:
-      $("newUserLastName")
-        ?.value.trim(),
-
-    username:
-      $("newUserUsername")
-        ?.value.trim(),
-
-    password:
-      $("newUserPassword")
-        ?.value || ""
-  };
-
-  try {
-    await postJson(
-      "/api/admin/create-customer",
-      p
-    );
-
-    alert(
-      "✅ نماینده اضافه شد."
-    );
-
-    [
-      "newUserFirstName",
-      "newUserLastName",
-      "newUserUsername",
-      "newUserPassword"
-    ].forEach(id => {
-      if ($(id)) {
-        $(id).value = "";
-      }
-    });
-
-    await loadCustomers();
-
-  } catch (e) {
-    alert(
-      "❌ افزودن نماینده انجام نشد:\n" +
-      e.message
-    );
-  }
-}
-
-async function deleteCustomerUser(id) {
-  if (
-    !confirm(
-      "آیا از حذف این نماینده مطمئن هستید؟"
-    )
-  ) {
-    return;
-  }
-
-  try {
-    await postJson(
-      "/api/admin/delete-customer",
-      {
-        customer_id: String(id)
-      }
-    );
-
-    alert(
-      "✅ نماینده حذف شد."
-    );
-
-    await loadCustomers();
-
-  } catch (e) {
-    alert(
-      "❌ حذف نماینده انجام نشد:\n" +
-      e.message
-    );
-  }
-}
-
-async function updateCustomerUser(id) {
-  const p = {
-    customer_id:
-      String(id),
-
-    first_name:
-      $("ufirst-" + id)
-        ?.value.trim() || "",
-
-    last_name:
-      $("ulast-" + id)
-        ?.value.trim() || "",
-
-    username:
-      $("uuser-" + id)
-        ?.value.trim() || "",
-
-    status:
-      $("ustatus-" + id)
-        ?.value || "active"
-  };
-
-  const pass =
-    $("upass-" + id)
-      ?.value || "";
-
-  if (pass) {
-    p.password = pass;
-  }
-
-  try {
-    await postJson(
-      "/api/admin/customer-profile",
-      p
-    );
-
-    alert(
-      "✅ اطلاعات نماینده ذخیره شد."
-    );
-
-    await loadCustomers();
-
-  } catch (e) {
-    alert(
-      "❌ ویرایش نماینده انجام نشد:\n" +
-      e.message
-    );
-  }
-}
-
+async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=false;updateAccountUI();}else setStoredToken("");}catch{setStoredToken("");}}
+async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;updateAccountUI();await loadProducts();}
+async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
+async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
+async function createProduct(){const p={name_fa:$("newProductNameFa")?.value.trim(),name_en:$("newProductNameEn")?.value.trim(),category:$("newProductCategory")?.value.trim(),package:$("newProductPackage")?.value.trim(),maker:$("newProductMaker")?.value.trim(),base_price:$("newProductPrice")?.value.trim()||null};if(!p.name_fa){alert("نام فارسی محصول را وارد کنید.");return;}try{await postJson("/api/admin/create-product",p);alert("✅ محصول جدید ایجاد شد.");["newProductNameFa","newProductNameEn","newProductCategory","newProductPackage","newProductMaker","newProductPrice"].forEach(id=>{if($(id))$(id).value=""});await loadProducts();await loadAdminProducts();}catch(e){alert("❌ افزودن محصول انجام نشد:\n"+e.message);}}
+async function deleteProduct(id){if(!confirm("آیا از حذف کامل این محصول مطمئن هستید؟"))return;try{await postJson("/api/admin/delete-product",{product_id:Number(id)});alert("✅ محصول حذف شد.");await loadProducts();await loadAdminProducts();}catch(e){alert("❌ حذف محصول انجام نشد:\n"+e.message);}}
+async function createCustomerUser(){const p={first_name:$("newUserFirstName")?.value.trim(),last_name:$("newUserLastName")?.value.trim(),username:$("newUserUsername")?.value.trim(),password:$("newUserPassword")?.value||""};try{await postJson("/api/admin/create-customer",p);alert("✅ نماینده اضافه شد.");["newUserFirstName","newUserLastName","newUserUsername","newUserPassword"].forEach(id=>{if($(id))$(id).value=""});await loadCustomers();}catch(e){alert("❌ افزودن نماینده انجام نشد:\n"+e.message);}}
+async function deleteCustomerUser(id){if(!confirm("آیا از حذف این نماینده مطمئن هستید؟"))return;try{await postJson("/api/admin/delete-customer",{customer_id:String(id)});alert("✅ نماینده حذف شد.");await loadCustomers();}catch(e){alert("❌ حذف نماینده انجام نشد:\n"+e.message);}}
+async function updateCustomerUser(id){const p={customer_id:String(id),first_name:$("ufirst-"+id)?.value.trim()||"",last_name:$("ulast-"+id)?.value.trim()||"",username:$("uuser-"+id)?.value.trim()||"",status:$("ustatus-"+id)?.value||"active"};const pass=$("upass-"+id)?.value||"";if(pass)p.password=pass;try{await postJson("/api/admin/customer-profile",p);alert("✅ اطلاعات نماینده ذخیره شد.");await loadCustomers();}catch(e){alert("❌ ویرایش نماینده انجام نشد:\n"+e.message);}}
 
 /* =========================================================
    AUTHENTICATION
@@ -687,36 +240,22 @@ async function authenticate() {
   }
 
   try {
-    const result =
-      await postJson(
-        "/api/telegram-auth",
-        {
-          initData: tg.initData
-        }
-      );
+    const result = await postJson("/api/telegram-auth", {
+      initData: tg.initData
+    });
 
-    if (
-      result &&
-      result.user
-    ) {
-      currentUser =
-        result.user;
+    if (result && result.user) {
+      currentUser = result.user;
     }
 
-    if (
-      result &&
-      result.isAdmin
-    ) {
+    if (result && result.isAdmin) {
       isAdmin = true;
     }
 
     updateAccountUI();
 
   } catch (error) {
-    console.warn(
-      "Telegram authentication failed:",
-      error
-    );
+    console.warn("Telegram authentication failed:", error);
   }
 }
 
@@ -726,38 +265,22 @@ async function loadCurrentUser() {
   }
 
   try {
-    const result =
-      await postJson(
-        "/api/whoami",
-        {
-          initData: tg.initData
-        }
-      );
+    const result = await postJson("/api/whoami", {
+      initData: tg.initData
+    });
 
-    if (
-      result &&
-      result.user
-    ) {
-      currentUser =
-        result.user;
+    if (result && result.user) {
+      currentUser = result.user;
     }
 
-    if (
-      result &&
-      typeof result.isAdmin ===
-        "boolean"
-    ) {
-      isAdmin =
-        result.isAdmin;
+    if (result && typeof result.isAdmin === "boolean") {
+      isAdmin = result.isAdmin;
     }
 
     updateAccountUI();
 
   } catch (error) {
-    console.warn(
-      "whoami:",
-      error
-    );
+    console.warn("whoami:", error);
   }
 }
 
@@ -767,50 +290,27 @@ async function loadCurrentUser() {
 ========================================================= */
 
 function updateAccountUI() {
-  const account =
-    $("account");
-
-  const adminButton =
-    $("adminButton");
-
-  const loginBox =
-    $("loginBox");
-
-  const logoutButton =
-    $("logoutButton");
+  const account = $("account");
+  const adminButton = $("adminButton");
+  const loginBox = $("loginBox");
+  const logoutButton = $("logoutButton");
 
   if (!currentUser) {
-    if (loginBox) {
-      loginBox.classList.remove(
-        "hidden"
-      );
-    }
-
-    if (logoutButton) {
-      logoutButton.classList.add(
-        "hidden"
-      );
-    }
-
+    if(loginBox) loginBox.classList.remove("hidden");
+    if(logoutButton) logoutButton.classList.add("hidden");
     if (account) {
-      account.classList.add(
-        "hidden"
-      );
+      account.classList.add("hidden");
     }
 
     if (adminButton) {
-      adminButton.classList.add(
-        "hidden"
-      );
+      adminButton.classList.add("hidden");
     }
 
     return;
   }
 
   if (account) {
-    account.classList.remove(
-      "hidden"
-    );
+    account.classList.remove("hidden");
   }
 
   const name =
@@ -825,57 +325,41 @@ function updateAccountUI() {
 
   const username =
     currentUser.username
-      ? "@" +
-        currentUser.username
+      ? "@" + currentUser.username
       : "";
 
   if ($("accountName")) {
-    $("accountName").textContent =
-      name;
+    $("accountName").textContent = name;
   }
 
   if ($("accountUser")) {
-    $("accountUser").textContent =
-      username;
+    $("accountUser").textContent = username;
   }
 
   if ($("accountInfo")) {
     $("accountInfo").textContent =
-      isAdmin ||
-      currentUser.role === "admin"
+      isAdmin || currentUser.role === "admin"
         ? "مدیر سیستم"
         : "مشتری";
   }
 
-  const customerButton =
-    $("customerButton");
-
-  if (loginBox) {
-    loginBox.classList.add(
-      "hidden"
-    );
-  }
-
-  if (logoutButton) {
-    logoutButton.classList.remove(
-      "hidden"
-    );
-  }
+  const customerButton = $("customerButton");
+  if(loginBox) loginBox.classList.add("hidden");
+  if(logoutButton) logoutButton.classList.remove("hidden");
 
   if (adminButton) {
-         if (adminButton) {
-      if (
-        isAdmin ||
-        currentUser.role === "admin"
-      ) {
-        adminButton.classList.remove(
-          "hidden"
-        );
-      } else {
-        adminButton.classList.add(
-          "hidden"
-        );
-      }
+    if (isAdmin) {
+      adminButton.classList.remove("hidden");
+    } else {
+      adminButton.classList.add("hidden");
+    }
+  }
+
+  if (customerButton) {
+    if (isAdmin) {
+      customerButton.classList.add("hidden");
+    } else {
+      customerButton.classList.remove("hidden");
     }
   }
 }
@@ -886,305 +370,259 @@ function updateAccountUI() {
 ========================================================= */
 
 async function loadProducts() {
-  const container =
-    $("products");
+  const loading = $("loading");
 
-  if (container) {
-    container.innerHTML = `
-      <div class="loading">
-        در حال دریافت محصولات...
-      </div>
-    `;
+  if (loading) {
+    loading.classList.remove("hidden");
+    loading.textContent = "در حال دریافت محصولات...";
   }
 
-  try {
-    const result =
-      await get("/api/products");
+  hideError();
 
-    products =
-      Array.isArray(result)
-        ? result
-        : Array.isArray(result?.products)
-          ? result.products
-          : [];
+  try {
+    const result = await get("/api/products");
+
+    if (Array.isArray(result)) {
+      products = result;
+    } else if (
+      result &&
+      Array.isArray(result.products)
+    ) {
+      products = result.products;
+    } else {
+      products = [];
+    }
 
     buildCategories();
+    renderCategories();
     renderProducts();
 
-  } catch (e) {
-    console.error(
-      "Products:",
-      e
+  } catch (error) {
+    console.error("Products error:", error);
+
+    products = [];
+
+    showError(
+      "❌ دریافت محصولات انجام نشد. اتصال اینترنت یا سرور را بررسی کنید."
     );
 
-    if (container) {
-      container.innerHTML = `
-        <div class="error-box">
-          دریافت محصولات انجام نشد.
-          <br>
-          ${escapeHtml(e.message)}
-        </div>
-      `;
+  } finally {
+    if (loading) {
+      loading.classList.add("hidden");
     }
   }
 }
 
+
+/* =========================================================
+   CATEGORIES
+========================================================= */
+
 function buildCategories() {
-  const set =
-    new Set();
+  const set = new Set();
 
   products.forEach(product => {
-    if (
-      product.category &&
-      String(product.category).trim()
-    ) {
-      set.add(
-        String(product.category).trim()
-      );
+    if (product.category) {
+      set.add(String(product.category).trim());
     }
   });
 
-  categories =
-    Array.from(set)
-      .sort((a, b) =>
-        a.localeCompare(
-          b,
-          "fa"
-        )
-      );
-
-  renderCategories();
+  categories = Array.from(set);
 }
 
 function renderCategories() {
-  const container =
-    $("categories");
+  const container = $("categories");
 
-  if (!container) {
-    return;
-  }
+  if (!container) return;
 
   let html = `
     <button
-      type="button"
-      class="category-btn ${
-        activeCategory === ""
-          ? "active"
-          : ""
+      class="category-circle ${
+        activeCategory === "" ? "active" : ""
       }"
       data-category=""
     >
-      همه محصولات
+      همه
     </button>
   `;
 
   categories.forEach(category => {
     html += `
       <button
-        type="button"
-        class="category-btn ${
-          activeCategory === category
-            ? "active"
-            : ""
+        class="category-circle ${
+          activeCategory === category ? "active" : ""
         }"
-        data-category="${escapeHtml(
-          category
-        )}"
+        data-category="${escapeHtml(category)}"
       >
         ${escapeHtml(category)}
       </button>
     `;
   });
 
-  container.innerHTML =
-    html;
+  container.innerHTML = html;
 
   container
-    .querySelectorAll(
-      ".category-btn"
-    )
+    .querySelectorAll(".category-circle")
     .forEach(button => {
-      button.addEventListener(
-        "click",
-        () => {
-          activeCategory =
-            button.dataset.category ||
-            "";
+      button.addEventListener("click", () => {
+        activeCategory =
+          button.dataset.category || "";
 
-          renderCategories();
-          renderProducts();
-        }
-      );
+        renderCategories();
+        renderProducts();
+      });
     });
 }
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
 
 function getFilteredProducts() {
-  const search =
-    $("searchInput")
-      ?.value
-      .trim()
-      .toLowerCase() || "";
+  const input = $("searchInput");
 
-  return products.filter(
-    product => {
-      const category =
-        String(
-          product.category || ""
-        );
+  const query = input
+    ? input.value.trim().toLowerCase()
+    : "";
 
-      if (
-        activeCategory &&
-        category !== activeCategory
-      ) {
-        return false;
-      }
+  return products.filter(product => {
+    const categoryOK =
+      !activeCategory ||
+      String(product.category || "") ===
+        activeCategory;
 
-      if (!search) {
-        return true;
-      }
-
-      const text = [
-        product.name_fa,
-        product.name_en,
-        product.category,
-        product.description,
-        product.short_description,
-        product.maker,
-        product.package
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      return text.includes(search);
+    if (!categoryOK) {
+      return false;
     }
-  );
+
+    if (!query) {
+      return true;
+    }
+
+    const searchable = [
+      product.name_fa,
+      product.name_en,
+      product.category,
+      product.package,
+      product.maker,
+      product.intro,
+      product.composition,
+      product.use_text,
+      product.warnings
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return searchable.includes(query);
+  });
 }
+
+
+/* =========================================================
+   PRODUCT CARDS
+========================================================= */
 
 function renderProducts() {
-  const container =
-    $("products");
+  const grid = $("productGrid");
+  const empty = $("empty");
+  const count = $("productCount");
 
-  if (!container) {
+  if (!grid) return;
+
+  const filtered = getFilteredProducts();
+
+  if (count) {
+    count.textContent =
+      `${formatNumber(filtered.length)} محصول`;
+  }
+
+  if (!filtered.length) {
+    grid.innerHTML = "";
+
+    if (empty) {
+      empty.classList.remove("hidden");
+    }
+
     return;
   }
 
-  const list =
-    getFilteredProducts();
-
-  if (!list.length) {
-    container.innerHTML = `
-      <div class="empty-box">
-        محصولی پیدا نشد.
-      </div>
-    `;
-
-    return;
+  if (empty) {
+    empty.classList.add("hidden");
   }
 
-  container.innerHTML =
-    list
-      .map(
-        product =>
-          createProductCard(
-            product
-          )
-      )
-      .join("");
-
-  container
-    .querySelectorAll(
-      "[data-product-id]"
-    )
-    .forEach(card => {
-      card.addEventListener(
-        "click",
-        () => {
-          const id =
-            Number(
-              card.dataset.productId
-            );
-
-          openProductModal(id);
-        }
-      );
-    });
+  grid.innerHTML = filtered
+    .map(renderProductCard)
+    .join("");
 }
 
-function createProductCard(
-  product
-) {
-  const id =
-    Number(product.id);
+function renderProductCard(product) {
+  const id = product.id;
 
-  const image =
-    product.image_url ||
-    product.image ||
-    product.catalog_url ||
-    "";
+  const name =
+    product.name_fa ||
+    product.name_en ||
+    "محصول";
 
-  const imageHtml =
-    image
-      ? `
-        <div class="product-image">
-          <img
-            src="${escapeHtml(
-              image
-            )}"
-            alt="${escapeHtml(
-              product.name_fa ||
-              ""
-            )}"
-            loading="lazy"
-            onerror="this.parentElement.classList.add('image-error')"
-          >
-        </div>
-      `
-      : `
-        <div class="product-image image-placeholder">
-          <span>🌱</span>
-        </div>
-      `;
+  const imageUrl =
+    product.image_url || "";
 
   return `
     <article
       class="product-card"
-      data-product-id="${id}"
+      data-product-id="${escapeHtml(id)}"
+      role="button"
+      tabindex="0"
+      onclick="openProduct(${Number(id)})"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProduct(${Number(id)})}"
     >
 
-      ${imageHtml}
+      <div class="product-image">
+
+        ${
+          imageUrl
+            ? `
+              <img
+                src="${escapeHtml(imageUrl)}"
+                alt="${escapeHtml(name)}"
+                loading="lazy"
+                onerror="
+                  this.style.display='none';
+                  this.parentElement.classList.add('image-error');
+                "
+              >
+            `
+            : `
+              <div class="no-image">
+                🌱
+              </div>
+            `
+        }
+
+      </div>
 
       <div class="product-body">
 
-        <div class="product-title">
-          ${escapeHtml(
-            product.name_fa ||
-            ""
-          )}
-        </div>
+        <h3>
+          ${escapeHtml(name)}
+        </h3>
 
         ${
           product.name_en
             ? `
-              <div class="product-name-en">
-                ${escapeHtml(
-                  product.name_en
-                )}
+              <div class="product-en">
+                ${escapeHtml(product.name_en)}
               </div>
             `
             : ""
         }
 
         ${
-          product.short_description ||
-          product.description
+          product.category
             ? `
-              <div class="product-description">
-                ${escapeHtml(
-                  product.short_description ||
-                  product.description ||
-                  ""
-                )}
+              <div class="product-category">
+                ${escapeHtml(product.category)}
               </div>
             `
             : ""
@@ -1194,9 +632,7 @@ function createProductCard(
           product.package
             ? `
               <div class="product-package">
-                📦 ${escapeHtml(
-                  product.package
-                )}
+                📦 ${escapeHtml(product.package)}
               </div>
             `
             : ""
@@ -1205,7 +641,6 @@ function createProductCard(
         ${getPriceText(product)}
 
       </div>
-
     </article>
   `;
 }
@@ -1215,1888 +650,54 @@ function createProductCard(
    PRODUCT MODAL
 ========================================================= */
 
-function openProductModal(
-  productId
-) {
-  const product =
-    products.find(
-      p =>
-        Number(p.id) ===
-        Number(productId)
-    );
+function openProduct(id) {
+  const product = products.find(
+    p => Number(p.id) === Number(id)
+  );
 
   if (!product) {
     return;
   }
 
-  const modal =
-    $("productModal");
+  const modal = $("modal");
+  const content = $("modalContent");
 
-  if (!modal) {
+  if (!modal || !content) {
     return;
   }
-
-  const image =
-    product.image_url ||
-    product.image ||
-    product.catalog_url ||
-    "";
-
-  const imageElement =
-    $("modalProductImage");
-
-  if (imageElement) {
-    if (image) {
-      imageElement.src =
-        image;
-
-      imageElement.alt =
-        product.name_fa || "";
-
-      imageElement.classList.remove(
-        "hidden"
-      );
-    } else {
-      imageElement.removeAttribute(
-        "src"
-      );
-
-      imageElement.classList.add(
-        "hidden"
-      );
-    }
-  }
-
-  if ($("modalProductName")) {
-    $("modalProductName").textContent =
-      product.name_fa || "";
-  }
-
-  if ($("modalProductNameEn")) {
-    $("modalProductNameEn").textContent =
-      product.name_en || "";
-  }
-
-  if ($("modalProductDescription")) {
-    $("modalProductDescription").textContent =
-      product.description ||
-      product.short_description ||
-      "";
-  }
-
-  if ($("modalProductCategory")) {
-    $("modalProductCategory").textContent =
-      product.category || "";
-  }
-
-  if ($("modalProductPackage")) {
-    $("modalProductPackage").textContent =
-      product.package
-        ? "📦 " +
-          product.package
-        : "";
-  }
-
-  if ($("modalProductMaker")) {
-    $("modalProductMaker").textContent =
-      product.maker || "";
-  }
-
-  const price =
-    $("modalProductPrice");
-
-  if (price) {
-    if (
-      product.base_price !== null &&
-      product.base_price !== undefined &&
-      product.base_price !== ""
-    ) {
-      price.textContent =
-        formatNumber(
-          product.base_price
-        ) +
-        " " +
-        (
-          product.base_currency ||
-          "تومان"
-        );
-    } else {
-      price.textContent =
-        "برای اطلاع از قیمت تماس بگیرید.";
-    }
-  }
-
-  const video =
-    $("modalProductVideo");
-
-  if (video) {
-    const videoUrl =
-      product.video_url ||
-      product.video ||
-      "";
-
-    if (videoUrl) {
-      video.src =
-        videoUrl;
-
-      video.classList.remove(
-        "hidden"
-      );
-    } else {
-      video.pause();
-
-      video.removeAttribute(
-        "src"
-      );
-
-      video.load();
-
-      video.classList.add(
-        "hidden"
-      );
-    }
-  }
-
-  modal.classList.remove(
-    "hidden"
-  );
-
-  document.body.classList.add(
-    "modal-open"
-  );
-
-  /*
-   * مهم:
-   * بعضی نسخه‌های Telegram WebApp ممکن است
-   * BackButton را در محیط عادی وب پشتیبانی نکنند.
-   * بنابراین قبل از استفاده بررسی می‌کنیم.
-   */
-  if (
-    tg &&
-    tg.initData &&
-    tg.BackButton
-  ) {
-    try {
-      if (
-        typeof tg.BackButton.show ===
-        "function"
-      ) {
-        tg.BackButton.show();
-      }
-    } catch (e) {
-      console.warn(
-        "Telegram BackButton.show:",
-        e
-      );
-    }
-  }
-}
-
-function closeModal() {
-  const modal =
-    $("productModal");
-
-  if (modal) {
-    modal.classList.add(
-      "hidden"
-    );
-  }
-
-  document.body.classList.remove(
-    "modal-open"
-  );
-
-  const video =
-    $("modalProductVideo");
-
-  if (video) {
-    try {
-      video.pause();
-    } catch {}
-
-    video.removeAttribute(
-      "src"
-    );
-
-    try {
-      video.load();
-    } catch {}
-  }
-
-  if (
-    tg &&
-    tg.initData &&
-    tg.BackButton
-  ) {
-    try {
-      if (
-        typeof tg.BackButton.hide ===
-        "function"
-      ) {
-        tg.BackButton.hide();
-      }
-    } catch (e) {
-      console.warn(
-        "Telegram BackButton.hide:",
-        e
-      );
-    }
-  }
-}
-
-
-/* =========================================================
-   CUSTOMER REQUEST MODAL
-========================================================= */
-
-function openCustomerRequest(
-  type = "order"
-) {
-  const modal =
-    $("customerRequestModal");
-
-  if (!modal) {
-    return;
-  }
-
-  const select =
-    $("customerRequestType");
-
-  if (select) {
-    select.value =
-      type === "note"
-        ? "note"
-        : "order";
-  }
-
-  const title =
-    $("customerRequestTitle");
-
-  if (title) {
-    title.textContent =
-      type === "note"
-        ? "ثبت یادداشت"
-        : "ثبت سفارش";
-  }
-
-  const input =
-    $("customerRequestText");
-
-  if (input) {
-    input.value = "";
-    input.focus();
-  }
-
-  modal.classList.remove(
-    "hidden"
-  );
-}
-
-function closeCustomerRequest() {
-  const modal =
-    $("customerRequestModal");
-
-  if (modal) {
-    modal.classList.add(
-      "hidden"
-    );
-  }
-}
-
-
-/* =========================================================
-   ثبت سفارش / یادداشت
-   نسخه اصلاح‌شده برای رفع
-   WebAppMethod Unsupported
-========================================================= */
-
-async function submitCustomerRequest() {
-  const input =
-    $("customerRequestText");
-
-  const typeInput =
-    $("customerRequestType");
-
-  const text =
-    input
-      ? input.value.trim()
-      : "";
-
-  const type =
-    typeInput?.value === "note"
-      ? "note"
-      : "order";
-
-  if (!text) {
-    alert(
-      "لطفاً متن سفارش یا یادداشت را بنویسید."
-    );
-
-    return;
-  }
-
-  try {
-    await postJson(
-      "/api/customer/request",
-      {
-        type,
-        text
-      }
-    );
-
-    if (input) {
-      input.value = "";
-    }
-
-    closeCustomerRequest();
-
-    /*
-     * عمداً از tg.showPopup استفاده نمی‌کنیم.
-     * چون در بعضی محیط‌ها این متد وجود دارد ولی
-     * توسط WebApp پشتیبانی نمی‌شود و خطای:
-     *
-     * WebAppMethod Unsupported
-     *
-     * ایجاد می‌کند.
-     *
-     * alert در مرورگر، PWA و WebApp قابل استفاده است.
-     */
-
-    alert(
-      type === "note"
-        ? "✅ یادداشت شما با موفقیت ثبت شد."
-        : "✅ سفارش شما با موفقیت ثبت شد."
-    );
-
-  } catch (error) {
-    console.error(
-      "Customer request error:",
-      error
-    );
-
-    alert(
-      "❌ ثبت درخواست انجام نشد:\n" +
-      (
-        error?.message ||
-        "خطای نامشخص"
-      )
-    );
-  }
-}
-
-
-/* =========================================================
-   ADMIN PRODUCTS
-========================================================= */
-
-async function loadAdminProducts() {
-  const container =
-    $("adminProducts");
-
-  if (!container) {
-    return;
-  }
-
-  try {
-    const result =
-      await get("/api/products");
-
-    const list =
-      Array.isArray(result)
-        ? result
-        : Array.isArray(
-            result?.products
-          )
-          ? result.products
-          : [];
-
-    if (!list.length) {
-      container.innerHTML = `
-        <div class="empty-box">
-          محصولی وجود ندارد.
-        </div>
-      `;
-
-      return;
-    }
-
-    container.innerHTML =
-      list
-        .map(
-          product => `
-            <div
-              class="admin-product-row"
-            >
-
-              <div
-                class="admin-product-info"
-              >
-                <strong>
-                  ${escapeHtml(
-                    product.name_fa ||
-                    ""
-                  )}
-                </strong>
-
-                ${
-                  product.name_en
-                    ? `
-                      <span>
-                        ${escapeHtml(
-                          product.name_en
-                        )}
-                      </span>
-                    `
-                    : ""
-                }
-
-                <small>
-                  ID:
-                  ${escapeHtml(
-                    product.id
-                  )}
-                </small>
-              </div>
-
-              <div
-                class="admin-product-actions"
-              >
-
-                <button
-                  type="button"
-                  class="danger-btn"
-                  data-delete-product="${
-                    product.id
-                  }"
-                >
-                  حذف
-                </button>
-
-              </div>
-
-            </div>
-          `
-        )
-        .join("");
-
-    container
-      .querySelectorAll(
-        "[data-delete-product]"
-      )
-      .forEach(button => {
-        button.addEventListener(
-          "click",
-          () => {
-            deleteProduct(
-              button.dataset
-                .deleteProduct
-            );
-          }
-        );
-      });
-
-  } catch (e) {
-    container.innerHTML = `
-      <div class="error-box">
-        ${escapeHtml(
-          e.message
-        )}
-      </div>
-    `;
-  }
-}
-
-
-/* =========================================================
-   CUSTOMERS / REPRESENTATIVES
-========================================================= */
-
-async function loadCustomers() {
-  const container =
-    $("customersList");
-
-  if (!container) {
-    return;
-  }
-
-  try {
-    const result =
-      await get(
-        "/api/admin/customers"
-      );
-
-    const list =
-      Array.isArray(result)
-        ? result
-        : Array.isArray(
-            result?.customers
-          )
-          ? result.customers
-          : [];
-
-    if (!list.length) {
-      container.innerHTML = `
-        <div class="empty-box">
-          نماینده‌ای تعریف نشده است.
-        </div>
-      `;
-
-      return;
-    }
-
-    container.innerHTML =
-      list
-        .map(customer => {
-          const id =
-            String(
-              customer.id
-            );
-
-          const first =
-            escapeHtml(
-              customer.first_name ||
-              ""
-            );
-
-          const last =
-            escapeHtml(
-              customer.last_name ||
-              ""
-            );
-
-          const username =
-            escapeHtml(
-              customer.username ||
-              ""
-            );
-
-          const status =
-            customer.status ||
-            "active";
-
-          return `
-            <div
-              class="customer-admin-card"
-            >
-
-              <div
-                class="customer-admin-header"
-              >
-                <strong>
-                  ${first}
-                  ${last}
-                </strong>
-
-                <small>
-                  ID:
-                  ${escapeHtml(id)}
-                </small>
-              </div>
-
-              <div
-                class="customer-admin-fields"
-              >
-
-                <label>
-                  نام
-                  <input
-                    id="ufirst-${escapeHtml(
-                      id
-                    )}"
-                    value="${first}"
-                  >
-                </label>
-
-                <label>
-                  نام خانوادگی
-                  <input
-                    id="ulast-${escapeHtml(
-                      id
-                    )}"
-                    value="${last}"
-                  >
-                </label>
-
-                <label>
-                  نام کاربری
-                  <input
-                    id="uuser-${escapeHtml(
-                      id
-                    )}"
-                    value="${username}"
-                    dir="ltr"
-                  >
-                </label>
-
-                <label>
-                  رمز جدید
-                  <input
-                    id="upass-${escapeHtml(
-                      id
-                    )}"
-                    type="password"
-                    placeholder="در صورت تغییر"
-                    dir="ltr"
-                  >
-                </label>
-
-                <label>
-                  وضعیت
-                  <select
-                    id="ustatus-${escapeHtml(
-                      id
-                    )}"
-                  >
-                    <option
-                      value="active"
-                      ${
-                        status ===
-                        "active"
-                          ? "selected"
-                          : ""
-                      }
-                    >
-                      فعال
-                    </option>
-
-                    <option
-                      value="inactive"
-                      ${
-                        status ===
-                        "inactive"
-                          ? "selected"
-                          : ""
-                      }
-                    >
-                      غیرفعال
-                    </option>
-                  </select>
-                </label>
-
-              </div>
-
-              <div
-                class="customer-admin-actions"
-              >
-
-                <button
-                  type="button"
-                  class="primary-btn"
-                  data-save-customer="${escapeHtml(
-                    id
-                  )}"
-                >
-                  ذخیره
-                </button>
-
-                <button
-                  type="button"
-                  class="danger-btn"
-                  data-delete-customer="${escapeHtml(
-                    id
-                  )}"
-                >
-                  حذف نماینده
-                </button>
-
-              </div>
-
-            </div>
-          `;
-        })
-        .join("");
-
-    container
-      .querySelectorAll(
-        "[data-save-customer]"
-      )
-      .forEach(button => {
-        button.addEventListener(
-          "click",
-          () => {
-            updateCustomerUser(
-              button.dataset
-                .saveCustomer
-            );
-          }
-        );
-      });
-
-    container
-      .querySelectorAll(
-        "[data-delete-customer]"
-      )
-      .forEach(button => {
-        button.addEventListener(
-          "click",
-          () => {
-            deleteCustomerUser(
-              button.dataset
-                .deleteCustomer
-            );
-          }
-        );
-      });
-
-  } catch (e) {
-    container.innerHTML = `
-      <div class="error-box">
-        ${escapeHtml(
-          e.message
-        )}
-      </div>
-    `;
-  }
-}
-
-
-/* =========================================================
-   ADMIN PANEL
-========================================================= */
-
-function openAdminPanel() {
-  if (
-    !currentUser ||
-    !(
-      isAdmin ||
-      currentUser.role ===
-        "admin"
-    )
-  ) {
-    alert(
-      "دسترسی به پنل مدیریت مجاز نیست."
-    );
-
-    return;
-  }
-
-  const panel =
-    $("adminPanel");
-
-  if (!panel) {
-    return;
-  }
-
-  panel.classList.remove(
-    "hidden"
-  );
-
-  loadAdminProducts();
-  loadCustomers();
-  loadSiteSettings();
-}
-
-function closeAdminPanel() {
-  const panel =
-    $("adminPanel");
-
-  if (panel) {
-    panel.classList.add(
-      "hidden"
-    );
-  }
-}
-
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-function setupSearch() {
-  const input =
-    $("searchInput");
-
-  if (!input) {
-    return;
-  }
-
-  let timer = null;
-
-  input.addEventListener(
-    "input",
-    () => {
-      clearTimeout(timer);
-
-      timer =
-        setTimeout(
-          () => {
-            renderProducts();
-          },
-          120
-        );
-    }
-  );
-}
-
-
-/* =========================================================
-   TELEGRAM BACK BUTTON
-========================================================= */
-
-function setupTelegramBackButton() {
-  if (
-    !tg ||
-    !tg.initData ||
-    !tg.BackButton
-  ) {
-    return;
-  }
-
-  try {
-    if (
-      typeof tg.BackButton.onClick ===
-      "function"
-    ) {
-      tg.BackButton.onClick(
-        () => {
-          const productModal =
-            $("productModal");
-
-          const requestModal =
-            $("customerRequestModal");
-
-          const adminPanel =
-            $("adminPanel");
-
-          if (
-            productModal &&
-            !productModal.classList.contains(
-              "hidden"
-            )
-          ) {
-            closeModal();
-            return;
-          }
-
-          if (
-            requestModal &&
-            !requestModal.classList.contains(
-              "hidden"
-            )
-          ) {
-            closeCustomerRequest();
-            return;
-          }
-
-          if (
-            adminPanel &&
-            !adminPanel.classList.contains(
-              "hidden"
-            )
-          ) {
-            closeAdminPanel();
-          }
-        }
-      );
-    }
-  } catch (e) {
-    console.warn(
-      "Telegram BackButton:",
-      e
-    );
-  }
-}
-/* =========================================================
-   EVENT SETUP
-========================================================= */
-
-function setupEvents() {
-
-  /* -----------------------------------------
-     Search
-  ----------------------------------------- */
-  setupSearch();
-
-
-  /* -----------------------------------------
-     Login
-  ----------------------------------------- */
-  const loginButton =
-    $("loginButton");
-
-  if (loginButton) {
-    loginButton.addEventListener(
-      "click",
-      loginWithUsernamePassword
-    );
-  }
-
-  const loginForm =
-    $("loginForm");
-
-  if (loginForm) {
-    loginForm.addEventListener(
-      "submit",
-      event => {
-        event.preventDefault();
-        loginWithUsernamePassword();
-      }
-    );
-  }
-
-
-  /* -----------------------------------------
-     Logout
-  ----------------------------------------- */
-  const logoutButton =
-    $("logoutButton");
-
-  if (logoutButton) {
-    logoutButton.addEventListener(
-      "click",
-      logoutUser
-    );
-  }
-
-
-  /* -----------------------------------------
-     Admin
-  ----------------------------------------- */
-  const adminButton =
-    $("adminButton");
-
-  if (adminButton) {
-    adminButton.addEventListener(
-      "click",
-      openAdminPanel
-    );
-  }
-
-  const closeAdminButton =
-    $("closeAdminButton");
-
-  if (closeAdminButton) {
-    closeAdminButton.addEventListener(
-      "click",
-      closeAdminPanel
-    );
-  }
-
-
-  /* -----------------------------------------
-     Product modal close
-  ----------------------------------------- */
-  const closeProductButton =
-    $("closeProductModal");
-
-  if (closeProductButton) {
-    closeProductButton.addEventListener(
-      "click",
-      closeModal
-    );
-  }
-
-  const productModal =
-    $("productModal");
-
-  if (productModal) {
-    productModal.addEventListener(
-      "click",
-      event => {
-        if (
-          event.target ===
-          productModal
-        ) {
-          closeModal();
-        }
-      }
-    );
-  }
-
-
-  /* -----------------------------------------
-     Customer request
-  ----------------------------------------- */
-  const orderButton =
-    $("orderButton");
-
-  if (orderButton) {
-    orderButton.addEventListener(
-      "click",
-      () => {
-        openCustomerRequest(
-          "order"
-        );
-      }
-    );
-  }
-
-  const noteButton =
-    $("noteButton");
-
-  if (noteButton) {
-    noteButton.addEventListener(
-      "click",
-      () => {
-        openCustomerRequest(
-          "note"
-        );
-      }
-    );
-  }
-
-  const closeRequestButton =
-    $("closeCustomerRequest");
-
-  if (closeRequestButton) {
-    closeRequestButton.addEventListener(
-      "click",
-      closeCustomerRequest
-    );
-  }
-
-  const cancelRequestButton =
-    $("cancelCustomerRequest");
-
-  if (cancelRequestButton) {
-    cancelRequestButton.addEventListener(
-      "click",
-      closeCustomerRequest
-    );
-  }
-
-  const submitRequestButton =
-    $("submitCustomerRequest");
-
-  if (submitRequestButton) {
-    submitRequestButton.addEventListener(
-      "click",
-      submitCustomerRequest
-    );
-  }
-
-  const requestModal =
-    $("customerRequestModal");
-
-  if (requestModal) {
-    requestModal.addEventListener(
-      "click",
-      event => {
-        if (
-          event.target ===
-          requestModal
-        ) {
-          closeCustomerRequest();
-        }
-      }
-    );
-  }
-
-
-  /* -----------------------------------------
-     Admin: create product
-  ----------------------------------------- */
-  const createProductButton =
-    $("createProductButton");
-
-  if (createProductButton) {
-    createProductButton.addEventListener(
-      "click",
-      createProduct
-    );
-  }
-
-
-  /* -----------------------------------------
-     Admin: create customer
-  ----------------------------------------- */
-  const createCustomerButton =
-    $("createCustomerButton");
-
-  if (createCustomerButton) {
-    createCustomerButton.addEventListener(
-      "click",
-      createCustomerUser
-    );
-  }
-
-
-  /* -----------------------------------------
-     Admin: save settings
-  ----------------------------------------- */
-  const saveSettingsButton =
-    $("saveSettingsButton");
-
-  if (saveSettingsButton) {
-    saveSettingsButton.addEventListener(
-      "click",
-      saveSiteSettings
-    );
-  }
-
-
-  /* -----------------------------------------
-     ESC key
-  ----------------------------------------- */
-  document.addEventListener(
-    "keydown",
-    event => {
-
-      if (
-        event.key !== "Escape"
-      ) {
-        return;
-      }
-
-      const productModal =
-        $("productModal");
-
-      const requestModal =
-        $("customerRequestModal");
-
-      const adminPanel =
-        $("adminPanel");
-
-      if (
-        productModal &&
-        !productModal.classList.contains(
-          "hidden"
-        )
-      ) {
-        closeModal();
-        return;
-      }
-
-      if (
-        requestModal &&
-        !requestModal.classList.contains(
-          "hidden"
-        )
-      ) {
-        closeCustomerRequest();
-        return;
-      }
-
-      if (
-        adminPanel &&
-        !adminPanel.classList.contains(
-          "hidden"
-        )
-      ) {
-        closeAdminPanel();
-      }
-
-    }
-  );
-
-
-  /* -----------------------------------------
-     Telegram Back Button
-  ----------------------------------------- */
-  setupTelegramBackButton();
-}
-
-
-/* =========================================================
-   ADMIN TAB / SECTION
-========================================================= */
-
-function setupAdminTabs() {
-
-  const buttons =
-    document.querySelectorAll(
-      "[data-admin-tab]"
-    );
-
-  const sections =
-    document.querySelectorAll(
-      "[data-admin-section]"
-    );
-
-  if (!buttons.length) {
-    return;
-  }
-
-  buttons.forEach(button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        const target =
-          button.dataset.adminTab;
-
-        buttons.forEach(
-          item => {
-            item.classList.toggle(
-              "active",
-              item === button
-            );
-          }
-        );
-
-        sections.forEach(
-          section => {
-            section.classList.toggle(
-              "hidden",
-              section.dataset
-                .adminSection !==
-                target
-            );
-          }
-        );
-
-      }
-    );
-
-  });
-}
-
-
-/* =========================================================
-   PRODUCT IMAGE FALLBACK
-========================================================= */
-
-function setupImageFallback() {
-
-  document.addEventListener(
-    "error",
-    event => {
-
-      const image =
-        event.target;
-
-      if (
-        !image ||
-        image.tagName !==
-          "IMG"
-      ) {
-        return;
-      }
-
-      if (
-        image.dataset
-          .fallbackApplied
-      ) {
-        return;
-      }
-
-      image.dataset
-        .fallbackApplied =
-        "1";
-
-      const fallback =
-        image.dataset
-          .fallback;
-
-      if (fallback) {
-        image.src =
-          fallback;
-
-        return;
-      }
-
-      const parent =
-        image.parentElement;
-
-      if (parent) {
-        parent.classList.add(
-          "image-error"
-        );
-      }
-
-    },
-    true
-  );
-}
-
-
-/* =========================================================
-   PWA SERVICE WORKER
-========================================================= */
-
-function registerServiceWorker() {
-
-  if (
-    !("serviceWorker" in
-      navigator)
-  ) {
-    return;
-  }
-
-  /*
-   * Service Worker فقط روی HTTPS
-   * یا localhost قابل استفاده است.
-   */
-  if (
-    location.protocol !==
-      "https:" &&
-    location.hostname !==
-      "localhost" &&
-    location.hostname !==
-      "127.0.0.1"
-  ) {
-    return;
-  }
-
-  navigator.serviceWorker
-    .register(
-      "./service-worker.js",
-      {
-        scope: "./"
-      }
-    )
-    .then(
-      registration => {
-        console.log(
-          "Service Worker registered:",
-          registration.scope
-        );
-      }
-    )
-    .catch(
-      error => {
-        console.warn(
-          "Service Worker:",
-          error
-        );
-      }
-    );
-}
-
-
-/* =========================================================
-   INSTALL / PWA UI
-========================================================= */
-
-let deferredInstallPrompt =
-  null;
-
-function setupInstallPrompt() {
-
-  window.addEventListener(
-    "beforeinstallprompt",
-    event => {
-
-      /*
-       * جلوگیری از نمایش خودکار
-       */
-      event.preventDefault();
-
-      deferredInstallPrompt =
-        event;
-
-      const button =
-        $("installAppButton");
-
-      if (button) {
-        button.classList.remove(
-          "hidden"
-        );
-      }
-    }
-  );
-
-
-  const installButton =
-    $("installAppButton");
-
-  if (installButton) {
-
-    installButton.addEventListener(
-      "click",
-      async () => {
-
-        if (
-          !deferredInstallPrompt
-        ) {
-          alert(
-            "برای نصب برنامه، از گزینه نصب برنامه در مرورگر استفاده کنید."
-          );
-
-          return;
-        }
-
-        try {
-
-          deferredInstallPrompt
-            .prompt();
-
-          await deferredInstallPrompt
-            .userChoice;
-
-        } catch (
-          error
-        ) {
-
-          console.warn(
-            "Install prompt:",
-            error
-          );
-
-        } finally {
-
-          deferredInstallPrompt =
-            null;
-
-          installButton.classList.add(
-            "hidden"
-          );
-        }
-
-      }
-    );
-  }
-
-
-  window.addEventListener(
-    "appinstalled",
-    () => {
-
-      deferredInstallPrompt =
-        null;
-
-      const button =
-        $("installAppButton");
-
-      if (button) {
-        button.classList.add(
-          "hidden"
-        );
-      }
-
-      console.log(
-        "Moshkfam installed."
-      );
-    }
-  );
-}
-
-
-/* =========================================================
-   IMAGE / LOGO INITIALIZATION
-========================================================= */
-
-function setupLogo() {
-
-  const logo =
-    $("siteLogo");
-
-  if (!logo) {
-    return;
-  }
-
-  /*
-   * در بعضی سرورها حروف بزرگ/کوچک
-   * مسیر فایل اهمیت دارد.
-   */
-  logo.addEventListener(
-    "error",
-    () => {
-
-      if (
-        logo.dataset
-          .fallbackApplied
-      ) {
-        return;
-      }
-
-      logo.dataset
-        .fallbackApplied =
-        "1";
-
-      logo.src =
-        "./images/logo.png";
-    }
-  );
-
-  /*
-   * مسیر اصلی
-   */
-  if (
-    !logo.getAttribute("src")
-  ) {
-    logo.src =
-      "./Images/logo.png";
-  }
-}
-
-
-/* =========================================================
-   URL / HASH
-========================================================= */
-
-function setupNavigation() {
-
-  document.addEventListener(
-    "click",
-    event => {
-
-      const link =
-        event.target.closest(
-          "a[href^='#']"
-        );
-
-      if (!link) {
-        return;
-      }
-
-      const href =
-        link.getAttribute(
-          "href"
-        );
-
-      if (
-        !href ||
-        href === "#"
-      ) {
-        return;
-      }
-
-      const target =
-        document.querySelector(
-          href
-        );
-
-      if (!target) {
-        return;
-      }
-
-      event.preventDefault();
-
-      target.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   CUSTOMER ACCESS CHECK
-========================================================= */
-
-function canSubmitCustomerRequest() {
-
-  if (!currentUser) {
-
-    alert(
-      "برای ثبت سفارش یا یادداشت ابتدا وارد حساب کاربری شوید."
-    );
-
-    return false;
-  }
-
-  return true;
-}
-
-
-/* =========================================================
-   WRAP CUSTOMER REQUEST BUTTONS
-========================================================= */
-
-function setupCustomerAccess() {
-
-  const buttons =
-    document.querySelectorAll(
-      "[data-customer-request]"
-    );
-
-  buttons.forEach(
-    button => {
-
-      button.addEventListener(
-        "click",
-        event => {
-
-          event.preventDefault();
-
-          if (
-            !canSubmitCustomerRequest()
-          ) {
-            return;
-          }
-
-          const type =
-            button.dataset
-              .customerRequest ===
-              "note"
-              ? "note"
-              : "order";
-
-          openCustomerRequest(
-            type
-          );
-
-        }
-      );
-
-    }
-  );
-}
-
-
-/* =========================================================
-   ADMIN LOGIN VISIBILITY
-========================================================= */
-
-function refreshAdminVisibility() {
-
-  const elements =
-    document.querySelectorAll(
-      "[data-admin-only]"
-    );
-
-  elements.forEach(
-    element => {
-
-      const allowed =
-        !!currentUser &&
-        (
-          isAdmin ||
-          currentUser.role ===
-            "admin"
-        );
-
-      element.classList.toggle(
-        "hidden",
-        !allowed
-      );
-
-    }
-  );
-}
-
-
-/* =========================================================
-   USER NAME
-========================================================= */
-
-function getUserDisplayName(
-  user
-) {
-
-  if (!user) {
-    return "";
-  }
-
-  const fullName =
-    [
-      user.first_name,
-      user.last_name
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .trim();
-
-  if (fullName) {
-    return fullName;
-  }
-
-  if (user.name) {
-    return String(
-      user.name
-    );
-  }
-
-  if (user.username) {
-    return String(
-      user.username
-    );
-  }
-
-  return "کاربر";
-}
-
-
-/* =========================================================
-   HEADER USER INFO
-========================================================= */
-
-function renderUserHeader() {
 
   const name =
-    getUserDisplayName(
-      currentUser
-    );
+    product.name_fa ||
+    product.name_en ||
+    "محصول";
 
-  const elements = [
-    $("headerUserName"),
-    $("loggedUserName"),
-    $("userName"),
-    $("welcomeUser")
-  ];
+  let html = `
+    <div class="product-detail">
+      <button class="back-product" onclick="closeModal()">← بازگشت به محصولات</button>
 
-  elements.forEach(
-    element => {
-
-      if (!element) {
-        return;
+      ${
+        product.image_url
+          ? `
+            <img
+              class="detail-image"
+              src="${escapeHtml(product.image_url)}"
+              alt="${escapeHtml(name)}"
+            >
+          `
+          : ""
       }
 
-      if (currentUser) {
-        element.textContent =
-          name;
-      } else {
-        element.textContent =
-          "";
-      }
+      <h2>
+        ${escapeHtml(name)}
+      </h2>
 
-    }
-  );
-
-  const usernameElements = [
-    $("headerUsername"),
-    $("loggedUsername"),
-    $("userUsername")
-  ];
-
-  usernameElements.forEach(
-    element => {
-
-      if (!element) {
-        return;
-      }
-
-      element.textContent =
-        currentUser?.username
-          ? "@" +
-            currentUser.username
-          : "";
-
-    }
-  );
-}
-
-
-/* =========================================================
-   ACCOUNT REFRESH
-========================================================= */
-
-function refreshAccount() {
-  updateAccountUI();
-  refreshAdminVisibility();
-  renderUserHeader();
-}
-
-
-/* =========================================================
-   INITIAL LOAD
-========================================================= */
-
-async function initializeApp() {
-
-  hideError();
-
-  setupEvents();
-  setupAdminTabs();
-  setupImageFallback();
-  setupInstallPrompt();
-  setupLogo();
-  setupNavigation();
-  setupCustomerAccess();
-
-  registerServiceWorker();
-
-  /*
-   * ابتدا تنظیمات عمومی
-   */
-  await loadSiteSettings();
-
-  /*
-   * نشست ورود معمولی وب / اندروید
-   */
-  await loadWebSession();
-
-  /*
-   * اگر برنامه داخل Telegram باز شده باشد،
-   * احراز هویت Telegram نیز انجام می‌شود.
-   */
-  if (
-    tg &&
-    tg.initData
-  ) {
-
-    await authenticate();
-    await loadCurrentUser();
-
-  }
-
-  refreshAccount();
-
-  /*
-   * محصولات در نهایت بارگذاری می‌شوند.
-   */
-  await loadProducts();
-
-}
-
-
-/* =========================================================
-   DOM READY
-========================================================= */
-
-if (
-  document.readyState ===
-  "loading"
-) {
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    initializeApp,
-    {
-      once: true
-    }
-  );
-
-} else {
-
-  initializeApp();
-
-}
-
-
-/* =========================================================
-   GLOBAL FUNCTIONS
-========================================================= */
-
-window.Moshkfam = {
-
-  loadProducts,
-
-  openProductModal,
-
-  closeModal,
-
-  openCustomerRequest,
-
-  closeCustomerRequest,
-
-  submitCustomerRequest,
-
-  loginWithUsernamePassword,
-
-  logoutUser,
-
-  openAdminPanel,
-
-  closeAdminPanel,
-
-  saveSiteSettings,
-
-  createProduct,
-
-  deleteProduct,
-
-  createCustomerUser,
-
-  deleteCustomerUser,
-
-  updateCustomerUser
-
-};
-
-
-/* =========================================================
-   DEBUG
-========================================================= */
-
-console.log(
-  "Moshkfam app.js loaded."
-);
+      ${
+        product.name_en
+          ? `
+            <div class="detail-en">
+              ${escapeHtml(product.name_en)}
+            </div>
+          `
           : ""
       }
 
@@ -3798,59 +1399,6 @@ async function setCustomerPrice(
         currency: "تومان"
       }
     );
-           info.innerHTML = customer ? `
-        <strong>مشتری:</strong> ${escapeHtml([customer.first_name, customer.last_name].filter(Boolean).join(" ") || customer.username || "مشتری")}
-        ${customer.telegram_user_id ? `<span> | Telegram ID: ${escapeHtml(customer.telegram_user_id)}</span>` : ""}
-      ` : "";
-      info.classList.remove("hidden");
-    }
-
-    if (!products.length) {
-      container.innerHTML = `<div class="message">محصولی برای قیمت‌گذاری وجود ندارد.</div>`;
-      return;
-    }
-
-    container.innerHTML = products.map(product => {
-      const pid = Number(product.id);
-      const item = priceMap.get(pid);
-      return `
-        <div class="customer-price-row">
-          <div>${escapeHtml(product.name_fa || product.name_en || `محصول ${pid}`)}</div>
-          <input type="number" id="customer-price-${pid}" value="${item?.price ?? ""}" placeholder="قیمت اختصاصی (خالی = حذف)">
-          <button onclick="setCustomerPrice('${escapeHtml(customerId)}', ${pid})">ذخیره</button>
-        </div>`;
-    }).join("");
-  } catch (error) {
-    container.innerHTML = `<div class="message error">خطا در دریافت قیمت مشتری.</div>`;
-  }
-}
-
-async function setCustomerPrice(
-  customerId,
-  productId
-) {
-  const input =
-    $(
-      `customer-price-${Number(productId)}`
-    );
-
-  if (!input) return;
-
-  const value = input.value.trim();
-
-  try {
-    await postJson(
-      "/api/admin/set-customer-price",
-      {
-        customer_id: customerId,
-        product_id: Number(productId),
-        price:
-          value === ""
-            ? null
-            : Number(value),
-        currency: "تومان"
-      }
-    );
 
     alert("✅ قیمت اختصاصی ذخیره شد.");
 
@@ -4158,374 +1706,4 @@ window.openCustomerRequest = openCustomerRequest;
 window.closeCustomerRequest = closeCustomerRequest;
 window.submitCustomerRequest = submitCustomerRequest;
 window.updateCustomerRequestStatus = updateCustomerRequestStatus;
-window.createProduct=createProduct;
-window.deleteProduct=deleteProduct;
-window.createCustomerUser=createCustomerUser;
-window.deleteCustomerUser=deleteCustomerUser;
-window.updateCustomerUser=updateCustomerUser;
-window.saveSiteSettings=saveSiteSettings;      info.innerHTML = customer ? `
-        <strong>مشتری:</strong> ${escapeHtml([customer.first_name, customer.last_name].filter(Boolean).join(" ") || customer.username || "مشتری")}
-        ${customer.telegram_user_id ? `<span> | Telegram ID: ${escapeHtml(customer.telegram_user_id)}</span>` : ""}
-      ` : "";
-      info.classList.remove("hidden");
-    }
-
-    if (!products.length) {
-      container.innerHTML = `<div class="message">محصولی برای قیمت‌گذاری وجود ندارد.</div>`;
-      return;
-    }
-
-    container.innerHTML = products.map(product => {
-      const pid = Number(product.id);
-      const item = priceMap.get(pid);
-      return `
-        <div class="customer-price-row">
-          <div>${escapeHtml(product.name_fa || product.name_en || `محصول ${pid}`)}</div>
-          <input type="number" id="customer-price-${pid}" value="${item?.price ?? ""}" placeholder="قیمت اختصاصی (خالی = حذف)">
-          <button onclick="setCustomerPrice('${escapeHtml(customerId)}', ${pid})">ذخیره</button>
-        </div>`;
-    }).join("");
-  } catch (error) {
-    container.innerHTML = `<div class="message error">خطا در دریافت قیمت مشتری.</div>`;
-  }
-}
-
-async function setCustomerPrice(
-  customerId,
-  productId
-) {
-  const input =
-    $(
-      `customer-price-${Number(productId)}`
-    );
-
-  if (!input) return;
-
-  const value = input.value.trim();
-
-  try {
-    await postJson(
-      "/api/admin/set-customer-price",
-      {
-        customer_id: customerId,
-        product_id: Number(productId),
-        price:
-          value === ""
-            ? null
-            : Number(value),
-        currency: "تومان"
-      }
-    );
-
-    alert("✅ قیمت اختصاصی ذخیره شد.");
-
-    await loadCustomerPrices(customerId);
-
-  } catch (error) {
-    alert(
-      "❌ خطا در ذخیره قیمت مشتری:\n" +
-      error.message
-    );
-  }
-}
-
-
-/* =========================================================
-   CUSTOMER ORDER / NOTE
-========================================================= */
-
-function openCustomerRequest() {
-  const modal = $("customerRequestModal");
-  if (!modal) return;
-  modal.classList.remove("hidden");
-}
-
-function closeCustomerRequest() {
-  const modal = $("customerRequestModal");
-  if (modal) modal.classList.add("hidden");
-}
-
-async function submitCustomerRequest() {
-  const input = $("customerRequestText");
-  const typeInput = $("customerRequestType");
-
-  const text = input ? input.value.trim() : "";
-  const type = typeInput?.value === "note" ? "note" : "order";
-
-  if (!text) {
-    alert("لطفاً متن سفارش یا یادداشت را بنویسید.");
-    return;
-  }
-
-  try {
-    await postJson("/api/customer/request", {
-      type,
-      text
-    });
-
-    if (input) {
-      input.value = "";
-    }
-
-    closeCustomerRequest();
-
-    // از tg.showPopup استفاده نمی‌کنیم؛ این متد در بعضی WebViewها
-    // باعث خطای WebAppMethod Unsupported می‌شود.
-    alert(
-      type === "note"
-        ? "✅ یادداشت شما با موفقیت ثبت شد."
-        : "✅ سفارش شما با موفقیت ثبت شد."
-    );
-
-  } catch (error) {
-    console.error("Customer request error:", error);
-
-    alert(
-      "❌ ثبت درخواست انجام نشد:\n" +
-      (error?.message || "خطای نامشخص")
-    );
-  }
-}
-
-async function loadAdminRequests() {
-  const container = $("adminRequests");
-  if (!container) return;
-  container.innerHTML = `<div class="message">در حال دریافت سفارش‌ها و یادداشت‌ها...</div>`;
-
-  try {
-    const result = await postJson("/api/admin/customer-requests", {});
-    const requests = Array.isArray(result) ? result : (result?.requests || []);
-    if (!requests.length) {
-      container.innerHTML = `<div class="message">هنوز سفارش یا یادداشتی ثبت نشده است.</div>`;
-      return;
-    }
-
-    const statusLabels = {new:"جدید",seen:"دیده شد",in_progress:"در حال بررسی",done:"انجام شد",cancelled:"لغو شد"};
-    container.innerHTML = requests.map(r => {
-      const c = r.customers || {};
-      const name = [c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "مشتری";
-      const username = c.username ? `@${escapeHtml(c.username)}` : "";
-      const typeLabel = r.request_type === "note" ? "📝 یادداشت" : "🛒 سفارش";
-      const date = r.created_at ? new Date(r.created_at).toLocaleString("fa-IR") : "";
-      return `<div class="admin-request-card">
-        <div class="admin-request-head"><strong>${typeLabel}</strong><span>${escapeHtml(date)}</span></div>
-        <div class="admin-request-customer">👤 ${escapeHtml(name)} ${username ? `(${username})` : ""} <small>ID: ${escapeHtml(c.telegram_user_id || r.telegram_user_id || "-")}</small></div>
-        <div class="admin-request-text">${escapeHtml(r.text || "")}</div>
-        <div class="admin-request-actions">
-          <select onchange="updateCustomerRequestStatus(${Number(r.id)}, this.value)">
-            ${Object.entries(statusLabels).map(([key,label]) => `<option value="${key}" ${r.status===key?"selected":""}>${label}</option>`).join("")}
-          </select>
-        </div>
-      </div>`;
-    }).join("");
-  } catch (error) {
-    container.innerHTML = `<div class="message error">خطا در دریافت سفارش‌ها و یادداشت‌ها.<br>${escapeHtml(error.message || "")}</div>`;
-  }
-}
-
-async function updateCustomerRequestStatus(id, status) {
-  try {
-    await postJson("/api/admin/update-request-status", {id:Number(id), status});
-    await loadAdminRequests();
-    await loadSiteSettings();
-  } catch (error) {
-    alert("❌ تغییر وضعیت انجام نشد:\n" + error.message);
-  }
-}
-
-/* =========================================================
-   EVENTS
-========================================================= */
-
-function setupEvents() {
-    const loginButton=$("loginButton"); if(loginButton)loginButton.addEventListener("click",loginWithUsernamePassword);
-    [$("loginUsername"),$("loginPassword")].forEach(el=>{if(el)el.addEventListener("keydown",e=>{if(e.key==="Enter")loginWithUsernamePassword();});});
-    const logoutButton=$("logoutButton"); if(logoutButton)logoutButton.addEventListener("click",logoutUser);
-
-    const search =
-      $("searchInput");
-
-    if (search) {
-      search.addEventListener(
-        "input",
-        () => {
-          renderProducts();
-        }
-      );
-    }
-
-    const adminButton =
-      $("adminButton");
-
-    if (adminButton) {
-      adminButton.addEventListener(
-        "click",
-        openAdmin
-      );
-    }
-
-    const customerButton = $("customerButton");
-    if (customerButton) {
-      customerButton.addEventListener("click", openCustomerRequest);
-    }
-
-    const customerSelect =
-      $("customerSelect");
-
-    if (customerSelect) {
-      customerSelect.addEventListener(
-        "change",
-        () => {
-
-          selectedCustomer =
-            customerSelect.value || null;
-
-          if (selectedCustomer) {
-            loadCustomerPrices(
-              selectedCustomer
-            );
-          } else {
-
-            const info =
-              $("customerInfo");
-
-            const prices =
-              $("customerPrices");
-
-            if (info) {
-              info.classList.add("hidden");
-            }
-
-            if (prices) {
-              prices.innerHTML = "";
-            }
-          }
-        }
-      );
-    }
-
-    /* Telegram Back Button */
-    if (tg && tg.BackButton) {
-      try {
-        tg.BackButton.onClick(() => {
-          const modal = $("modal");
-          const adminModal = $("adminModal");
-
-          if (modal && !modal.classList.contains("hidden")) {
-            closeModal();
-            return;
-          }
-
-          if (adminModal && !adminModal.classList.contains("hidden")) {
-            closeAdmin();
-            try {
-              tg.BackButton.hide();
-            } catch (e) {}
-          }
-        });
-      } catch (e) {
-        console.warn("Telegram BackButton is not supported:", e);
-      }
-    }
-
-}
-
-setupEvents();
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(e => console.warn("PWA:", e));
-  });
-}
-
-function finishBootLoader() {
-  const app = document.querySelector(".app");
-  const loader = document.getElementById("bootLoader");
-
-  if (app) app.style.visibility = "visible";
-
-  if (loader) {
-    loader.classList.add("hide");
-    setTimeout(() => loader.remove(), 300);
-  }
-}
-
-/* =========================================================
-   INITIAL LOAD
-========================================================= */
-
-(async function init() {
-
-  try {
-    await authenticate();
-  } catch (error) {
-    console.error(
-      "Authentication init:",
-      error
-    );
-  }
-
-  try {
-    await loadCurrentUser();
-    await loadWebSession();
-  } catch (error) {
-    console.error(
-      "User init:",
-      error
-    );
-  }
-
-  try {
-    await loadSiteSettings();
-    await loadProducts();
-  } finally {
-    finishBootLoader();
-  }
-
-})();
-
-
-/* =========================================================
-   GLOBAL FUNCTIONS
-   برای onclick های داخل HTML
-========================================================= */
-
-window.openProduct =
-  openProduct;
-
-window.closeModal =
-  closeModal;
-
-window.openAdmin =
-  openAdmin;
-
-window.closeAdmin =
-  closeAdmin;
-
-window.updateProductPrice = updateProductPrice;
-window.uploadProductImage = uploadProductImage;
-window.removeProductImage = removeProductImage;
-window.uploadProductCatalog = uploadProductCatalog;
-window.removeProductCatalog = removeProductCatalog;
-
-window.uploadProductVideo =
-  uploadProductVideo;
-
-window.removeProductVideo =
-  removeProductVideo;
-
-window.loadCustomerPrices =
-  loadCustomerPrices;
-
-window.setCustomerPrice =
-  setCustomerPrice;
-window.openCustomerRequest = openCustomerRequest;
-window.closeCustomerRequest = closeCustomerRequest;
-window.submitCustomerRequest = submitCustomerRequest;
-window.updateCustomerRequestStatus = updateCustomerRequestStatus;
-window.createProduct=createProduct;
-window.deleteProduct=deleteProduct;
-window.createCustomerUser=createCustomerUser;
-window.deleteCustomerUser=deleteCustomerUser;
-window.updateCustomerUser=updateCustomerUser;
-window.saveSiteSettings=saveSiteSettings;
+window.createProduct=createProduct;window.deleteProduct=deleteProduct;window.createCustomerUser=createCustomerUser;window.deleteCustomerUser=deleteCustomerUser;window.updateCustomerUser=updateCustomerUser;window.saveSiteSettings=saveSiteSettings;

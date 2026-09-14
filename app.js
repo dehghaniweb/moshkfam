@@ -252,7 +252,21 @@ async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const 
 async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;updateAccountUI();await loadProducts();}
 async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
-async function createProduct(){const p={name_fa:$("newProductNameFa")?.value.trim(),name_en:$("newProductNameEn")?.value.trim(),category:$("newProductCategory")?.value.trim(),package:$("newProductPackage")?.value.trim(),maker:$("newProductMaker")?.value.trim(),base_price:$("newProductPrice")?.value.trim()||null};if(!p.name_fa){alert("نام فارسی محصول را وارد کنید.");return;}try{await postJson("/api/admin/create-product",p);alert("✅ محصول جدید ایجاد شد.");["newProductNameFa","newProductNameEn","newProductCategory","newProductPackage","newProductMaker","newProductPrice"].forEach(id=>{if($(id))$(id).value=""});await loadProducts();await loadAdminProducts();}catch(e){alert("❌ افزودن محصول انجام نشد:\n"+e.message);}}
+async function createProduct(){
+  const fa = $("newProductNameFa")?.value.trim() || "";
+  const toNumber = v => { const raw=String(v??"").trim().replace(/[٬,]/g,"").replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)); return raw===""?null:Number(raw); };
+  const p={name_fa:fa,name_en:$("newProductNameEn")?.value.trim()||"",category:$("newProductCategory")?.value.trim()||"",package:$("newProductPackage")?.value.trim()||"",maker:$("newProductMaker")?.value.trim()||"",base_price:toNumber($("newProductPrice")?.value)};
+  if(!p.name_fa){alert("نام فارسی محصول را وارد کنید.");return;}
+  try{
+    await postJson("/api/admin/create-product",p);
+    alert("✅ محصول جدید ایجاد شد.");
+    ["newProductNameFa","newProductNameEn","newProductCategory","newProductPackage","newProductMaker","newProductPrice"].forEach(id=>{if($(id))$(id).value=""});
+    await loadProducts(); await loadAdminProducts();
+  }catch(e){
+    console.error("Create product:",e);
+    alert("❌ افزودن محصول انجام نشد:\n"+(e.message||"خطای نامشخص"));
+  }
+}
 async function deleteProduct(id){if(!confirm("آیا از حذف کامل این محصول مطمئن هستید؟"))return;try{await postJson("/api/admin/delete-product",{product_id:Number(id)});alert("✅ محصول حذف شد.");await loadProducts();await loadAdminProducts();}catch(e){alert("❌ حذف محصول انجام نشد:\n"+e.message);}}
 async function createCustomerUser(){const p={first_name:$("newUserFirstName")?.value.trim(),last_name:$("newUserLastName")?.value.trim(),username:$("newUserUsername")?.value.trim(),password:$("newUserPassword")?.value||""};try{await postJson("/api/admin/create-customer",p);alert("✅ نماینده اضافه شد.");["newUserFirstName","newUserLastName","newUserUsername","newUserPassword"].forEach(id=>{if($(id))$(id).value=""});await loadCustomers();}catch(e){alert("❌ افزودن نماینده انجام نشد:\n"+e.message);}}
 async function deleteCustomerUser(id){if(!confirm("آیا از حذف این نماینده مطمئن هستید؟"))return;try{await postJson("/api/admin/delete-customer",{customer_id:String(id)});alert("✅ نماینده حذف شد.");await loadCustomers();}catch(e){alert("❌ حذف نماینده انجام نشد:\n"+e.message);}}

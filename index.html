@@ -308,58 +308,27 @@
 <!-- ADMIN MODAL -->
 <div id="adminModal" class="modal hidden">
   <div class="modal-backdrop" onclick="closeAdmin()"></div>
-
   <div class="modal-card admin-card">
     <button class="close" onclick="closeAdmin()">×</button>
-
-    <h2>⚙️ پنل مدیریت</h2>
-
-    <div id="adminError" class="message error hidden"></div>
-    <div id="adminLoading" class="message hidden">در حال دریافت اطلاعات...</div>
-
-    <!-- ADMIN HOME -->
     <div id="adminHome" class="admin-page">
-      <section class="admin-account-box">
-        <h3>👤 حساب مدیریت</h3>
-        <div id="adminAccountInfo" class="info-box"></div>
-      </section>
-
-      <div class="admin-menu-grid">
-        <button class="admin-menu-item" onclick="showAdminSection('productsCreateDelete')">
-          <span>📦</span><strong>اضافه و حذف محصول</strong><small>ایجاد محصول جدید یا حذف محصول</small>
-        </button>
-
-        <button class="admin-menu-item" onclick="showAdminSection('productsEdit')">
-          <span>✏️</span><strong>ویرایش محصول</strong><small>اطلاعات، تصویر، کاتالوگ و ویدئو</small>
-        </button>
-
-        <button class="admin-menu-item" onclick="showAdminSection('usersCreateDelete')">
-          <span>👥</span><strong>اضافه و حذف نماینده‌ها</strong><small>ثبت یا حذف نماینده فروش</small>
-        </button>
-
-        <button class="admin-menu-item" onclick="showAdminSection('usersEdit')">
-          <span>✏️</span><strong>ویرایش نماینده‌ها</strong><small>نام، نام کاربری، رمز و وضعیت</small>
-        </button>
-
-        <button class="admin-menu-item" onclick="showAdminSection('customerPrices')">
-          <span>💰</span><strong>قیمت اختصاصی مشتری</strong><small>تعیین قیمت مخصوص هر نماینده</small>
-        </button>
-
-        <button class="admin-menu-item" onclick="showAdminSection('requests')">
-          <span>📨</span><strong>سفارش‌ها و یادداشت‌ها</strong><small>مشاهده درخواست‌های مشتریان</small>
-        </button>
-
-        <button class="admin-menu-item" onclick="showAdminSection('siteInfo')">
-          <span>🏢</span><strong>اطلاعات پایین صفحه</strong><small>نام شرکت، تلفن و آدرس</small>
-        </button>
+      <h2>⚙️ پنل مدیریت مشکفام</h2>
+      <div id="adminError" class="message error hidden"></div>
+      <div id="adminLoading" class="message hidden">در حال دریافت اطلاعات...</div>
+      <div id="adminAccountInfo" class="info-box"></div>
+      <div class="admin-menu">
+        <button class="admin-menu-item" onclick="openAdminSection('productsAdd')">📦 <span>اضافه و حذف محصول</span></button>
+        <button class="admin-menu-item" onclick="openAdminSection('productsEdit')">✏️ <span>ویرایش محصول</span></button>
+        <button class="admin-menu-item" onclick="openAdminSection('usersAdd')">👥 <span>اضافه و حذف نماینده‌ها</span></button>
+        <button class="admin-menu-item" onclick="openAdminSection('usersEdit')">✏️ <span>ویرایش نماینده‌ها</span></button>
+        <button class="admin-menu-item" onclick="openAdminSection('prices')">💰 <span>قیمت اختصاصی مشتری</span></button>
+        <button class="admin-menu-item" onclick="openAdminSection('requests')">📨 <span>سفارش‌ها و یادداشت‌ها</span></button>
+        <button class="admin-menu-item" onclick="openAdminSection('settings')">🏢 <span>اطلاعات پایین صفحه</span></button>
       </div>
     </div>
 
-    <!-- PRODUCTS: CREATE / DELETE -->
-    <section id="adminPage-productsCreateDelete" class="admin-page admin-subpage hidden">
+    <section id="adminSection-productsAdd" class="admin-page admin-subpage hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>📦 اضافه و حذف محصول</h3>
-
+      <h2>📦 اضافه و حذف محصول</h2>
       <div class="admin-create-product">
         <h4>➕ افزودن محصول جدید</h4>
         <div class="admin-edit-grid">
@@ -372,26 +341,19 @@
         </div>
         <button class="admin-primary" onclick="createProduct()">➕ ایجاد محصول</button>
       </div>
-
-      <h4 class="admin-subtitle">محصولات موجود</h4>
-      <div id="adminProductsCreateDelete"></div>
+      <div id="adminProductsDelete"></div>
     </section>
 
-    <!-- PRODUCTS: EDIT -->
-    <section id="adminPage-productsEdit" class="admin-page admin-subpage hidden">
+    <section id="adminSection-productsEdit" class="admin-page admin-subpage hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>✏️ ویرایش محصول</h3>
-      <p class="admin-help">محصول موردنظر را پیدا کنید و اطلاعات آن را ویرایش کنید.</p>
+      <h2>✏️ ویرایش محصول</h2>
       <div id="adminProductsEdit"></div>
     </section>
 
-    <!-- USERS: CREATE / DELETE -->
-    <section id="adminPage-usersCreateDelete" class="admin-page admin-subpage hidden">
+    <section id="adminSection-usersAdd" class="admin-page admin-subpage hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>👥 اضافه و حذف نماینده‌ها</h3>
-
+      <h2>👥 اضافه و حذف نماینده‌ها</h2>
       <div class="admin-create-user">
-        <h4>➕ افزودن نماینده</h4>
         <div class="admin-edit-grid">
           <label>نام<input id="newUserFirstName"></label>
           <label>نام خانوادگی<input id="newUserLastName"></label>
@@ -400,44 +362,32 @@
         </div>
         <button class="admin-primary" onclick="createCustomerUser()">➕ افزودن نماینده</button>
       </div>
-
-      <h4 class="admin-subtitle">نماینده‌های موجود</h4>
-      <div id="adminUsersCreateDelete"></div>
+      <div id="adminUsersDelete"></div>
     </section>
 
-    <!-- USERS: EDIT -->
-    <section id="adminPage-usersEdit" class="admin-page admin-subpage hidden">
+    <section id="adminSection-usersEdit" class="admin-page admin-subpage hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>✏️ ویرایش نماینده‌ها</h3>
-      <p class="admin-help">اطلاعات نماینده، نام کاربری، رمز عبور و وضعیت را تغییر دهید.</p>
+      <h2>✏️ ویرایش نماینده‌ها</h2>
       <div id="adminUsersEdit"></div>
     </section>
 
-    <!-- CUSTOMER PRICES -->
-    <section id="adminPage-customerPrices" class="admin-page admin-subpage hidden">
+    <section id="adminSection-prices" class="admin-page admin-subpage hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>💰 قیمت اختصاصی مشتری</h3>
-
-      <select id="customerSelect">
-        <option value="">انتخاب مشتری</option>
-      </select>
-
+      <h2>💰 قیمت اختصاصی مشتری</h2>
+      <select id="customerSelect"><option value="">انتخاب مشتری</option></select>
       <div id="customerInfo" class="customer-info hidden"></div>
       <div id="customerPrices" class="customer-prices"></div>
     </section>
 
-    <!-- REQUESTS -->
-    <section id="adminPage-requests" class="admin-page admin-subpage hidden">
+    <section id="adminSection-requests" class="admin-page admin-subpage hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>📨 سفارش‌ها و یادداشت‌ها</h3>
+      <h2>📨 سفارش‌ها و یادداشت‌ها</h2>
       <div id="adminRequests"></div>
     </section>
 
-    <!-- SITE INFO -->
-    <section id="adminPage-siteInfo" class="admin-page admin-subpage hidden">
+    <section id="adminSection-settings" class="admin-page admin-subpage hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>🏢 اطلاعات پایین صفحه</h3>
-
+      <h2>🏢 اطلاعات پایین صفحه</h2>
       <div class="admin-edit-grid">
         <label>نام شرکت<input id="settingCompanyName"></label>
         <label>تلفن<input id="settingPhone"></label>
@@ -448,7 +398,6 @@
     </section>
   </div>
 </div>
-
 
 <!--
   JavaScript به صورت داینامیک و ضدکش بارگذاری می‌شود.

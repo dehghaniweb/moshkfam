@@ -1707,6 +1707,74 @@ window.openProduct =
 window.closeModal =
   closeModal;
 
+
+/* =========================================================
+   ADMIN SECTION NAVIGATION
+   فقط برای هماهنگی با منوی بخش‌بندی‌شده پنل مدیریت
+========================================================= */
+
+function showAdminHome() {
+  const home = $("adminHome");
+  const sections = document.querySelectorAll("[id^='adminSection-']");
+
+  sections.forEach(section => section.classList.add("hidden"));
+  if (home) home.classList.remove("hidden");
+}
+
+async function showAdminSection(sectionName) {
+  const home = $("adminHome");
+  const sections = document.querySelectorAll("[id^='adminSection-']");
+
+  if (home) home.classList.add("hidden");
+  sections.forEach(section => section.classList.add("hidden"));
+
+  const section = $("adminSection-" + sectionName);
+  if (!section) return;
+  section.classList.remove("hidden");
+
+  try {
+    if (sectionName === "products" || sectionName === "edit-products") {
+      await loadAdminProducts();
+      const source = $("adminProducts");
+      const editBox = $("adminEditProducts");
+      if (source && editBox) editBox.innerHTML = source.innerHTML;
+    }
+
+    if (sectionName === "customers" || sectionName === "edit-customers" || sectionName === "prices") {
+      await loadCustomers();
+      const editBox = $("adminUsers");
+      const deleteBox = $("adminUsersDelete");
+      if (editBox && deleteBox) deleteBox.innerHTML = editBox.innerHTML;
+    }
+
+    if (sectionName === "requests") {
+      await loadAdminRequests();
+    }
+
+    if (sectionName === "footer") {
+      await loadSiteSettings();
+    }
+  } catch (error) {
+    console.error("Admin section:", error);
+  }
+}
+
+function searchAdminItems(inputId, containerId) {
+  const input = $(inputId);
+  const container = $(containerId);
+  if (!input || !container) return;
+
+  const query = input.value.trim().toLocaleLowerCase("fa-IR");
+  container.querySelectorAll(":scope > div").forEach(item => {
+    const text = (item.textContent || "").toLocaleLowerCase("fa-IR");
+    item.style.display = !query || text.includes(query) ? "" : "none";
+  });
+}
+
+window.showAdminSection = showAdminSection;
+window.showAdminHome = showAdminHome;
+window.searchAdminItems = searchAdminItems;
+
 window.openAdmin =
   openAdmin;
 

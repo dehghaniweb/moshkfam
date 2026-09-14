@@ -875,6 +875,31 @@ function closeModal() {
    ADMIN
 ========================================================= */
 
+function showAdminHome() {
+  document.querySelectorAll("#adminModal .admin-page").forEach(el => el.classList.add("hidden"));
+  const home = $("adminHome");
+  if (home) home.classList.remove("hidden");
+}
+
+function showAdminSection(section) {
+  document.querySelectorAll("#adminModal .admin-page").forEach(el => el.classList.add("hidden"));
+  const page = $("adminPage-" + section);
+  if (page) page.classList.remove("hidden");
+
+  // Refresh the data when entering a management section.
+  if (section === "productsCreateDelete" || section === "productsEdit") {
+    loadAdminProducts();
+  } else if (section === "usersCreateDelete" || section === "usersEdit") {
+    loadCustomers();
+  } else if (section === "requests") {
+    loadAdminRequests();
+  } else if (section === "customerPrices") {
+    loadCustomers();
+  } else if (section === "siteInfo") {
+    loadSiteSettings();
+  }
+}
+
 async function openAdmin() {
   const modal = $("adminModal");
   const error = $("adminError");
@@ -882,6 +907,7 @@ async function openAdmin() {
   if (!modal) return;
 
   modal.classList.remove("hidden");
+  showAdminHome();
 
   if (error) {
     error.classList.add("hidden");
@@ -1002,8 +1028,10 @@ function renderAdminAccount() {
 ========================================================= */
 
 async function loadAdminProducts() {
-  const container = $("adminProducts");
-  if (!container) return;
+  const createDeleteBox = $("adminProductsCreateDelete");
+  const editBox = $("adminProductsEdit");
+
+  if (!createDeleteBox && !editBox) return;
 
   try {
     const result = await postJson("/api/admin/products", {});
@@ -1011,66 +1039,92 @@ async function loadAdminProducts() {
       ? result
       : (Array.isArray(result?.products) ? result.products : products);
 
-    container.innerHTML = list.map(product => {
-      const id = Number(product.id);
-      const nameFa = product.name_fa || "";
-      const nameEn = product.name_en || "";
-      const benefits = Array.isArray(product.benefits)
-        ? product.benefits.join("\n")
-        : (product.benefits || "");
-      return `
-        <div class="admin-product">
-          <div class="admin-product-title">
-            <strong>${escapeHtml(nameFa || nameEn || "محصول")}</strong>
-            <small>ID: ${escapeHtml(id)}</small>
-          </div>
+    if (createDeleteBox) {
+      createDeleteBox.innerHTML = list.length
+        ? list.map(product => {
+            const id = Number(product.id);
+            const nameFa = product.name_fa || "";
+            const nameEn = product.name_en || "";
+            return `
+              <div class="admin-simple-row">
+                <div>
+                  <strong>${escapeHtml(nameFa || nameEn || "محصول")}</strong>
+                  <small>ID: ${escapeHtml(id)}</small>
+                </div>
+                <button class="admin-danger" onclick="deleteProduct(${id})">🗑️ حذف</button>
+              </div>`;
+          }).join("")
+        : `<div class="message">هنوز محصولی ثبت نشده است.</div>`;
+    }
 
-          <div class="admin-edit-grid">
-            <label>نام فارسی<input id="namefa-${id}" value="${escapeHtml(nameFa)}"></label>
-            <label>نام انگلیسی<input id="nameen-${id}" value="${escapeHtml(nameEn)}"></label>
-            <label>دسته‌بندی<input id="category-${id}" value="${escapeHtml(product.category || "")}"></label>
-            <label>بسته‌بندی<input id="package-${id}" value="${escapeHtml(product.package || "")}"></label>
-            <label>سازنده<input id="maker-${id}" value="${escapeHtml(product.maker || "")}"></label>
-            <label>قیمت پایه<input type="number" id="price-${id}" value="${product.base_price ?? ""}" placeholder="قیمت پایه"></label>
-          </div>
+    if (editBox) {
+      editBox.innerHTML = list.length
+        ? list.map(product => {
+            const id = Number(product.id);
+            const nameFa = product.name_fa || "";
+            const nameEn = product.name_en || "";
+            const benefits = Array.isArray(product.benefits)
+              ? product.benefits.join("\n")
+              : (product.benefits || "");
 
-          <div class="admin-edit-grid admin-edit-grid-wide">
-            <label>معرفی<textarea id="intro-${id}">${escapeHtml(product.intro || "")}</textarea></label>
-            <label>ترکیبات<textarea id="composition-${id}">${escapeHtml(product.composition || "")}</textarea></label>
-            <label>نحوه مصرف<textarea id="use-${id}">${escapeHtml(product.use_text || "")}</textarea></label>
-            <label>هشدارها<textarea id="warnings-${id}">${escapeHtml(product.warnings || "")}</textarea></label>
-            <label>مزایا (هر مورد در یک خط)<textarea id="benefits-${id}">${escapeHtml(benefits)}</textarea></label>
-          </div>
+            return `
+              <div class="admin-product">
+                <div class="admin-product-title">
+                  <strong>${escapeHtml(nameFa || nameEn || "محصول")}</strong>
+                  <small>ID: ${escapeHtml(id)}</small>
+                </div>
 
-          <label class="admin-active">
-            <input type="checkbox" id="active-${id}" ${product.active !== false ? "checked" : ""}>
-            محصول فعال و قابل نمایش برای مشتریان
-          </label>
+                <div class="admin-edit-grid">
+                  <label>نام فارسی<input id="namefa-${id}" value="${escapeHtml(nameFa)}"></label>
+                  <label>نام انگلیسی<input id="nameen-${id}" value="${escapeHtml(nameEn)}"></label>
+                  <label>دسته‌بندی<input id="category-${id}" value="${escapeHtml(product.category || "")}"></label>
+                  <label>بسته‌بندی<input id="package-${id}" value="${escapeHtml(product.package || "")}"></label>
+                  <label>سازنده<input id="maker-${id}" value="${escapeHtml(product.maker || "")}"></label>
+                  <label>قیمت پایه<input type="number" id="price-${id}" value="${product.base_price ?? ""}" placeholder="قیمت پایه"></label>
+                </div>
 
-          <div class="admin-product-buttons"><button onclick="saveProduct(${id})">💾 ذخیره اطلاعات محصول</button><button class="admin-danger" onclick="deleteProduct(${id})">🗑️ حذف محصول</button></div>
+                <div class="admin-edit-grid admin-edit-grid-wide">
+                  <label>معرفی<textarea id="intro-${id}">${escapeHtml(product.intro || "")}</textarea></label>
+                  <label>ترکیبات<textarea id="composition-${id}">${escapeHtml(product.composition || "")}</textarea></label>
+                  <label>نحوه مصرف<textarea id="use-${id}">${escapeHtml(product.use_text || "")}</textarea></label>
+                  <label>هشدارها<textarea id="warnings-${id}">${escapeHtml(product.warnings || "")}</textarea></label>
+                  <label>مزایا (هر مورد در یک خط)<textarea id="benefits-${id}">${escapeHtml(benefits)}</textarea></label>
+                </div>
 
-          <div class="admin-media-grid">
-            <div class="admin-media-box">
-              <label>🖼️ تصویر جدید<input type="file" id="image-${id}" accept="image/*"></label>
-              <button onclick="uploadProductImage(${id})">آپلود / جایگزینی تصویر</button>
-              ${product.image_url ? `<button class="danger" onclick="removeProductImage(${id})">بایگانی تصویر فعلی</button>` : ""}
-            </div>
-            <div class="admin-media-box">
-              <label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label>
-              <button onclick="uploadProductVideo(${id})">آپلود / جایگزینی ویدئو</button>
-              ${product.video_url ? `<button class="danger" onclick="removeProductVideo(${id})">بایگانی ویدئو</button>` : ""}
-            </div>
-            <div class="admin-media-box">
-              <label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label>
-              <button onclick="uploadProductCatalog(${id})">آپلود / جایگزینی کاتالوگ</button>
-              ${product.catalog_pdf_url ? `<button class="danger" onclick="removeProductCatalog(${id})">بایگانی کاتالوگ</button>` : ""}
-            </div>
-          </div>
-        </div>`;
-    }).join("");
+                <label class="admin-active">
+                  <input type="checkbox" id="active-${id}" ${product.active !== false ? "checked" : ""}>
+                  محصول فعال و قابل نمایش برای مشتریان
+                </label>
+
+                <div class="admin-product-buttons">
+                  <button onclick="saveProduct(${id})">💾 ذخیره اطلاعات محصول</button>
+                </div>
+
+                <div class="admin-media-grid">
+                  <div class="admin-media-box">
+                    <label>🖼️ تصویر جدید<input type="file" id="image-${id}" accept="image/*"></label>
+                    <button onclick="uploadProductImage(${id})">آپلود / جایگزینی تصویر</button>
+                    ${product.image_url ? `<button class="danger" onclick="removeProductImage(${id})">بایگانی تصویر فعلی</button>` : ""}
+                  </div>
+                  <div class="admin-media-box">
+                    <label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label>
+                    <button onclick="uploadProductVideo(${id})">آپلود / جایگزینی ویدئو</button>
+                    ${product.video_url ? `<button class="danger" onclick="removeProductVideo(${id})">بایگانی ویدئو</button>` : ""}
+                  </div>
+                  <div class="admin-media-box">
+                    <label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label>
+                    <button onclick="uploadProductCatalog(${id})">آپلود / جایگزینی کاتالوگ</button>
+                    ${product.catalog_pdf_url ? `<button class="danger" onclick="removeProductCatalog(${id})">بایگانی کاتالوگ</button>` : ""}
+                  </div>
+                </div>
+              </div>`;
+          }).join("")
+        : `<div class="message">هنوز محصولی ثبت نشده است.</div>`;
+    }
   } catch (error) {
     console.error("Admin products:", error);
-    container.innerHTML = `<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>`;
+    if (createDeleteBox) createDeleteBox.innerHTML = `<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>`;
+    if (editBox) editBox.innerHTML = `<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>`;
   }
 }
 
@@ -1326,9 +1380,58 @@ async function loadCustomers() {
   } catch (error) {
     console.error("Customers:", error);
   }
-  const usersBox=$("adminUsers");
-  if(usersBox){
-    try{const r=await postJson("/api/admin/customers",{});const cs=Array.isArray(r?.customers)?r.customers:(Array.isArray(r)?r:[]);usersBox.innerHTML=cs.length?cs.map(c=>{const id=String(c.id);return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button onclick="updateCustomerUser(${JSON.stringify(id)})">💾 ذخیره</button><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف</button></div>`}).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;}catch(e){usersBox.innerHTML=`<div class="message error">خطا در دریافت کاربران.</div>`;}}
+  try {
+    const r = await postJson("/api/admin/customers", {});
+    const cs = Array.isArray(r?.customers)
+      ? r.customers
+      : (Array.isArray(r) ? r : []);
+
+    const simpleBox = $("adminUsersCreateDelete");
+    if (simpleBox) {
+      simpleBox.innerHTML = cs.length
+        ? cs.map(c => {
+            const id = String(c.id);
+            const name = [c.first_name, c.last_name].filter(Boolean).join(" ") || c.username || "نماینده";
+            return `
+              <div class="admin-simple-row">
+                <div>
+                  <strong>${escapeHtml(name)}</strong>
+                  <small>${c.username ? "@" + escapeHtml(c.username) : ""}</small>
+                </div>
+                <button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف</button>
+              </div>`;
+          }).join("")
+        : `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
+    }
+
+    const editBox = $("adminUsersEdit");
+    if (editBox) {
+      editBox.innerHTML = cs.length
+        ? cs.map(c => {
+            const id = String(c.id);
+            return `
+              <div class="admin-user-row">
+                <div class="admin-edit-grid">
+                  <label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name || "")}"></label>
+                  <label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name || "")}"></label>
+                  <label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username || "")}"></label>
+                  <label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label>
+                  <label>وضعیت<select id="ustatus-${id}">
+                    <option value="active" ${c.status !== "disabled" ? "selected" : ""}>فعال</option>
+                    <option value="disabled" ${c.status === "disabled" ? "selected" : ""}>غیرفعال</option>
+                  </select></label>
+                </div>
+                <button onclick="updateCustomerUser(${JSON.stringify(id)})">💾 ذخیره</button>
+              </div>`;
+          }).join("")
+        : `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
+    }
+  } catch (e) {
+    const simpleBox = $("adminUsersCreateDelete");
+    const editBox = $("adminUsersEdit");
+    if (simpleBox) simpleBox.innerHTML = `<div class="message error">خطا در دریافت کاربران.</div>`;
+    if (editBox) editBox.innerHTML = `<div class="message error">خطا در دریافت کاربران.</div>`;
+  }
 }
 
 async function loadCustomerPrices(customerId) {

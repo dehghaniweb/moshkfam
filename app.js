@@ -1120,14 +1120,14 @@ async function saveProduct(productId) {
     warnings: value(`warnings-${id}`)?.value || "",
     benefits,
     active: !!value(`active-${id}`)?.checked,
-    base_price: (value(`price-${id}`)?.value.trim() || "") === "" ? null : Number(value(`price-${id}`).value),
+    base_price: (() => { const raw = (value(`price-${id}`)?.value || "").trim().replace(/[٬,]/g, "").replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)); return raw === "" ? null : Number(raw); })(),
     base_currency: "تومان"
   };
 
   try {
     const result = await postJson("/api/admin/update-product", payload);
     // بلافاصله مقدار ذخیره‌شده را در صفحه اصلی هم اعمال کن
-    const saved = result?.product && !Array.isArray(result.product) ? result.product : null;
+    const saved = Array.isArray(result?.product) ? result.product[0] : (result?.product || null);
     if (saved) {
       const index = products.findIndex(p => Number(p.id) === id);
       if (index >= 0) products[index] = { ...products[index], ...saved };
@@ -1205,7 +1205,7 @@ async function updateProductPrice(productId) {
     );
 
     // مقدار برگشتی Worker را همان لحظه روی کارت محصول اعمال کن
-    const saved = result?.product && !Array.isArray(result.product) ? result.product : null;
+    const saved = Array.isArray(result?.product) ? result.product[0] : (result?.product || null);
     if (saved) {
       const index = products.findIndex(p => Number(p.id) === Number(productId));
       if (index >= 0) products[index] = { ...products[index], ...saved };

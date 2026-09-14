@@ -16,10 +16,13 @@
 const WORKER_URL =
   "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
 
-const tg =
-  window.Telegram && window.Telegram.WebApp
-    ? window.Telegram.WebApp
+const telegramWebApp =
+  typeof window !== "undefined" &&
+  window["Telegram"] &&
+  window["Telegram"].WebApp
+    ? window["Telegram"].WebApp
     : null;
+const tg = telegramWebApp;
 
 
 /* =========================================================
@@ -224,57 +227,1054 @@ async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const 
 async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;updateAccountUI();await loadProducts();}
 async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
-async function createProduct(){
-  const p={
-    name_fa:$("newProductNameFa")?.value.trim(),
-    name_en:$("newProductNameEn")?.value.trim(),
-    category:$("newProductCategory")?.value.trim(),
-    package:$("newProductPackage")?.value.trim(),
-    maker:$("newProductMaker")?.value.trim(),
-    base_price:$("newProductPrice")?.value.trim() || null
-  };
-  if(!p.name_fa){alert("نام فارسی محصول را وارد کنید.");return;}
-  try{
-    const result = await postJson("/api/admin/create-product",p);
-    if (!result?.ok) throw new Error(result?.error || "پاسخ نامعتبر از سرور");
-    alert("✅ محصول جدید ایجاد شد.");
-    ["newProductNameFa","newProductNameEn","newProductCategory","newProductPackage","newProductMaker","newProductPrice"].forEach(id=>{if($(id))$(id).value=""});
-    await loadProducts(); await loadAdminProducts();
-  }catch(e){alert("❌ افزودن محصول انجام نشد:\n"+(e?.message || "خطای نامشخص"));}
-}
-async function deleteProduct(id){if(!confirm("آیا از حذف کامل این محصول مطمئن هستید؟"))return;try{const result = await postJson("/api/admin/delete-product",{product_id:Number(id)}); if (!result?.ok) throw new Error(result?.error || "حذف انجام نشد"); alert("✅ محصول حذف شد.");await loadProducts();await loadAdminProducts();}catch(e){alert("❌ حذف محصول انجام نشد:\n"+e.message);}}
+async function createProduct(){const p={name_fa:$("newProductNameFa")?.value.trim(),name_en:$("newProductNameEn")?.value.trim(),category:$("newProductCategory")?.value.trim(),package:$("newProductPackage")?.value.trim(),maker:$("newProductMaker")?.value.trim(),base_price:$("newProductPrice")?.value.trim()||null};if(!p.name_fa){alert("نام فارسی محصول را وارد کنید.");return;}try{await postJson("/api/admin/create-product",p);alert("✅ محصول جدید ایجاد شد.");["newProductNameFa","newProductNameEn","newProductCategory","newProductPackage","newProductMaker","newProductPrice"].forEach(id=>{if($(id))$(id).value=""});await loadProducts();await loadAdminProducts();}catch(e){alert("❌ افزودن محصول انجام نشد:\n"+e.message);}}
+async function deleteProduct(id){if(!confirm("آیا از حذف کامل این محصول مطمئن هستید؟"))return;try{await postJson("/api/admin/delete-product",{product_id:Number(id)});alert("✅ محصول حذف شد.");await loadProducts();await loadAdminProducts();}catch(e){alert("❌ حذف محصول انجام نشد:\n"+e.message);}}
 async function createCustomerUser(){const p={first_name:$("newUserFirstName")?.value.trim(),last_name:$("newUserLastName")?.value.trim(),username:$("newUserUsername")?.value.trim(),password:$("newUserPassword")?.value||""};try{await postJson("/api/admin/create-customer",p);alert("✅ نماینده اضافه شد.");["newUserFirstName","newUserLastName","newUserUsername","newUserPassword"].forEach(id=>{if($(id))$(id).value=""});await loadCustomers();}catch(e){alert("❌ افزودن نماینده انجام نشد:\n"+e.message);}}
-async function deleteCustomerUser(id){
-  if(!id) return alert("شناسه نماینده مشخص نیست.");
-  if(!confirm("آیا از حذف این نماینده مطمئن هستید؟")) return;
-  try{
-    const result = await postJson("/api/admin/delete-customer",{customer_id:String(id)});
-    if (!result?.ok) throw new Error(result?.error || "حذف انجام نشد");
-    alert("✅ نماینده حذف شد.");
-    await loadCustomers();
-    await loadAdminDeleteCustomers();
-  }catch(e){alert("❌ حذف نماینده انجام نشد:\n"+(e?.message || "خطای نامشخص"));}
+async function deleteCustomerUser(id){if(!confirm("آیا از حذف این نماینده مطمئن هستید؟"))return;try{await postJson("/api/admin/delete-customer",{customer_id:String(id)});alert("✅ نماینده حذف شد.");await loadCustomers();}catch(e){alert("❌ حذف نماینده انجام نشد:\n"+e.message);}}
+async function updateCustomerUser(id){const p={customer_id:String(id),first_name:$("ufirst-"+id)?.value.trim()||"",last_name:$("ulast-"+id)?.value.trim()||"",username:$("uuser-"+id)?.value.trim()||"",status:$("ustatus-"+id)?.value||"active"};const pass=$("upass-"+id)?.value||"";if(pass)p.password=pass;try{await postJson("/api/admin/customer-profile",p);alert("✅ اطلاعات نماینده ذخیره شد.");await loadCustomers();}catch(e){alert("❌ ویرایش نماینده انجام نشد:\n"+e.message);}}
+
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
+
+async function authenticate() {
+  if (!tg || !tg.initData) {
+    return;
+  }
+
+  try {
+    const result = await postJson("/api/telegram-auth", {
+      initData: tg.initData
+    });
+
+    if (result && result.user) {
+      currentUser = result.user;
+    }
+
+    if (result && result.isAdmin) {
+      isAdmin = true;
+    }
+
+    updateAccountUI();
+
+  } catch (error) {
+    console.warn("Telegram authentication failed:", error);
+  }
 }
 
-async function updateCustomerUser(id){
-  const p={
-    customer_id:String(id),
-    first_name:$("ufirst-"+id)?.value.trim()||"",
-    last_name:$("ulast-"+id)?.value.trim()||"",
-    username:$("uuser-"+id)?.value.trim()||"",
-    status:$("ustatus-"+id)?.value||"active"
-  };
-  const pass=$("upass-"+id)?.value||"";
-  if(pass) p.password=pass;
-  try{
-    const result=await postJson("/api/admin/customer-profile",p);
-    if (!result?.ok) throw new Error(result?.error || "ذخیره انجام نشد");
-    alert(pass ? "✅ اطلاعات نماینده و رمز عبور با موفقیت ذخیره شد." : "✅ اطلاعات نماینده ذخیره شد.");
-    if ($( "upass-"+id )) $( "upass-"+id ).value="";
-    await loadCustomers();
-    await loadAdminDeleteCustomers();
-  }catch(e){alert("❌ ویرایش نماینده انجام نشد:\n"+(e?.message || "خطای نامشخص"));}
+async function loadCurrentUser() {
+  if (!tg || !tg.initData) {
+    return;
+  }
+
+  try {
+    const result = await postJson("/api/whoami", {
+      initData: tg.initData
+    });
+
+    if (result && result.user) {
+      currentUser = result.user;
+    }
+
+    if (result && typeof result.isAdmin === "boolean") {
+      isAdmin = result.isAdmin;
+    }
+
+    updateAccountUI();
+
+  } catch (error) {
+    console.warn("whoami:", error);
+  }
 }
+
+
+/* =========================================================
+   ACCOUNT UI
+========================================================= */
+
+function updateAccountUI() {
+  const account = $("account");
+  const adminButton = $("adminButton");
+  const loginBox = $("loginBox");
+  const logoutButton = $("logoutButton");
+
+  if (!currentUser) {
+    if(loginBox) loginBox.classList.remove("hidden");
+    if(logoutButton) logoutButton.classList.add("hidden");
+    if (account) {
+      account.classList.add("hidden");
+    }
+
+    if (adminButton) {
+      adminButton.classList.add("hidden");
+    }
+
+    return;
+  }
+
+  if (account) {
+    account.classList.remove("hidden");
+  }
+
+  const name =
+    [
+      currentUser.first_name,
+      currentUser.last_name
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    currentUser.username ||
+    "کاربر";
+
+  const username =
+    currentUser.username
+      ? "@" + currentUser.username
+      : "";
+
+  if ($("accountName")) {
+    $("accountName").textContent = name;
+  }
+
+  if ($("accountUser")) {
+    $("accountUser").textContent = username;
+  }
+
+  if ($("accountInfo")) {
+    $("accountInfo").textContent =
+      isAdmin || currentUser.role === "admin"
+        ? "مدیر سیستم"
+        : "مشتری";
+  }
+
+  const customerButton = $("customerButton");
+  if(loginBox) loginBox.classList.add("hidden");
+  if(logoutButton) logoutButton.classList.remove("hidden");
+
+  if (adminButton) {
+    if (isAdmin) {
+      adminButton.classList.remove("hidden");
+    } else {
+      adminButton.classList.add("hidden");
+    }
+  }
+
+  if (customerButton) {
+    if (isAdmin) {
+      customerButton.classList.add("hidden");
+    } else {
+      customerButton.classList.remove("hidden");
+    }
+  }
+}
+
+
+/* =========================================================
+   PRODUCTS
+========================================================= */
+
+async function loadProducts() {
+  const loading = $("loading");
+
+  if (loading) {
+    loading.classList.remove("hidden");
+    loading.textContent = "در حال دریافت محصولات...";
+  }
+
+  hideError();
+
+  try {
+    const result = await get("/api/products");
+
+    if (Array.isArray(result)) {
+      products = result;
+    } else if (
+      result &&
+      Array.isArray(result.products)
+    ) {
+      products = result.products;
+    } else {
+      products = [];
+    }
+
+    buildCategories();
+    renderCategories();
+    renderProducts();
+
+  } catch (error) {
+    console.error("Products error:", error);
+
+    products = [];
+
+    showError(
+      "❌ دریافت محصولات انجام نشد. اتصال اینترنت یا سرور را بررسی کنید."
+    );
+
+  } finally {
+    if (loading) {
+      loading.classList.add("hidden");
+    }
+  }
+}
+
+
+/* =========================================================
+   CATEGORIES
+========================================================= */
+
+function buildCategories() {
+  const set = new Set();
+
+  products.forEach(product => {
+    if (product.category) {
+      set.add(String(product.category).trim());
+    }
+  });
+
+  categories = Array.from(set);
+}
+
+function renderCategories() {
+  const container = $("categories");
+
+  if (!container) return;
+
+  let html = `
+    <button
+      class="category-circle ${
+        activeCategory === "" ? "active" : ""
+      }"
+      data-category=""
+    >
+      همه
+    </button>
+  `;
+
+  categories.forEach(category => {
+    html += `
+      <button
+        class="category-circle ${
+          activeCategory === category ? "active" : ""
+        }"
+        data-category="${escapeHtml(category)}"
+      >
+        ${escapeHtml(category)}
+      </button>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  container
+    .querySelectorAll(".category-circle")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        activeCategory =
+          button.dataset.category || "";
+
+        renderCategories();
+        renderProducts();
+      });
+    });
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+function getFilteredProducts() {
+  const input = $("searchInput");
+
+  const query = input
+    ? input.value.trim().toLowerCase()
+    : "";
+
+  return products.filter(product => {
+    const categoryOK =
+      !activeCategory ||
+      String(product.category || "") ===
+        activeCategory;
+
+    if (!categoryOK) {
+      return false;
+    }
+
+    if (!query) {
+      return true;
+    }
+
+    const searchable = [
+      product.name_fa,
+      product.name_en,
+      product.category,
+      product.package,
+      product.maker,
+      product.intro,
+      product.composition,
+      product.use_text,
+      product.warnings
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return searchable.includes(query);
+  });
+}
+
+
+/* =========================================================
+   PRODUCT CARDS
+========================================================= */
+
+function renderProducts() {
+  const grid = $("productGrid");
+  const empty = $("empty");
+  const count = $("productCount");
+
+  if (!grid) return;
+
+  const filtered = getFilteredProducts();
+
+  if (count) {
+    count.textContent =
+      `${formatNumber(filtered.length)} محصول`;
+  }
+
+  if (!filtered.length) {
+    grid.innerHTML = "";
+
+    if (empty) {
+      empty.classList.remove("hidden");
+    }
+
+    return;
+  }
+
+  if (empty) {
+    empty.classList.add("hidden");
+  }
+
+  grid.innerHTML = filtered
+    .map(renderProductCard)
+    .join("");
+}
+
+function renderProductCard(product) {
+  const id = product.id;
+
+  const name =
+    product.name_fa ||
+    product.name_en ||
+    "محصول";
+
+  const imageUrl =
+    product.image_url || "";
+
+  return `
+    <article
+      class="product-card"
+      data-product-id="${escapeHtml(id)}"
+      role="button"
+      tabindex="0"
+      onclick="openProduct(${Number(id)})"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProduct(${Number(id)})}"
+    >
+
+      <div class="product-image">
+
+        ${
+          imageUrl
+            ? `
+              <img
+                src="${escapeHtml(imageUrl)}"
+                alt="${escapeHtml(name)}"
+                loading="lazy"
+                onerror="
+                  this.style.display='none';
+                  this.parentElement.classList.add('image-error');
+                "
+              >
+            `
+            : `
+              <div class="no-image">
+                🌱
+              </div>
+            `
+        }
+
+      </div>
+
+      <div class="product-body">
+
+        <h3>
+          ${escapeHtml(name)}
+        </h3>
+
+        ${
+          product.name_en
+            ? `
+              <div class="product-en">
+                ${escapeHtml(product.name_en)}
+              </div>
+            `
+            : ""
+        }
+
+        ${
+          product.category
+            ? `
+              <div class="product-category">
+                ${escapeHtml(product.category)}
+              </div>
+            `
+            : ""
+        }
+
+        ${
+          product.package
+            ? `
+              <div class="product-package">
+                📦 ${escapeHtml(product.package)}
+              </div>
+            `
+            : ""
+        }
+
+        ${getPriceText(product)}
+
+      </div>
+    </article>
+  `;
+}
+
+
+/* =========================================================
+   PRODUCT MODAL
+========================================================= */
+
+function openProduct(id) {
+  const product = products.find(
+    p => Number(p.id) === Number(id)
+  );
+
+  if (!product) {
+    return;
+  }
+
+  const modal = $("modal");
+  const content = $("modalContent");
+
+  if (!modal || !content) {
+    return;
+  }
+
+  const name =
+    product.name_fa ||
+    product.name_en ||
+    "محصول";
+
+  let html = `
+    <div class="product-detail">
+      <button class="back-product" onclick="closeModal()">← بازگشت به محصولات</button>
+
+      ${
+        product.image_url
+          ? `
+            <img
+              class="detail-image"
+              src="${escapeHtml(product.image_url)}"
+              alt="${escapeHtml(name)}"
+            >
+          `
+          : ""
+      }
+
+      <h2>
+        ${escapeHtml(name)}
+      </h2>
+
+      ${
+        product.name_en
+          ? `
+            <div class="detail-en">
+              ${escapeHtml(product.name_en)}
+            </div>
+          `
+          : ""
+      }
+
+      ${getPriceText(product)}
+
+      ${
+        product.category
+          ? `
+            <div class="detail-row">
+              <strong>دسته‌بندی:</strong>
+              <span>${escapeHtml(product.category)}</span>
+            </div>
+          `
+          : ""
+      }
+
+      ${
+        product.package
+          ? `
+            <div class="detail-row">
+              <strong>بسته‌بندی:</strong>
+              <span>${escapeHtml(product.package)}</span>
+            </div>
+          `
+          : ""
+      }
+
+      ${
+        product.maker
+          ? `
+            <div class="detail-row">
+              <strong>تولیدکننده:</strong>
+              <span>${escapeHtml(product.maker)}</span>
+            </div>
+          `
+          : ""
+      }
+
+      ${
+        product.intro
+          ? `
+            <section class="detail-section">
+              <h3>معرفی محصول</h3>
+              <p>${escapeHtml(product.intro)}</p>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        product.composition
+          ? `
+            <section class="detail-section">
+              <h3>ترکیبات</h3>
+              <p>${escapeHtml(product.composition)}</p>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        product.benefits &&
+        Array.isArray(product.benefits) &&
+        product.benefits.length
+          ? `
+            <section class="detail-section">
+              <h3>مزایا</h3>
+              <ul>
+                ${product.benefits
+                  .map(
+                    item =>
+                      `<li>${escapeHtml(item)}</li>`
+                  )
+                  .join("")}
+              </ul>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        product.use_text
+          ? `
+            <section class="detail-section">
+              <h3>نحوه مصرف</h3>
+              <p>${escapeHtml(product.use_text)}</p>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        product.warnings
+          ? `
+            <section class="detail-section warning">
+              <h3>⚠️ هشدارها</h3>
+              <p>${escapeHtml(product.warnings)}</p>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        product.video_url
+          ? `
+            <div class="video-box">
+              <video
+                controls
+                playsinline
+                preload="metadata"
+                src="${escapeHtml(product.video_url)}"
+              ></video>
+            </div>
+          `
+          : ""
+      }
+
+
+      ${
+        product.catalog_pdf_url
+          ? `
+            <section class="catalog-section">
+              <h3>📄 کاتالوگ</h3>
+              <div class="catalog-frame-wrap">
+                <iframe
+                  src="${escapeHtml(product.catalog_pdf_url)}"
+                  title="کاتالوگ ${escapeHtml(product.name_fa || "محصول")}"
+                  loading="lazy"
+                ></iframe>
+              </div>
+              <a
+                href="${escapeHtml(product.catalog_pdf_url)}"
+                target="_blank"
+                rel="noopener"
+                class="catalog-fallback"
+              >
+                باز کردن کاتالوگ در صفحه جداگانه
+              </a>
+            </section>
+          `
+          : ""
+      }
+
+
+    </div>
+  `;
+
+  content.innerHTML = html;
+
+  modal.classList.remove("hidden");
+
+  if (tg && tg.BackButton) {
+    try {
+      tg.BackButton.show();
+    } catch (e) {}
+  }
+}
+
+function closeModal() {
+  const modal = $("modal");
+
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+
+  if (tg && tg.BackButton) {
+    try {
+      tg.BackButton.hide();
+    } catch (e) {}
+  }
+}
+
+
+/* =========================================================
+   ADMIN
+========================================================= */
+
+async function openAdmin() {
+  const modal = $("adminModal");
+  const error = $("adminError");
+
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+
+  if (error) {
+    error.classList.add("hidden");
+    error.textContent = "";
+  }
+
+  // Refresh authentication before opening the management data.
+  try {
+    await loadCurrentUser();
+  } catch (e) {
+    console.warn("Admin authentication refresh:", e);
+  }
+
+  if (!isAdmin) {
+    if (error) {
+      error.textContent =
+        "❌ این حساب به پنل مدیریت دسترسی ندارد. لطفاً سامانه را از داخل ربات تلگرام و با حساب مدیر باز کنید.";
+      error.classList.remove("hidden");
+    }
+    return;
+  }
+
+  await loadAdminData();
+}
+
+function closeAdmin() {
+  const modal = $("adminModal");
+
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
+
+async function loadAdminData() {
+  const loading = $("adminLoading");
+  const error = $("adminError");
+
+  if (loading) {
+    loading.classList.remove("hidden");
+  }
+
+  if (error) {
+    error.classList.add("hidden");
+  }
+
+  try {
+    await Promise.all([
+      loadAdminProducts(),
+      loadCustomers(),
+      loadAdminRequests()
+    ]);
+
+    renderAdminAccount();
+
+  } catch (e) {
+    console.error(e);
+
+    if (error) {
+      error.textContent =
+        "❌ دریافت اطلاعات مدیریت انجام نشد.";
+      error.classList.remove("hidden");
+    }
+
+  } finally {
+    if (loading) {
+      loading.classList.add("hidden");
+    }
+  }
+}
+
+function renderAdminAccount() {
+  const el = $("adminAccountInfo");
+
+  if (!el) return;
+
+  if (!currentUser) {
+    el.innerHTML = "کاربر وارد نشده است.";
+    return;
+  }
+
+  const name =
+    [
+      currentUser.first_name,
+      currentUser.last_name
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    currentUser.username ||
+    "کاربر";
+
+  el.innerHTML = `
+    <div>
+      <strong>نام:</strong>
+      ${escapeHtml(name)}
+    </div>
+
+    ${
+      currentUser.username
+        ? `
+          <div>
+            <strong>Username:</strong>
+            @${escapeHtml(currentUser.username)}
+          </div>
+        `
+        : ""
+    }
+
+    <div>
+      <strong>نقش:</strong>
+      ${escapeHtml(isAdmin ? "admin" : (currentUser.role || "customer"))}
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   ADMIN PRODUCTS
+========================================================= */
+
+async function loadAdminProducts() {
+  const container = $("adminProducts");
+  if (!container) return;
+
+  try {
+    const result = await postJson("/api/admin/products", {});
+    const list = Array.isArray(result)
+      ? result
+      : (Array.isArray(result?.products) ? result.products : products);
+
+    container.innerHTML = list.map(product => {
+      const id = Number(product.id);
+      const nameFa = product.name_fa || "";
+      const nameEn = product.name_en || "";
+      const benefits = Array.isArray(product.benefits)
+        ? product.benefits.join("\n")
+        : (product.benefits || "");
+      return `
+        <div class="admin-product">
+          <div class="admin-product-title">
+            <strong>${escapeHtml(nameFa || nameEn || "محصول")}</strong>
+            <small>ID: ${escapeHtml(id)}</small>
+          </div>
+
+          <div class="admin-edit-grid">
+            <label>نام فارسی<input id="namefa-${id}" value="${escapeHtml(nameFa)}"></label>
+            <label>نام انگلیسی<input id="nameen-${id}" value="${escapeHtml(nameEn)}"></label>
+            <label>دسته‌بندی<input id="category-${id}" value="${escapeHtml(product.category || "")}"></label>
+            <label>بسته‌بندی<input id="package-${id}" value="${escapeHtml(product.package || "")}"></label>
+            <label>سازنده<input id="maker-${id}" value="${escapeHtml(product.maker || "")}"></label>
+            <label>قیمت پایه<input type="number" id="price-${id}" value="${product.base_price ?? ""}" placeholder="قیمت پایه"></label>
+          </div>
+
+          <div class="admin-edit-grid admin-edit-grid-wide">
+            <label>معرفی<textarea id="intro-${id}">${escapeHtml(product.intro || "")}</textarea></label>
+            <label>ترکیبات<textarea id="composition-${id}">${escapeHtml(product.composition || "")}</textarea></label>
+            <label>نحوه مصرف<textarea id="use-${id}">${escapeHtml(product.use_text || "")}</textarea></label>
+            <label>هشدارها<textarea id="warnings-${id}">${escapeHtml(product.warnings || "")}</textarea></label>
+            <label>مزایا (هر مورد در یک خط)<textarea id="benefits-${id}">${escapeHtml(benefits)}</textarea></label>
+          </div>
+
+          <label class="admin-active">
+            <input type="checkbox" id="active-${id}" ${product.active !== false ? "checked" : ""}>
+            محصول فعال و قابل نمایش برای مشتریان
+          </label>
+
+          <div class="admin-product-buttons"><button onclick="saveProduct(${id})">💾 ذخیره اطلاعات محصول</button><button class="admin-danger" onclick="deleteProduct(${id})">🗑️ حذف محصول</button></div>
+
+          <div class="admin-media-grid">
+            <div class="admin-media-box">
+              <label>🖼️ تصویر جدید<input type="file" id="image-${id}" accept="image/*"></label>
+              <button onclick="uploadProductImage(${id})">آپلود / جایگزینی تصویر</button>
+              ${product.image_url ? `<button class="danger" onclick="removeProductImage(${id})">بایگانی تصویر فعلی</button>` : ""}
+            </div>
+            <div class="admin-media-box">
+              <label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label>
+              <button onclick="uploadProductVideo(${id})">آپلود / جایگزینی ویدئو</button>
+              ${product.video_url ? `<button class="danger" onclick="removeProductVideo(${id})">بایگانی ویدئو</button>` : ""}
+            </div>
+            <div class="admin-media-box">
+              <label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label>
+              <button onclick="uploadProductCatalog(${id})">آپلود / جایگزینی کاتالوگ</button>
+              ${product.catalog_pdf_url ? `<button class="danger" onclick="removeProductCatalog(${id})">بایگانی کاتالوگ</button>` : ""}
+            </div>
+          </div>
+        </div>`;
+    }).join("");
+  } catch (error) {
+    console.error("Admin products:", error);
+    container.innerHTML = `<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>`;
+  }
+}
+
+async function saveProduct(productId) {
+  const id = Number(productId);
+  const value = id => $(id);
+  const benefitsText = value(`benefits-${id}`)?.value || "";
+  const benefits = benefitsText.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  const payload = {
+    product_id: id,
+    name_fa: value(`namefa-${id}`)?.value.trim() || "",
+    name_en: value(`nameen-${id}`)?.value.trim() || "",
+    category: value(`category-${id}`)?.value.trim() || "",
+    package: value(`package-${id}`)?.value.trim() || "",
+    maker: value(`maker-${id}`)?.value.trim() || "",
+    intro: value(`intro-${id}`)?.value || "",
+    composition: value(`composition-${id}`)?.value || "",
+    use_text: value(`use-${id}`)?.value || "",
+    warnings: value(`warnings-${id}`)?.value || "",
+    benefits,
+    active: !!value(`active-${id}`)?.checked,
+    base_price: (value(`price-${id}`)?.value.trim() || "") === "" ? null : Number(value(`price-${id}`).value),
+    base_currency: "تومان"
+  };
+
+  try {
+    await postJson("/api/admin/update-product", payload);
+    alert("✅ اطلاعات محصول ذخیره شد.");
+    await loadProducts();
+    await loadAdminProducts();
+  } catch (error) {
+    alert("❌ خطا در ذخیره محصول:\n" + error.message);
+  }
+}
+
+async function uploadProductImage(productId) {
+  const input = $(`image-${Number(productId)}`);
+  if (!input?.files?.length) return alert("لطفاً تصویر را انتخاب کنید.");
+  const fd = new FormData();
+  fd.append("product_id", String(productId));
+  fd.append("file", input.files[0], input.files[0].name);
+  try {
+    await apiRequest("/api/admin/upload-image", { method:"POST", body:fd });
+    alert("✅ تصویر جدید ثبت شد. تصویر قبلی به old منتقل شد.");
+    await loadProducts(); await loadAdminProducts();
+  } catch(e) { alert("❌ خطا در تصویر:\n" + e.message); }
+}
+
+async function removeProductImage(productId) {
+  if (!confirm("تصویر فعلی به پوشه old منتقل و از محصول خارج شود؟")) return;
+  try {
+    await postJson("/api/admin/remove-image", {product_id:Number(productId)});
+    alert("✅ تصویر بایگانی شد.");
+    await loadProducts(); await loadAdminProducts();
+  } catch(e) { alert("❌ خطا در تصویر:\n" + e.message); }
+}
+
+async function uploadProductCatalog(productId) {
+  const input = $(`catalog-${Number(productId)}`);
+  if (!input?.files?.length) return alert("لطفاً کاتالوگ را انتخاب کنید.");
+  const fd = new FormData(); fd.append("product_id", String(productId)); fd.append("file", input.files[0], input.files[0].name);
+  try {
+    await apiRequest("/api/admin/upload-catalog", {method:"POST", body:fd});
+    alert("✅ کاتالوگ جدید ثبت شد. کاتالوگ قبلی به old منتقل شد.");
+    await loadProducts(); await loadAdminProducts();
+  } catch(e) { alert("❌ خطا در کاتالوگ:\n" + e.message); }
+}
+
+async function removeProductCatalog(productId) {
+  if (!confirm("کاتالوگ فعلی به پوشه old منتقل و از محصول خارج شود؟")) return;
+  try {
+    await postJson("/api/admin/remove-catalog", {product_id:Number(productId)});
+    alert("✅ کاتالوگ بایگانی شد.");
+    await loadProducts(); await loadAdminProducts();
+  } catch(e) { alert("❌ خطا در کاتالوگ:\n" + e.message); }
+}
+
+async function updateProductPrice(productId) {
+  const input =
+    $(`price-${Number(productId)}`);
+
+  if (!input) return;
+
+  const value = input.value.trim();
+
+  try {
+    await postJson(
+      "/api/admin/update-price",
+      {
+        product_id: Number(productId),
+        price:
+          value === ""
+            ? null
+            : Number(value),
+        currency: "تومان"
+      }
+    );
+
+    alert("✅ قیمت ذخیره شد.");
+
+    await loadProducts();
+    await loadAdminProducts();
+
+  } catch (error) {
+    alert(
+      "❌ خطا در ذخیره قیمت:\n" +
+      error.message
+    );
+  }
+}
+
+
+/* =========================================================
+   VIDEO
+========================================================= */
+
+async function uploadProductVideo(productId) {
+  const input =
+    $(`video-${Number(productId)}`);
+
+  if (!input || !input.files.length) {
+    alert("لطفاً یک فایل ویدئو انتخاب کنید.");
+    return;
+  }
+
+  const file = input.files[0];
+
+  if (file.size > 100 * 1024 * 1024) {
+    alert("❌ حجم ویدئو نباید بیشتر از 100MB باشد.");
+    return;
+  }
+
+  const formData = new FormData();
+
+  formData.append(
+    "product_id",
+    String(productId)
+  );
+
+  formData.append(
+    "file",
+    file,
+    file.name
+  );
+
+  try {
+    await apiRequest(
+      "/api/admin/upload-video",
+      {
+        method: "POST",
+        body: formData
+      }
+    );
+
+    alert("✅ ویدئو با موفقیت آپلود شد.");
+
+    await loadProducts();
+    await loadAdminProducts();
+
+  } catch (error) {
+    alert(
+      "❌ خطا در آپلود ویدئو:\n" +
+      error.message
+    );
+  }
+}
+
+async function removeProductVideo(productId) {
+  if (
+    !confirm(
+      "آیا از حذف ویدئوی این محصول مطمئن هستید؟"
+    )
+  ) {
+    return;
+  }
+
+  try {
+    await postJson(
+      "/api/admin/remove-video",
+      {
+        product_id: Number(productId)
+      }
+    );
+
+    alert("✅ ویدئو حذف شد.");
+
+    await loadProducts();
+    await loadAdminProducts();
+
+  } catch (error) {
+    alert(
+      "❌ خطا در حذف ویدئو:\n" +
+      error.message
+    );
+  }
+}
+
+
+/* =========================================================
+   CUSTOMERS
+========================================================= */
 
 async function loadCustomers() {
   const select = $("customerSelect");
@@ -332,15 +1332,6 @@ async function loadCustomers() {
   const usersBox=$("adminUsers");
   if(usersBox){
     try{const r=await postJson("/api/admin/customers",{});const cs=Array.isArray(r?.customers)?r.customers:(Array.isArray(r)?r:[]);usersBox.innerHTML=cs.length?cs.map(c=>{const id=String(c.id);return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button onclick="updateCustomerUser(${JSON.stringify(id)})">💾 ذخیره</button><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف</button></div>`}).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;}catch(e){usersBox.innerHTML=`<div class="message error">خطا در دریافت کاربران.</div>`;}}
-}
-
-async function loadAdminDeleteCustomers() {
-  const box = $("adminUsersDelete"); if (!box) return;
-  try {
-    const r = await postJson("/api/admin/customers", {});
-    const cs = Array.isArray(r?.customers) ? r.customers : (Array.isArray(r) ? r : []);
-    box.innerHTML = cs.length ? cs.map(c => { const id=String(c.id); const name=[c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "نماینده"; return `<div class="admin-user-row admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${c.username ? "@"+escapeHtml(c.username) : ""}</small></div><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف نماینده</button></div>`; }).join("") : `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
-  } catch(e) { box.innerHTML=`<div class="message error">خطا در دریافت نماینده‌ها.</div>`; }
 }
 
 async function loadCustomerPrices(customerId) {
@@ -443,7 +1434,6 @@ function closeCustomerRequest() {
 async function submitCustomerRequest() {
   const input = $("customerRequestText");
   const typeInput = $("customerRequestType");
-
   const text = input ? input.value.trim() : "";
   const type = typeInput?.value === "note" ? "note" : "order";
 
@@ -453,32 +1443,16 @@ async function submitCustomerRequest() {
   }
 
   try {
-    await postJson("/api/customer/request", {
-      type,
-      text
-    });
-
-    if (input) {
-      input.value = "";
-    }
-
+    await postJson("/api/customer/request", { type, text });
+    input.value = "";
     closeCustomerRequest();
-
-    // از tg.showPopup استفاده نمی‌کنیم؛ این متد در بعضی WebViewها
-    // باعث خطای WebAppMethod Unsupported می‌شود.
-    alert(
-      type === "note"
-        ? "✅ یادداشت شما با موفقیت ثبت شد."
-        : "✅ سفارش شما با موفقیت ثبت شد."
-    );
-
+    if (tg && typeof tg.showPopup === "function") {
+      tg.showPopup({title:"ثبت شد", message:type === "note" ? "یادداشت شما با موفقیت ثبت شد." : "سفارش شما با موفقیت ثبت شد.", buttons:[{type:"ok"}]});
+    } else {
+      alert(type === "note" ? "✅ یادداشت ثبت شد." : "✅ سفارش ثبت شد.");
+    }
   } catch (error) {
-    console.error("Customer request error:", error);
-
-    alert(
-      "❌ ثبت درخواست انجام نشد:\n" +
-      (error?.message || "خطای نامشخص")
-    );
+    alert("❌ ثبت درخواست انجام نشد:\n" + error.message);
   }
 }
 
@@ -601,26 +1575,36 @@ function setupEvents() {
 
     /* Telegram Back Button */
     if (tg && tg.BackButton) {
-      try {
-        tg.BackButton.onClick(() => {
-          const modal = $("modal");
-          const adminModal = $("adminModal");
 
-          if (modal && !modal.classList.contains("hidden")) {
-            closeModal();
-            return;
-          }
+      tg.BackButton.onClick(() => {
 
-          if (adminModal && !adminModal.classList.contains("hidden")) {
-            closeAdmin();
-            try {
-              tg.BackButton.hide();
-            } catch (e) {}
-          }
-        });
-      } catch (e) {
-        console.warn("Telegram BackButton is not supported:", e);
-      }
+        const modal =
+          $("modal");
+
+        const adminModal =
+          $("adminModal");
+
+        if (
+          modal &&
+          !modal.classList.contains("hidden")
+        ) {
+          closeModal();
+          return;
+        }
+
+        if (
+          adminModal &&
+          !adminModal.classList.contains("hidden")
+        ) {
+          closeAdmin();
+
+          try {
+            tg.BackButton.hide();
+          } catch (e) {}
+
+          return;
+        }
+      });
     }
 
 }
@@ -643,6 +1627,234 @@ function finishBootLoader() {
     loader.classList.add("hide");
     setTimeout(() => loader.remove(), 300);
   }
+}
+
+
+/* =========================================================
+   STABLE SECTIONED ADMIN OVERRIDES
+   این بخش فقط امکانات پنل را اضافه می‌کند و به روند اصلی لود سایت دست نمی‌زند.
+========================================================= */
+
+async function createProduct() {
+  const p = {
+    name_fa: $("newProductNameFa")?.value.trim() || "",
+    name_en: $("newProductNameEn")?.value.trim() || "",
+    category: $("newProductCategory")?.value.trim() || "",
+    package: $("newProductPackage")?.value.trim() || "",
+    maker: $("newProductMaker")?.value.trim() || "",
+    base_price: $("newProductPrice")?.value.trim() || null
+  };
+  if (!p.name_fa) return alert("نام فارسی محصول را وارد کنید.");
+  try {
+    const r = await postJson("/api/admin/create-product", p);
+    if (r && r.ok === false) throw new Error(r.error || "ایجاد محصول انجام نشد");
+    alert("✅ محصول جدید ایجاد شد.");
+    ["newProductNameFa","newProductNameEn","newProductCategory","newProductPackage","newProductMaker","newProductPrice"].forEach(id => { if ($(id)) $(id).value = ""; });
+    await loadProducts();
+    await loadAdminProducts();
+  } catch (e) {
+    alert("❌ افزودن محصول انجام نشد:\n" + (e?.message || "خطای نامشخص"));
+  }
+}
+
+async function deleteProduct(id) {
+  if (!id) return alert("شناسه محصول مشخص نیست.");
+  if (!confirm("آیا از حذف کامل این محصول مطمئن هستید؟")) return;
+  try {
+    const r = await postJson("/api/admin/delete-product", { product_id: Number(id) });
+    if (r && r.ok === false) throw new Error(r.error || "حذف انجام نشد");
+    alert("✅ محصول حذف شد.");
+    await loadProducts();
+    await loadAdminProducts();
+  } catch (e) {
+    alert("❌ حذف محصول انجام نشد:\n" + (e?.message || "خطای نامشخص"));
+  }
+}
+
+async function createCustomerUser() {
+  const p = {
+    first_name: $("newUserFirstName")?.value.trim() || "",
+    last_name: $("newUserLastName")?.value.trim() || "",
+    username: $("newUserUsername")?.value.trim() || "",
+    password: $("newUserPassword")?.value || ""
+  };
+  if (!p.username || !p.password) return alert("نام کاربری و رمز عبور را وارد کنید.");
+  try {
+    const r = await postJson("/api/admin/create-customer", p);
+    if (r && r.ok === false) throw new Error(r.error || "ایجاد نماینده انجام نشد");
+    alert("✅ نماینده اضافه شد.");
+    ["newUserFirstName","newUserLastName","newUserUsername","newUserPassword"].forEach(id => { if ($(id)) $(id).value = ""; });
+    await loadCustomers();
+  } catch (e) {
+    alert("❌ افزودن نماینده انجام نشد:\n" + (e?.message || "خطای نامشخص"));
+  }
+}
+
+async function deleteCustomerUser(id) {
+  if (!id) return alert("شناسه نماینده مشخص نیست.");
+  if (!confirm("آیا از حذف این نماینده مطمئن هستید؟")) return;
+  try {
+    const r = await postJson("/api/admin/delete-customer", { customer_id: String(id) });
+    if (r && r.ok === false) throw new Error(r.error || "حذف انجام نشد");
+    alert("✅ نماینده حذف شد.");
+    await loadCustomers();
+  } catch (e) {
+    alert("❌ حذف نماینده انجام نشد:\n" + (e?.message || "خطای نامشخص"));
+  }
+}
+
+async function updateCustomerUser(id) {
+  const p = {
+    customer_id: String(id),
+    first_name: $("ufirst-" + id)?.value.trim() || "",
+    last_name: $("ulast-" + id)?.value.trim() || "",
+    username: $("uuser-" + id)?.value.trim() || "",
+    status: $("ustatus-" + id)?.value || "active"
+  };
+  const pass = $("upass-" + id)?.value || "";
+  if (pass) p.password = pass;
+  try {
+    const r = await postJson("/api/admin/customer-profile", p);
+    if (r && r.ok === false) throw new Error(r.error || "ذخیره انجام نشد");
+    alert(pass ? "✅ اطلاعات نماینده و رمز عبور با موفقیت ذخیره شد." : "✅ اطلاعات نماینده ذخیره شد.");
+    if ($("upass-" + id)) $("upass-" + id).value = "";
+    await loadCustomers();
+  } catch (e) {
+    alert("❌ ویرایش نماینده انجام نشد:\n" + (e?.message || "خطای نامشخص"));
+  }
+}
+
+async function loadAdminProducts() {
+  try {
+    const result = await postJson("/api/admin/products", {});
+    const list = Array.isArray(result) ? result : (Array.isArray(result?.products) ? result.products : products);
+    const editBox = $("adminEditProducts");
+    const deleteBox = $("adminProducts");
+
+    if (editBox) {
+      editBox.innerHTML = list.map(product => {
+        const id = Number(product.id);
+        const benefits = Array.isArray(product.benefits) ? product.benefits.join("\n") : (product.benefits || "");
+        return `<div class="admin-product">
+          <div class="admin-product-title"><strong>${escapeHtml(product.name_fa || product.name_en || "محصول")}</strong><small>ID: ${escapeHtml(id)}</small></div>
+          <div class="admin-edit-grid">
+            <label>نام فارسی<input id="namefa-${id}" value="${escapeHtml(product.name_fa || "")}"></label>
+            <label>نام انگلیسی<input id="nameen-${id}" value="${escapeHtml(product.name_en || "")}"></label>
+            <label>دسته‌بندی<input id="category-${id}" value="${escapeHtml(product.category || "")}"></label>
+            <label>بسته‌بندی<input id="package-${id}" value="${escapeHtml(product.package || "")}"></label>
+            <label>سازنده<input id="maker-${id}" value="${escapeHtml(product.maker || "")}"></label>
+            <label>قیمت پایه<input type="number" id="price-${id}" value="${product.base_price ?? ""}"></label>
+          </div>
+          <div class="admin-edit-grid admin-edit-grid-wide">
+            <label>معرفی<textarea id="intro-${id}">${escapeHtml(product.intro || "")}</textarea></label>
+            <label>ترکیبات<textarea id="composition-${id}">${escapeHtml(product.composition || "")}</textarea></label>
+            <label>نحوه مصرف<textarea id="use-${id}">${escapeHtml(product.use_text || "")}</textarea></label>
+            <label>هشدارها<textarea id="warnings-${id}">${escapeHtml(product.warnings || "")}</textarea></label>
+            <label>مزایا (هر مورد در یک خط)<textarea id="benefits-${id}">${escapeHtml(benefits)}</textarea></label>
+          </div>
+          <label class="admin-active"><input type="checkbox" id="active-${id}" ${product.active !== false ? "checked" : ""}> محصول فعال و قابل نمایش برای مشتریان</label>
+          <div class="admin-product-buttons"><button onclick="saveProduct(${id})">💾 ذخیره اطلاعات محصول</button><button class="admin-danger" onclick="deleteProduct(${id})">🗑️ حذف محصول</button></div>
+          <div class="admin-media-grid">
+            <div class="admin-media-box"><label>🖼️ تصویر جدید<input type="file" id="image-${id}" accept="image/*"></label><button onclick="uploadProductImage(${id})">آپلود / جایگزینی تصویر</button>${product.image_url ? `<button class="danger" onclick="removeProductImage(${id})">بایگانی تصویر فعلی</button>` : ""}</div>
+            <div class="admin-media-box"><label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label><button onclick="uploadProductVideo(${id})">آپلود / جایگزینی ویدئو</button>${product.video_url ? `<button class="danger" onclick="removeProductVideo(${id})">بایگانی ویدئو</button>` : ""}</div>
+            <div class="admin-media-box"><label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label><button onclick="uploadProductCatalog(${id})">آپلود / جایگزینی کاتالوگ</button>${product.catalog_pdf_url ? `<button class="danger" onclick="removeProductCatalog(${id})">بایگانی کاتالوگ</button>` : ""}</div>
+          </div>
+        </div>`;
+      }).join("") || `<div class="message">محصولی وجود ندارد.</div>`;
+    }
+
+    if (deleteBox) {
+      deleteBox.innerHTML = list.map(product => {
+        const id = Number(product.id);
+        const name = product.name_fa || product.name_en || "محصول";
+        return `<div class="admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${escapeHtml(product.name_en || "")} · ID: ${escapeHtml(id)}</small></div><button class="admin-danger" onclick="deleteProduct(${id})">🗑️ حذف محصول</button></div>`;
+      }).join("") || `<div class="message">محصولی وجود ندارد.</div>`;
+    }
+  } catch (e) {
+    console.error("Admin products:", e);
+    if ($("adminEditProducts")) $("adminEditProducts").innerHTML = `<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>`;
+    if ($("adminProducts")) $("adminProducts").innerHTML = `<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>`;
+  }
+}
+
+async function loadCustomers() {
+  try {
+    const result = await postJson("/api/admin/customers", {});
+    const customers = Array.isArray(result) ? result : (Array.isArray(result?.customers) ? result.customers : []);
+    const select = $("customerSelect");
+    if (select) {
+      select.innerHTML = `<option value="">انتخاب مشتری</option>`;
+      customers.forEach(c => {
+        const name = [c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || `مشتری ${c.id}`;
+        const o = document.createElement("option");
+        o.value = c.id;
+        o.textContent = c.username ? `${name} (@${c.username})` : name;
+        o.dataset.customer = JSON.stringify(c);
+        select.appendChild(o);
+      });
+    }
+    const usersBox = $("adminUsers");
+    if (usersBox) usersBox.innerHTML = customers.length ? customers.map(c => {
+      const id = String(c.id);
+      return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name || "")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name || "")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username || "")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر" autocomplete="new-password"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status !== "disabled" ? "selected" : ""}>فعال</option><option value="disabled" ${c.status === "disabled" ? "selected" : ""}>غیرفعال</option></select></label></div><button onclick="updateCustomerUser(${JSON.stringify(id)})">💾 ذخیره</button><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف</button></div>`;
+    }).join("") : `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
+    const deleteBox = $("adminUsersDelete");
+    if (deleteBox) deleteBox.innerHTML = customers.length ? customers.map(c => {
+      const id = String(c.id), name = [c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "نماینده";
+      return `<div class="admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${c.username ? "@"+escapeHtml(c.username) : ""}</small></div><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف نماینده</button></div>`;
+    }).join("") : `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
+  } catch (e) {
+    console.error("Customers:", e);
+    if ($("adminUsers")) $("adminUsers").innerHTML = `<div class="message error">خطا در دریافت کاربران.</div>`;
+    if ($("adminUsersDelete")) $("adminUsersDelete").innerHTML = `<div class="message error">خطا در دریافت نماینده‌ها.</div>`;
+  }
+}
+
+function showAdminHome() {
+  document.querySelectorAll(".admin-view").forEach(el => el.classList.add("hidden"));
+  const home = $("adminHome");
+  if (home) home.classList.remove("hidden");
+  renderAdminAccount();
+}
+
+async function showAdminSection(name) {
+  document.querySelectorAll(".admin-view").forEach(el => el.classList.add("hidden"));
+  const view = $("adminSection-" + name);
+  if (view) view.classList.remove("hidden");
+  renderAdminAccount();
+  try {
+    if (name === "products" || name === "edit-products") await loadAdminProducts();
+    if (name === "customers" || name === "edit-customers" || name === "prices") await loadCustomers();
+    if (name === "requests") await loadAdminRequests();
+    if (name === "footer") await loadSiteSettings();
+  } catch (e) { console.warn("Admin section:", e); }
+}
+
+function searchAdminItems(inputId, containerId) {
+  const input = $(inputId), box = $(containerId);
+  if (!input || !box) return;
+  const q = input.value.trim().toLocaleLowerCase("fa-IR");
+  let found = null;
+  [...box.children].forEach(item => {
+    const ok = !q || (item.textContent || "").toLocaleLowerCase("fa-IR").includes(q);
+    item.style.display = ok ? "" : "none";
+    if (ok && q && !found) found = item;
+  });
+  if (found && q) found.scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+function searchCustomerPriceCustomer() {
+  const input = $("customerPriceSearch"), select = $("customerSelect");
+  if (!input || !select) return;
+  const q = input.value.trim().toLocaleLowerCase("fa-IR");
+  let match = null;
+  [...select.options].forEach((o,i) => {
+    if (i === 0) return;
+    const ok = !q || (o.textContent || "").toLocaleLowerCase("fa-IR").includes(q);
+    o.hidden = !ok;
+    if (ok && q && !match) match = o;
+  });
+  if (match) { select.value = match.value; selectedCustomer = match.value; loadCustomerPrices(match.value); }
 }
 
 /* =========================================================
@@ -719,3 +1931,15 @@ window.closeCustomerRequest = closeCustomerRequest;
 window.submitCustomerRequest = submitCustomerRequest;
 window.updateCustomerRequestStatus = updateCustomerRequestStatus;
 window.createProduct=createProduct;window.deleteProduct=deleteProduct;window.createCustomerUser=createCustomerUser;window.deleteCustomerUser=deleteCustomerUser;window.updateCustomerUser=updateCustomerUser;window.saveSiteSettings=saveSiteSettings;
+
+
+// Re-bind sectioned admin actions to the stable implementations above.
+window.createProduct=createProduct;
+window.deleteProduct=deleteProduct;
+window.createCustomerUser=createCustomerUser;
+window.deleteCustomerUser=deleteCustomerUser;
+window.updateCustomerUser=updateCustomerUser;
+window.showAdminHome=showAdminHome;
+window.showAdminSection=showAdminSection;
+window.searchAdminItems=searchAdminItems;
+window.searchCustomerPriceCustomer=searchCustomerPriceCustomer;

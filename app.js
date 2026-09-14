@@ -1125,7 +1125,14 @@ async function saveProduct(productId) {
   };
 
   try {
-    await postJson("/api/admin/update-product", payload);
+    const result = await postJson("/api/admin/update-product", payload);
+    // بلافاصله مقدار ذخیره‌شده را در صفحه اصلی هم اعمال کن
+    const saved = result?.product && !Array.isArray(result.product) ? result.product : null;
+    if (saved) {
+      const index = products.findIndex(p => Number(p.id) === id);
+      if (index >= 0) products[index] = { ...products[index], ...saved };
+      renderProducts();
+    }
     alert("✅ اطلاعات محصول ذخیره شد.");
     await loadProducts();
     await loadAdminProducts();
@@ -1185,7 +1192,7 @@ async function updateProductPrice(productId) {
   const value = input.value.trim();
 
   try {
-    await postJson(
+    const result = await postJson(
       "/api/admin/update-price",
       {
         product_id: Number(productId),
@@ -1197,8 +1204,15 @@ async function updateProductPrice(productId) {
       }
     );
 
-    alert("✅ قیمت ذخیره شد.");
+    // مقدار برگشتی Worker را همان لحظه روی کارت محصول اعمال کن
+    const saved = result?.product && !Array.isArray(result.product) ? result.product : null;
+    if (saved) {
+      const index = products.findIndex(p => Number(p.id) === Number(productId));
+      if (index >= 0) products[index] = { ...products[index], ...saved };
+      renderProducts();
+    }
 
+    alert("✅ قیمت ذخیره شد.");
     await loadProducts();
     await loadAdminProducts();
 

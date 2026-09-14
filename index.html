@@ -315,7 +315,7 @@
         <div class="admin-kicker">مشکفام فارس</div>
         <h2>⚙️ پنل مدیریت</h2>
       </div>
-      <div id="adminAccountInfo" class="admin-account-mini"></div>
+      <div id="adminAccountInfo" class="admin-account-mini admin-account-top"></div>
     </div>
 
     <div id="adminError" class="message error hidden"></div>
@@ -354,6 +354,7 @@
         </div>
         <button class="admin-primary" onclick="createProduct()">➕ ایجاد محصول</button>
       </div>
+      <div class="admin-search-wrap"><input id="productDeleteSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام محصول..." oninput="searchAdminItems('productDeleteSearch', 'adminProducts')"></div>
       <h4 class="admin-subtitle">محصولات موجود — حذف</h4>
       <div id="adminProducts"></div>
     </section>
@@ -363,6 +364,7 @@
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3>✏️ ویرایش محصول</h3>
       <p class="admin-section-help">محصول موردنظر را انتخاب و مشخصات آن را ویرایش کنید.</p>
+      <div class="admin-search-wrap"><input id="productEditSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام محصول..." oninput="searchAdminItems('productEditSearch', 'adminEditProducts')"></div>
       <div id="adminEditProducts"></div>
     </section>
 
@@ -380,6 +382,7 @@
         </div>
         <button class="admin-primary" onclick="createCustomerUser()">➕ افزودن نماینده</button>
       </div>
+      <div class="admin-search-wrap"><input id="customerDeleteSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر..." oninput="searchAdminItems('customerDeleteSearch', 'adminUsersDelete')"></div>
       <h4 class="admin-subtitle">نماینده‌های موجود — حذف</h4>
       <div id="adminUsersDelete"></div>
     </section>
@@ -389,6 +392,7 @@
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3>✏️ ویرایش نماینده‌ها</h3>
       <p class="admin-section-help">اطلاعات نماینده را ویرایش کنید. برای تغییر رمز، رمز جدید را وارد کنید.</p>
+      <div class="admin-search-wrap"><input id="customerEditSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر..." oninput="searchAdminItems('customerEditSearch', 'adminUsers')"></div>
       <div id="adminUsers"></div>
     </section>
 
@@ -396,6 +400,7 @@
     <section id="adminSection-prices" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3>💰 قیمت اختصاصی مشتری</h3>
+      <div class="admin-search-wrap"><input id="customerPriceSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر نماینده..." oninput="searchCustomerPriceCustomer()"></div>
       <label class="admin-select-label">انتخاب مشتری<select id="customerSelect"><option value="">انتخاب مشتری</option></select></label>
       <div id="customerInfo" class="customer-info hidden"></div>
       <div id="customerPrices" class="customer-prices"></div>

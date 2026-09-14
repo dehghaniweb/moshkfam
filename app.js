@@ -875,6 +875,22 @@ function closeModal() {
    ADMIN
 ========================================================= */
 
+function showAdminHome() {
+  document.querySelectorAll(".admin-view").forEach(el => el.classList.add("hidden"));
+  const home = $("adminHome");
+  if (home) home.classList.remove("hidden");
+}
+
+function showAdminSection(name) {
+  document.querySelectorAll(".admin-view").forEach(el => el.classList.add("hidden"));
+  const section = $("adminSection-" + name);
+  if (section) section.classList.remove("hidden");
+  if (name === "footer") loadSiteSettings();
+  if (name === "edit-products") loadAdminProducts();
+  if (name === "edit-customers" || name === "customers") loadCustomers();
+  if (name === "requests") loadAdminRequests();
+}
+
 async function openAdmin() {
   const modal = $("adminModal");
   const error = $("adminError");
@@ -882,6 +898,7 @@ async function openAdmin() {
   if (!modal) return;
 
   modal.classList.remove("hidden");
+  showAdminHome();
 
   if (error) {
     error.classList.add("hidden");
@@ -904,7 +921,6 @@ async function openAdmin() {
     return;
   }
 
-  showAdminHome();
   await loadAdminData();
 }
 
@@ -919,36 +935,38 @@ function closeAdmin() {
 async function loadAdminData() {
   const loading = $("adminLoading");
   const error = $("adminError");
-  if (loading) loading.classList.remove("hidden");
-  if (error) error.classList.add("hidden");
+
+  if (loading) {
+    loading.classList.remove("hidden");
+  }
+
+  if (error) {
+    error.classList.add("hidden");
+  }
+
   try {
+    await Promise.all([
+      loadAdminProducts(),
+      loadCustomers(),
+      loadAdminRequests()
+    ]);
+
     renderAdminAccount();
-    await loadSiteSettings();
+
   } catch (e) {
     console.error(e);
-    if (error) { error.textContent = "❌ دریافت اطلاعات مدیریت انجام نشد."; error.classList.remove("hidden"); }
+
+    if (error) {
+      error.textContent =
+        "❌ دریافت اطلاعات مدیریت انجام نشد.";
+      error.classList.remove("hidden");
+    }
+
   } finally {
-    if (loading) loading.classList.add("hidden");
+    if (loading) {
+      loading.classList.add("hidden");
+    }
   }
-}
-
-function showAdminHome() {
-  document.querySelectorAll(".admin-page").forEach(el => el.classList.add("hidden"));
-  $("adminHome")?.classList.remove("hidden");
-}
-
-async function openAdminSection(section) {
-  document.querySelectorAll(".admin-page").forEach(el => el.classList.add("hidden"));
-  const page = $("adminSection-" + section);
-  if (!page) return;
-  page.classList.remove("hidden");
-  try {
-    if (section === "productsAdd") await loadAdminProducts("delete");
-    if (section === "productsEdit") await loadAdminProducts("edit");
-    if (section === "usersAdd" || section === "usersEdit" || section === "prices") await loadCustomers();
-    if (section === "requests") await loadAdminRequests();
-    if (section === "settings") await loadSiteSettings();
-  } catch (e) { console.error("Admin section:", section, e); }
 }
 
 function renderAdminAccount() {
@@ -1000,54 +1018,33 @@ function renderAdminAccount() {
    ADMIN PRODUCTS
 ========================================================= */
 
-async function loadAdminProducts(mode = "edit") {
-  const container = $(mode === "delete" ? "adminProductsDelete" : "adminProductsEdit");
-  if (!container) return;
-
+async function loadAdminProducts() {
+  const deleteBox = $("adminProducts");
+  const editBox = $("adminEditProducts");
+  if (!deleteBox && !editBox) return;
   try {
     const result = await postJson("/api/admin/products", {});
-    const list = Array.isArray(result)
-      ? result
-      : (Array.isArray(result?.products) ? result.products : products);
-
-    container.innerHTML = list.map(product => {
-      const id = Number(product.id);
-      const nameFa = product.name_fa || "";
-      const nameEn = product.name_en || "";
-      if (mode === "delete") {
-        return `<div class="admin-product"><div class="admin-product-title"><strong>${escapeHtml(nameFa || nameEn || "محصول")}</strong><small>ID: ${escapeHtml(id)}</small></div><div class="admin-product-buttons"><button class="admin-danger" onclick="deleteProduct(${id})">🗑️ حذف محصول</button></div></div>`;
-      }
-      const benefits = Array.isArray(product.benefits) ? product.benefits.join("\n") : (product.benefits || "");
-      return `
-        <div class="admin-product">
-          <div class="admin-product-title"><strong>${escapeHtml(nameFa || nameEn || "محصول")}</strong><small>ID: ${escapeHtml(id)}</small></div>
-          <div class="admin-edit-grid">
-            <label>نام فارسی<input id="namefa-${id}" value="${escapeHtml(nameFa)}"></label>
-            <label>نام انگلیسی<input id="nameen-${id}" value="${escapeHtml(nameEn)}"></label>
-            <label>دسته‌بندی<input id="category-${id}" value="${escapeHtml(product.category || "")}"></label>
-            <label>بسته‌بندی<input id="package-${id}" value="${escapeHtml(product.package || "")}"></label>
-            <label>سازنده<input id="maker-${id}" value="${escapeHtml(product.maker || "")}"></label>
-            <label>قیمت پایه<input type="number" id="price-${id}" value="${product.base_price ?? ""}" placeholder="قیمت پایه"></label>
-          </div>
-          <div class="admin-edit-grid admin-edit-grid-wide">
-            <label>معرفی<textarea id="intro-${id}">${escapeHtml(product.intro || "")}</textarea></label>
-            <label>ترکیبات<textarea id="composition-${id}">${escapeHtml(product.composition || "")}</textarea></label>
-            <label>نحوه مصرف<textarea id="use-${id}">${escapeHtml(product.use_text || "")}</textarea></label>
-            <label>هشدارها<textarea id="warnings-${id}">${escapeHtml(product.warnings || "")}</textarea></label>
-            <label>مزایا (هر مورد در یک خط)<textarea id="benefits-${id}">${escapeHtml(benefits)}</textarea></label>
-          </div>
-          <label class="admin-active"><input type="checkbox" id="active-${id}" ${product.active !== false ? "checked" : ""}> محصول فعال و قابل نمایش برای مشتریان</label>
-          <div class="admin-product-buttons"><button onclick="saveProduct(${id})">💾 ذخیره اطلاعات محصول</button></div>
-          <div class="admin-media-grid">
-            <div class="admin-media-box"><label>🖼️ تصویر جدید<input type="file" id="image-${id}" accept="image/*"></label><button onclick="uploadProductImage(${id})">آپلود / جایگزینی تصویر</button>${product.image_url ? `<button class="danger" onclick="removeProductImage(${id})">بایگانی تصویر فعلی</button>` : ""}</div>
-            <div class="admin-media-box"><label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label><button onclick="uploadProductVideo(${id})">آپلود / جایگزینی ویدئو</button>${product.video_url ? `<button class="danger" onclick="removeProductVideo(${id})">بایگانی ویدئو</button>` : ""}</div>
-            <div class="admin-media-box"><label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label><button onclick="uploadProductCatalog(${id})">آپلود / جایگزینی کاتالوگ</button>${product.catalog_pdf_url ? `<button class="danger" onclick="removeProductCatalog(${id})">بایگانی کاتالوگ</button>` : ""}</div>
-          </div>
-        </div>`;
-    }).join("");
+    const list = Array.isArray(result) ? result : (Array.isArray(result?.products) ? result.products : products);
+    if (deleteBox) {
+      deleteBox.innerHTML = list.map(product => {
+        const id = Number(product.id);
+        const nameFa = product.name_fa || "";
+        const nameEn = product.name_en || "";
+        return `<div class="admin-product admin-delete-row"><div class="admin-product-title"><strong>${escapeHtml(nameFa || nameEn || "محصول")}</strong><small>${escapeHtml(nameEn)} · ID: ${escapeHtml(id)}</small></div><button class="admin-danger" onclick="deleteProduct(${id})">🗑️ حذف محصول</button></div>`;
+      }).join("");
+    }
+    if (editBox) {
+      editBox.innerHTML = list.map(product => {
+        const id = Number(product.id);
+        const nameFa = product.name_fa || ""; const nameEn = product.name_en || "";
+        const benefits = Array.isArray(product.benefits) ? product.benefits.join("\n") : (product.benefits || "");
+        return `<div class="admin-product"><div class="admin-product-title"><strong>${escapeHtml(nameFa || nameEn || "محصول")}</strong><small>ID: ${escapeHtml(id)}</small></div><div class="admin-edit-grid"><label>نام فارسی<input id="namefa-${id}" value="${escapeHtml(nameFa)}"></label><label>نام انگلیسی<input id="nameen-${id}" value="${escapeHtml(nameEn)}"></label><label>دسته‌بندی<input id="category-${id}" value="${escapeHtml(product.category || "")}"></label><label>بسته‌بندی<input id="package-${id}" value="${escapeHtml(product.package || "")}"></label><label>سازنده<input id="maker-${id}" value="${escapeHtml(product.maker || "")}"></label><label>قیمت پایه<input type="number" id="price-${id}" value="${product.base_price ?? ""}" placeholder="قیمت پایه"></label></div><div class="admin-edit-grid admin-edit-grid-wide"><label>معرفی<textarea id="intro-${id}">${escapeHtml(product.intro || "")}</textarea></label><label>ترکیبات<textarea id="composition-${id}">${escapeHtml(product.composition || "")}</textarea></label><label>نحوه مصرف<textarea id="use-${id}">${escapeHtml(product.use_text || "")}</textarea></label><label>هشدارها<textarea id="warnings-${id}">${escapeHtml(product.warnings || "")}</textarea></label><label>مزایا (هر مورد در یک خط)<textarea id="benefits-${id}">${escapeHtml(benefits)}</textarea></label></div><label class="admin-active"><input type="checkbox" id="active-${id}" ${product.active !== false ? "checked" : ""}> محصول فعال و قابل نمایش برای مشتریان</label><div class="admin-product-buttons"><button onclick="saveProduct(${id})">💾 ذخیره اطلاعات محصول</button><button class="admin-danger" onclick="deleteProduct(${id})">🗑️ حذف محصول</button></div><div class="admin-media-grid"><div class="admin-media-box"><label>🖼️ تصویر جدید<input type="file" id="image-${id}" accept="image/*"></label><button onclick="uploadProductImage(${id})">آپلود / جایگزینی تصویر</button>${product.image_url ? `<button class="danger" onclick="removeProductImage(${id})">بایگانی تصویر فعلی</button>` : ""}</div><div class="admin-media-box"><label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label><button onclick="uploadProductVideo(${id})">آپلود / جایگزینی ویدئو</button>${product.video_url ? `<button class="danger" onclick="removeProductVideo(${id})">بایگانی ویدئو</button>` : ""}</div><div class="admin-media-box"><label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label><button onclick="uploadProductCatalog(${id})">آپلود / جایگزینی کاتالوگ</button>${product.catalog_pdf_url ? `<button class="danger" onclick="removeProductCatalog(${id})">بایگانی کاتالوگ</button>` : ""}</div></div></div>`;
+      }).join("");
+    }
   } catch (error) {
     console.error("Admin products:", error);
-    container.innerHTML = `<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>`;
+    if (deleteBox) deleteBox.innerHTML = `<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>`;
+    if (editBox) editBox.innerHTML = `<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>`;
   }
 }
 
@@ -1303,19 +1300,18 @@ async function loadCustomers() {
   } catch (error) {
     console.error("Customers:", error);
   }
+  const usersBox=$("adminUsers");
+  if(usersBox){
+    try{const r=await postJson("/api/admin/customers",{});const cs=Array.isArray(r?.customers)?r.customers:(Array.isArray(r)?r:[]);usersBox.innerHTML=cs.length?cs.map(c=>{const id=String(c.id);return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button onclick="updateCustomerUser(${JSON.stringify(id)})">💾 ذخیره</button><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف</button></div>`}).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;}catch(e){usersBox.innerHTML=`<div class="message error">خطا در دریافت کاربران.</div>`;}}
+}
+
+async function loadAdminDeleteCustomers() {
+  const box = $("adminUsersDelete"); if (!box) return;
   try {
     const r = await postJson("/api/admin/customers", {});
     const cs = Array.isArray(r?.customers) ? r.customers : (Array.isArray(r) ? r : []);
-    const deleteBox = $("adminUsersDelete");
-    const editBox = $("adminUsersEdit");
-    const deleteHtml = cs.length ? cs.map(c => { const id=String(c.id); const name=[c.first_name,c.last_name].filter(Boolean).join(" ")||c.username||"نماینده"; return `<div class="admin-user-row"><strong>${escapeHtml(name)}</strong>${c.username?`<small> @${escapeHtml(c.username)}</small>`:""}<div><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف نماینده</button></div></div>`; }).join("") : `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
-    const editHtml = cs.length ? cs.map(c => { const id=String(c.id); return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button onclick="updateCustomerUser(${JSON.stringify(id)})">💾 ذخیره تغییرات</button></div>`; }).join("") : `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
-    if(deleteBox) deleteBox.innerHTML=deleteHtml;
-    if(editBox) editBox.innerHTML=editHtml;
-  } catch(e) {
-    if($("adminUsersDelete")) $("adminUsersDelete").innerHTML=`<div class="message error">خطا در دریافت نماینده‌ها.</div>`;
-    if($("adminUsersEdit")) $("adminUsersEdit").innerHTML=`<div class="message error">خطا در دریافت نماینده‌ها.</div>`;
-  }
+    box.innerHTML = cs.length ? cs.map(c => { const id=String(c.id); const name=[c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "نماینده"; return `<div class="admin-user-row admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${c.username ? "@"+escapeHtml(c.username) : ""}</small></div><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف نماینده</button></div>`; }).join("") : `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
+  } catch(e) { box.innerHTML=`<div class="message error">خطا در دریافت نماینده‌ها.</div>`; }
 }
 
 async function loadCustomerPrices(customerId) {

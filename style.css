@@ -1582,3 +1582,42 @@ footer span{font-size:12px}
 .admin-back{background:#fff3b0!important;border-color:#f0d96a!important;color:#5b4a00!important;}
 .brand img{background:#ffffff!important;padding:8px!important;border-radius:12px!important;width:166px!important;height:76px!important;object-fit:contain!important;}
 @media(max-width:600px){.brand img{width:130px!important;height:56px!important;padding:7px!important;}}
+
+/* آخرین اصلاحات پنل مدیریت */
+.admin-add-user-button{
+  display:block!important;
+  width:100%!important;
+  min-height:58px!important;
+  padding:16px 24px!important;
+  font-size:17px!important;
+  font-weight:900!important;
+  border-radius:13px!important;
+  cursor:pointer!important;
+}
+.admin-product-delete-only{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  padding:16px!important;
+}
+.admin-product-delete-only .admin-product-title{
+  flex:1!important;
+  border:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+.admin-product-en{display:block;color:#6b7280;font-size:11px;margin-top:3px;font-weight:500}
+.admin-delete-product-button{flex:0 0 auto!important;min-width:130px!important;padding:11px 15px!important}
+.brand img{
+  background:#000!important;
+  padding:10px!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+}
+@media(max-width:600px){
+  .admin-add-user-button{min-height:56px!important;font-size:16px!important}
+  .admin-product-delete-only{align-items:stretch!important;flex-direction:column!important}
+  .admin-delete-product-button{width:100%!important}
+  .brand img{background:#000!important;padding:8px!important}
+}

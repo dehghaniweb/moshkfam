@@ -380,7 +380,7 @@
           <label>نام کاربری<input id="newUserUsername" autocomplete="off"></label>
           <label>رمز عبور<input id="newUserPassword" type="password" autocomplete="new-password"></label>
         </div>
-        <button class="admin-primary" onclick="createCustomerUser()" class="admin-primary admin-add-user-button">➕ افزودن نماینده</button>
+        <button type="button" class="admin-primary admin-add-user-button" onclick="createCustomerUser(); return false;">➕ افزودن نماینده</button>
       </div>
       <div class="admin-search-wrap"><input id="customerDeleteSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر..." oninput="searchAdminItems('customerDeleteSearch', 'adminUsersDelete')"></div>
       <h4 class="admin-subtitle">نماینده‌های موجود — حذف</h4>

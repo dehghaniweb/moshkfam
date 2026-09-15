@@ -281,18 +281,22 @@ function showDeleteDebug(title, data, isError=false){
   el.textContent=title+"\n"+(typeof data === "string" ? data : JSON.stringify(data,null,2));
 }
 async function deleteCustomerUser(id){
-  if(!confirm("آیا از حذف این نماینده مطمئن هستید؟"))return;
-  showDeleteDebug("در حال حذف نماینده...", {customer_id:String(id)});
+  const customerId=String(id||"").trim();
+  if(!customerId){showDeleteDebug("❌ شناسه نماینده خالی است.","customer_id خالی است.",true);return false;}
+  showDeleteDebug("⏳ کلیک دریافت شد؛ در حال حذف نماینده...", {customer_id:customerId});
   try{
-    const result=await postJson("/api/admin/delete-customer",{customer_id:String(id)});
-    showDeleteDebug("✅ خروجی حذف نماینده", result, false);
-    alert("✅ نماینده حذف شد.");
+    const result=await postJson("/api/admin/delete-customer",{customer_id:customerId});
+    showDeleteDebug("✅ خروجی حذف نماینده",result,false);
+    alert("✅ نماینده با موفقیت حذف شد.");
     await loadCustomers();
   }catch(e){
-    showDeleteDebug("❌ خروجی خطای حذف نماینده", e?.message||e, true);
-    alert("❌ حذف نماینده انجام نشد:\n"+(e?.message||"خطای نامشخص"));
+    const detail=e?.message||String(e||"خطای نامشخص");
+    showDeleteDebug("❌ خروجی خطای حذف نماینده",detail,true);
+    alert("❌ حذف نماینده انجام نشد:\n"+detail);
   }
+  return false;
 }
+
 async function updateCustomerUser(id){const p={customer_id:String(id),first_name:adminVisibleElement("ufirst-"+id)?.value.trim()||"",last_name:adminVisibleElement("ulast-"+id)?.value.trim()||"",username:adminVisibleElement("uuser-"+id)?.value.trim()||"",status:adminVisibleElement("ustatus-"+id)?.value||"active"};const pass=adminVisibleElement("upass-"+id)?.value||"";if(pass)p.password=pass;try{await postJson("/api/admin/customer-profile",p);alert("✅ اطلاعات نماینده ذخیره شد.");await loadCustomers();}catch(e){alert("❌ ویرایش نماینده انجام نشد:\n"+e.message);}}
 
 /* =========================================================
@@ -1069,6 +1073,25 @@ function renderAdminAccount() {
 function renderAdminProductList(list, container){
   const allowDelete = container && container.id === "adminProducts";
   if(!container) return;
+  if (allowDelete) {
+    container.innerHTML = list.map(product => {
+      const id = Number(product.id);
+      const nameFa = product.name_fa || product.name_en || "محصول";
+      const nameEn = product.name_en || "";
+      return `
+        <div class="admin-product admin-product-delete-only">
+          <div class="admin-product-title">
+            <div>
+              <strong>${escapeHtml(nameFa)}</strong>
+              ${nameEn ? `<small class="admin-product-en">${escapeHtml(nameEn)}</small>` : ""}
+            </div>
+            <small>ID: ${escapeHtml(id)}</small>
+          </div>
+          <button type="button" class="admin-danger admin-delete-product-button" onclick="deleteProduct(${id}); return false;">🗑️ حذف محصول</button>
+        </div>`;
+    }).join("");
+    return;
+  }
   container.innerHTML = list.map(product => {
       const id = Number(product.id);
       const nameFa = product.name_fa || "";
@@ -1082,7 +1105,6 @@ function renderAdminProductList(list, container){
             <strong>${escapeHtml(nameFa || nameEn || "محصول")}</strong>
             <small>ID: ${escapeHtml(id)}</small>
           </div>
-
           <div class="admin-edit-grid">
             <label>نام فارسی<input id="namefa-${id}" value="${escapeHtml(nameFa)}"></label>
             <label>نام انگلیسی<input id="nameen-${id}" value="${escapeHtml(nameEn)}"></label>
@@ -1091,7 +1113,6 @@ function renderAdminProductList(list, container){
             <label>سازنده<input id="maker-${id}" value="${escapeHtml(product.maker || "")}"></label>
             <label>قیمت پایه<input type="text" inputmode="decimal" id="price-${id}" value="${product.base_price ?? ""}" placeholder="قیمت پایه"></label>
           </div>
-
           <div class="admin-edit-grid admin-edit-grid-wide">
             <label>معرفی<textarea id="intro-${id}">${escapeHtml(product.intro || "")}</textarea></label>
             <label>ترکیبات<textarea id="composition-${id}">${escapeHtml(product.composition || "")}</textarea></label>
@@ -1099,33 +1120,12 @@ function renderAdminProductList(list, container){
             <label>هشدارها<textarea id="warnings-${id}">${escapeHtml(product.warnings || "")}</textarea></label>
             <label>مزایا (هر مورد در یک خط)<textarea id="benefits-${id}">${escapeHtml(benefits)}</textarea></label>
           </div>
-
-          <label class="admin-active">
-            <input type="checkbox" id="active-${id}" ${product.active !== false ? "checked" : ""}>
-            محصول فعال و قابل نمایش برای مشتریان
-          </label>
-
-          <div class="admin-product-buttons">
-            <button onclick="saveProduct(${id})">💾 ذخیره اطلاعات محصول</button>
-            ${allowDelete ? `<button class="admin-danger" onclick="deleteProduct(${id})">🗑️ حذف محصول</button>` : ""}
-          </div>
-
+          <label class="admin-active"><input type="checkbox" id="active-${id}" ${product.active !== false ? "checked" : ""}> محصول فعال و قابل نمایش برای مشتریان</label>
+          <div class="admin-product-buttons"><button type="button" onclick="saveProduct(${id}); return false;">💾 ذخیره اطلاعات محصول</button></div>
           <div class="admin-media-grid">
-            <div class="admin-media-box">
-              <label>🖼️ تصویر جدید<input type="file" id="image-${id}" accept="image/*"></label>
-              <button onclick="uploadProductImage(${id})">آپلود / جایگزینی تصویر</button>
-              ${product.image_url ? `<button class="danger" onclick="removeProductImage(${id})">بایگانی تصویر فعلی</button>` : ""}
-            </div>
-            <div class="admin-media-box">
-              <label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label>
-              <button onclick="uploadProductVideo(${id})">آپلود / جایگزینی ویدئو</button>
-              ${product.video_url ? `<button class="danger" onclick="removeProductVideo(${id})">بایگانی ویدئو</button>` : ""}
-            </div>
-            <div class="admin-media-box">
-              <label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label>
-              <button onclick="uploadProductCatalog(${id})">آپلود / جایگزینی کاتالوگ</button>
-              ${product.catalog_pdf_url ? `<button class="danger" onclick="removeProductCatalog(${id})">بایگانی کاتالوگ</button>` : ""}
-            </div>
+            <div class="admin-media-box"><label>🖼️ تصویر جدید<input type="file" id="image-${id}" accept="image/*"></label><button type="button" onclick="uploadProductImage(${id}); return false;">آپلود / جایگزینی تصویر</button>${product.image_url ? `<button type="button" class="danger" onclick="removeProductImage(${id}); return false;">بایگانی تصویر فعلی</button>` : ""}</div>
+            <div class="admin-media-box"><label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label><button type="button" onclick="uploadProductVideo(${id}); return false;">آپلود / جایگزینی ویدئو</button>${product.video_url ? `<button type="button" class="danger" onclick="removeProductVideo(${id}); return false;">بایگانی ویدئو</button>` : ""}</div>
+            <div class="admin-media-box"><label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label><button type="button" onclick="uploadProductCatalog(${id}); return false;">آپلود / جایگزینی کاتالوگ</button>${product.catalog_pdf_url ? `<button type="button" class="danger" onclick="removeProductCatalog(${id}); return false;">بایگانی کاتالوگ</button>` : ""}</div>
           </div>
         </div>`;
     }).join("");

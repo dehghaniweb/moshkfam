@@ -1576,3 +1576,9 @@ footer span{font-size:12px}
 .admin-debug{margin-top:14px;padding:12px 14px;border:1px solid #d1d5db;border-radius:12px;background:#f8fafc;color:#374151;direction:ltr;text-align:left;white-space:pre-wrap;overflow:auto;font:11px/1.7 Tahoma,Arial,sans-serif;max-height:240px}
 .admin-debug.error{border-color:#fecaca;background:#fef2f2;color:#991b1b}
 @media(max-width:600px){.brand img{width:125px!important;height:54px!important;padding:5px!important;border-radius:14px!important}.login-fields{display:flex!important;flex-direction:column!important}.login-fields input,.login-fields button{width:100%!important}}
+
+/* Final UI adjustments */
+.admin-add-user-button{padding:14px 22px!important;font-size:15px!important;min-height:50px!important;}
+.admin-back{background:#fff3b0!important;border-color:#f0d96a!important;color:#5b4a00!important;}
+.brand img{background:#ffffff!important;padding:8px!important;border-radius:12px!important;width:166px!important;height:76px!important;object-fit:contain!important;}
+@media(max-width:600px){.brand img{width:130px!important;height:56px!important;padding:7px!important;}}

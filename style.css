@@ -1621,3 +1621,35 @@ footer span{font-size:12px}
   .admin-delete-product-button{width:100%!important}
   .brand img{background:#000!important;padding:8px!important}
 }
+
+/* اصلاح نهایی پنل مدیریت */
+.admin-create-product .admin-primary{
+  display:block!important;
+  width:100%!important;
+  min-height:60px!important;
+  padding:17px 24px!important;
+  margin-top:14px!important;
+  font-size:18px!important;
+  font-weight:900!important;
+  border-radius:14px!important;
+  cursor:pointer!important;
+}
+.admin-delete-customer-button{min-width:145px!important;min-height:46px!important;font-weight:800!important;cursor:pointer!important;}
+.admin-account-top{
+  display:block!important;
+  min-width:150px!important;
+  max-width:230px!important;
+  padding:6px 10px!important;
+  border:1px solid #e5e7eb!important;
+  border-radius:10px!important;
+  background:#f8fafc!important;
+  font-size:11px!important;
+  line-height:1.8!important;
+  text-align:left!important;
+}
+.admin-account-top strong{color:#374151!important}
+@media(max-width:700px){
+  .admin-account-top{display:block!important;min-width:125px!important;max-width:170px!important;font-size:10px!important;padding:4px 7px!important;line-height:1.65!important}
+  .admin-create-product .admin-primary{min-height:56px!important;font-size:17px!important}
+  .admin-delete-customer-button{width:100%!important;min-height:48px!important}
+}

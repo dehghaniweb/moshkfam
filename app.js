@@ -1377,7 +1377,7 @@ async function loadCustomers() {
       const deleteHtml=cs.length?cs.map(c=>{
         const id=String(c.id);
         const name=[c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "نماینده";
-        return `<div class="admin-user-row admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${escapeHtml(c.username?"@"+c.username:"")}</small></div><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف نماینده</button></div>`;
+        return `<div class="admin-user-row admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${escapeHtml(c.username?"@"+c.username:"")}</small></div><button type="button" class="admin-danger admin-delete-customer-button" data-delete-customer="${escapeHtml(id)}">🗑️ حذف نماینده</button></div>`;
       }).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
       if(editBox) editBox.innerHTML=editHtml;
       if(deleteBox) deleteBox.innerHTML=deleteHtml;
@@ -1791,6 +1791,16 @@ function searchAdminItems(inputId, containerId) {
     item.style.display = !query || text.includes(query) ? "" : "none";
   });
 }
+
+// حذف نماینده با event delegation؛ مستقل از onclick های HTML و مقاوم در برابر رندر مجدد
+document.addEventListener("click", function(event){
+  const button = event.target.closest("[data-delete-customer]");
+  if (!button) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const id = button.getAttribute("data-delete-customer") || "";
+  deleteCustomerUser(id);
+}, true);
 
 window.showAdminSection = showAdminSection;
 window.showAdminHome = showAdminHome;

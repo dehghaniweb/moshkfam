@@ -273,7 +273,26 @@ async function createProduct(){
 }
 async function deleteProduct(id){if(!confirm("آیا از حذف کامل این محصول مطمئن هستید؟"))return;try{await postJson("/api/admin/delete-product",{product_id:Number(id)});alert("✅ محصول حذف شد.");await loadProducts();await loadAdminProducts();}catch(e){alert("❌ حذف محصول انجام نشد:\n"+e.message);}}
 async function createCustomerUser(){const p={first_name:$("newUserFirstName")?.value.trim(),last_name:$("newUserLastName")?.value.trim(),username:$("newUserUsername")?.value.trim(),password:$("newUserPassword")?.value||""};try{await postJson("/api/admin/create-customer",p);alert("✅ نماینده اضافه شد.");["newUserFirstName","newUserLastName","newUserUsername","newUserPassword"].forEach(id=>{if($(id))$(id).value=""});await loadCustomers();}catch(e){alert("❌ افزودن نماینده انجام نشد:\n"+e.message);}}
-async function deleteCustomerUser(id){if(!confirm("آیا از حذف این نماینده مطمئن هستید؟"))return;try{await postJson("/api/admin/delete-customer",{customer_id:String(id)});alert("✅ نماینده حذف شد.");await loadCustomers();}catch(e){alert("❌ حذف نماینده انجام نشد:\n"+e.message);}}
+function showDeleteDebug(title, data, isError=false){
+  const el=$("customerDeleteDebug");
+  if(!el)return;
+  el.classList.remove("hidden");
+  el.classList.toggle("error", !!isError);
+  el.textContent=title+"\n"+(typeof data === "string" ? data : JSON.stringify(data,null,2));
+}
+async function deleteCustomerUser(id){
+  if(!confirm("آیا از حذف این نماینده مطمئن هستید؟"))return;
+  showDeleteDebug("در حال حذف نماینده...", {customer_id:String(id)});
+  try{
+    const result=await postJson("/api/admin/delete-customer",{customer_id:String(id)});
+    showDeleteDebug("✅ خروجی حذف نماینده", result, false);
+    alert("✅ نماینده حذف شد.");
+    await loadCustomers();
+  }catch(e){
+    showDeleteDebug("❌ خروجی خطای حذف نماینده", e?.message||e, true);
+    alert("❌ حذف نماینده انجام نشد:\n"+(e?.message||"خطای نامشخص"));
+  }
+}
 async function updateCustomerUser(id){const p={customer_id:String(id),first_name:adminVisibleElement("ufirst-"+id)?.value.trim()||"",last_name:adminVisibleElement("ulast-"+id)?.value.trim()||"",username:adminVisibleElement("uuser-"+id)?.value.trim()||"",status:adminVisibleElement("ustatus-"+id)?.value||"active"};const pass=adminVisibleElement("upass-"+id)?.value||"";if(pass)p.password=pass;try{await postJson("/api/admin/customer-profile",p);alert("✅ اطلاعات نماینده ذخیره شد.");await loadCustomers();}catch(e){alert("❌ ویرایش نماینده انجام نشد:\n"+e.message);}}
 
 /* =========================================================
@@ -1048,6 +1067,7 @@ function renderAdminAccount() {
 ========================================================= */
 
 function renderAdminProductList(list, container){
+  const allowDelete = container && container.id === "adminProducts";
   if(!container) return;
   container.innerHTML = list.map(product => {
       const id = Number(product.id);
@@ -1085,7 +1105,10 @@ function renderAdminProductList(list, container){
             محصول فعال و قابل نمایش برای مشتریان
           </label>
 
-          <div class="admin-product-buttons"><button onclick="saveProduct(${id})">💾 ذخیره اطلاعات محصول</button><button class="admin-danger" onclick="deleteProduct(${id})">🗑️ حذف محصول</button></div>
+          <div class="admin-product-buttons">
+            <button onclick="saveProduct(${id})">💾 ذخیره اطلاعات محصول</button>
+            ${allowDelete ? `<button class="admin-danger" onclick="deleteProduct(${id})">🗑️ حذف محصول</button>` : ""}
+          </div>
 
           <div class="admin-media-grid">
             <div class="admin-media-box">
@@ -1342,9 +1365,27 @@ async function loadCustomers() {
   } catch (error) {
     console.error("Customers:", error);
   }
-  const userBoxes=[$("adminUsers"),$("adminUsersDelete")].filter(Boolean);
-  if(userBoxes.length){
-    try{const r=await postJson("/api/admin/customers",{});const cs=Array.isArray(r?.customers)?r.customers:(Array.isArray(r)?r:[]);const html=cs.length?cs.map(c=>{const id=String(c.id);return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button onclick="updateCustomerUser(${JSON.stringify(id)})">💾 ذخیره</button><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف</button></div>`}).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;userBoxes.forEach(box=>box.innerHTML=html);}catch(e){userBoxes.forEach(box=>box.innerHTML=`<div class="message error">خطا در دریافت کاربران.</div>`);}}
+  const editBox=$("adminUsers"), deleteBox=$("adminUsersDelete");
+  if(editBox || deleteBox){
+    try{
+      const r=await postJson("/api/admin/customers",{});
+      const cs=Array.isArray(r?.customers)?r.customers:(Array.isArray(r)?r:[]);
+      const editHtml=cs.length?cs.map(c=>{
+        const id=String(c.id);
+        return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button onclick="updateCustomerUser(${JSON.stringify(id)})">💾 ذخیره</button></div>`;
+      }).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
+      const deleteHtml=cs.length?cs.map(c=>{
+        const id=String(c.id);
+        const name=[c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "نماینده";
+        return `<div class="admin-user-row admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${escapeHtml(c.username?"@"+c.username:"")}</small></div><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف نماینده</button></div>`;
+      }).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
+      if(editBox) editBox.innerHTML=editHtml;
+      if(deleteBox) deleteBox.innerHTML=deleteHtml;
+    }catch(e){
+      if(editBox) editBox.innerHTML=`<div class="message error">خطا در دریافت کاربران.</div>`;
+      if(deleteBox) deleteBox.innerHTML=`<div class="message error">خطا در دریافت کاربران.</div>`;
+    }
+  }
 }
 
 async function loadCustomerPrices(customerId) {

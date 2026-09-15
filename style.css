@@ -1653,3 +1653,68 @@ footer span{font-size:12px}
   .admin-create-product .admin-primary{min-height:56px!important;font-size:17px!important}
   .admin-delete-customer-button{width:100%!important;min-height:48px!important}
 }
+
+/* ===== اصلاح نهایی پنل مدیریت ===== */
+.admin-card{
+  direction:ltr!important;
+  background:#fff9c9!important;
+  padding-top:42px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  scrollbar-gutter:stable!important;
+}
+.admin-card > *{direction:rtl;}
+.admin-card .close{
+  right:10px!important;
+  left:auto!important;
+  top:10px!important;
+  z-index:20!important;
+}
+.admin-header{
+  direction:rtl!important;
+  padding-top:8px!important;
+  margin-top:2px!important;
+}
+.admin-header > div:first-child{
+  margin-top:6px!important;
+}
+.admin-account-top{
+  direction:ltr!important;
+  text-align:left!important;
+  order:2!important;
+  margin-left:auto!important;
+  margin-right:0!important;
+  background:#fff!important;
+}
+.admin-account-top strong{color:#374151!important;}
+.admin-account-top .admin-account-name{}
+.admin-save-customer-button{
+  display:block!important;
+  width:100%!important;
+  min-height:50px!important;
+  margin-top:10px!important;
+  border:1px solid #86efac!important;
+  border-radius:11px!important;
+  background:#ecfdf5!important;
+  color:#166534!important;
+  font:inherit!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+}
+.admin-save-customer-button:disabled{opacity:.7!important;cursor:wait!important;}
+@media(max-width:700px){
+  .admin-card{padding-top:48px!important;max-height:calc(100vh - 12px)!important;}
+  .admin-header{gap:8px!important;padding-top:4px!important;}
+  .admin-account-top{min-width:125px!important;max-width:175px!important;}
+}
+
+/* ===== اصلاح نهایی پنل مدیریت ===== */
+.admin-card{direction:ltr!important;background:#fff9c9!important;padding-top:42px!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-gutter:stable!important;}
+.admin-card > *{direction:rtl;}
+.admin-card .close{right:10px!important;left:auto!important;top:10px!important;z-index:20!important;}
+.admin-header{direction:rtl!important;padding-top:8px!important;margin-top:2px!important;}
+.admin-header > div:first-child{margin-top:6px!important;}
+.admin-account-top{direction:ltr!important;text-align:left!important;order:2!important;margin-left:auto!important;margin-right:0!important;background:#fff!important;}
+.admin-save-customer-button{display:block!important;width:100%!important;min-height:50px!important;margin-top:10px!important;border:1px solid #86efac!important;border-radius:11px!important;background:#ecfdf5!important;color:#166534!important;font:inherit!important;font-weight:900!important;cursor:pointer!important;}
+.admin-save-customer-button:disabled{opacity:.7!important;cursor:wait!important;}
+@media(max-width:700px){.admin-card{padding-top:48px!important;max-height:calc(100vh - 12px)!important;}.admin-header{gap:8px!important;padding-top:4px!important;}.admin-account-top{min-width:125px!important;max-width:175px!important;}}

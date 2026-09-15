@@ -297,7 +297,28 @@ async function deleteCustomerUser(id){
   return false;
 }
 
-async function updateCustomerUser(id){const p={customer_id:String(id),first_name:adminVisibleElement("ufirst-"+id)?.value.trim()||"",last_name:adminVisibleElement("ulast-"+id)?.value.trim()||"",username:adminVisibleElement("uuser-"+id)?.value.trim()||"",status:adminVisibleElement("ustatus-"+id)?.value||"active"};const pass=adminVisibleElement("upass-"+id)?.value||"";if(pass)p.password=pass;try{await postJson("/api/admin/customer-profile",p);alert("✅ اطلاعات نماینده ذخیره شد.");await loadCustomers();}catch(e){alert("❌ ویرایش نماینده انجام نشد:\n"+e.message);}}
+async function updateCustomerUser(id){
+  const cid=String(id||"").trim();
+  if(!cid){alert("❌ شناسه نماینده مشخص نیست.");return false;}
+  const first=adminVisibleElement("ufirst-"+cid);
+  const last=adminVisibleElement("ulast-"+cid);
+  const user=adminVisibleElement("uuser-"+cid);
+  const status=adminVisibleElement("ustatus-"+cid);
+  const passEl=adminVisibleElement("upass-"+cid);
+  const p={customer_id:cid,first_name:first?.value.trim()||"",last_name:last?.value.trim()||"",username:user?.value.trim()||"",status:status?.value||"active"};
+  const pass=passEl?.value||"";
+  if(pass)p.password=pass;
+  try{
+    const result=await postJson("/api/admin/customer-profile",p);
+    if(!result || result.ok===false) throw new Error(result?.details||result?.error||"سرور تغییرات را تأیید نکرد.");
+    alert("✅ اطلاعات نماینده ذخیره شد.");
+    await loadCustomers();
+  }catch(e){
+    console.error("Update customer:",e);
+    alert("❌ ویرایش نماینده انجام نشد:\n"+(e?.message||String(e)));
+  }
+  return false;
+}
 
 /* =========================================================
    AUTHENTICATION
@@ -1043,7 +1064,7 @@ function renderAdminAccount() {
 
   el.innerHTML = `
     <div>
-      <strong>نام:</strong>
+      <strong>Name:</strong>
       ${escapeHtml(name)}
     </div>
 
@@ -1059,7 +1080,7 @@ function renderAdminAccount() {
     }
 
     <div>
-      <strong>نقش:</strong>
+      <strong>Role:</strong>
       ${escapeHtml(isAdmin ? "admin" : (currentUser.role || "customer"))}
     </div>
   `;
@@ -1372,7 +1393,7 @@ async function loadCustomers() {
       const cs=Array.isArray(r?.customers)?r.customers:(Array.isArray(r)?r:[]);
       const editHtml=cs.length?cs.map(c=>{
         const id=String(c.id);
-        return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button onclick="updateCustomerUser(${JSON.stringify(id)})">💾 ذخیره</button></div>`;
+        return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button type="button" class="admin-save-customer-button" data-update-customer="${escapeHtml(id)}">💾 ذخیره</button></div>`;
       }).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
       const deleteHtml=cs.length?cs.map(c=>{
         const id=String(c.id);
@@ -1794,12 +1815,22 @@ function searchAdminItems(inputId, containerId) {
 
 // حذف نماینده با event delegation؛ مستقل از onclick های HTML و مقاوم در برابر رندر مجدد
 document.addEventListener("click", function(event){
-  const button = event.target.closest("[data-delete-customer]");
-  if (!button) return;
-  event.preventDefault();
-  event.stopPropagation();
-  const id = button.getAttribute("data-delete-customer") || "";
-  deleteCustomerUser(id);
+  const deleteButton = event.target.closest("[data-delete-customer]");
+  if (deleteButton) {
+    event.preventDefault(); event.stopPropagation();
+    deleteCustomerUser(deleteButton.getAttribute("data-delete-customer") || "");
+    return;
+  }
+  const saveButton = event.target.closest("[data-update-customer]");
+  if (saveButton) {
+    event.preventDefault(); event.stopPropagation();
+    const id = saveButton.getAttribute("data-update-customer") || "";
+    saveButton.disabled = true;
+    saveButton.textContent = "⏳ در حال ذخیره...";
+    updateCustomerUser(id).finally(() => {
+      if (saveButton.isConnected) { saveButton.disabled=false; saveButton.textContent="💾 ذخیره"; }
+    });
+  }
 }, true);
 
 window.showAdminSection = showAdminSection;

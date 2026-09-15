@@ -191,8 +191,11 @@ async function apiRequest(path, options = {}) {
       data.error
         ? data.error
         : `HTTP ${response.status}`;
-
-    throw new Error(message);
+    const details =
+      data && typeof data === "object" && data.details
+        ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}`
+        : "";
+    throw new Error(message + details);
   }
 
   return data;
@@ -254,23 +257,24 @@ async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
 async function createProduct(){
   const fa = $("newProductNameFa")?.value.trim() || "";
-  const toNumber = v => { const raw=String(v??"").trim().replace(/[٬,]/g,"").replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)); return raw===""?null:Number(raw); };
-  const p={name_fa:fa,name_en:$("newProductNameEn")?.value.trim()||"",category:$("newProductCategory")?.value.trim()||"",package:$("newProductPackage")?.value.trim()||"",maker:$("newProductMaker")?.value.trim()||"",base_price:toNumber($("newProductPrice")?.value)};
+  const toNumber = v => {
+    const raw=String(v??"").trim().replace(/[٬,\s]/g,"").replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
+    return raw==="" ? null : Number(raw);
+  };
+  const p={name_fa:fa,name_en:$("newProductNameEn")?.value.trim()||"",category:$("newProductCategory")?.value.trim()||"",package:$("newProductPackage")?.value.trim()||"",maker:$("newProductMaker")?.value.trim()||"",base_price:toNumber($("newProductPrice")?.value),base_currency:"تومان",active:true};
   if(!p.name_fa){alert("نام فارسی محصول را وارد کنید.");return;}
   try{
-    await postJson("/api/admin/create-product",p);
+    const result=await postJson("/api/admin/create-product",p);
+    if(!result?.product?.id) throw new Error("سرور محصول جدید را ثبت نکرد.");
     alert("✅ محصول جدید ایجاد شد.");
     ["newProductNameFa","newProductNameEn","newProductCategory","newProductPackage","newProductMaker","newProductPrice"].forEach(id=>{if($(id))$(id).value=""});
     await loadProducts(); await loadAdminProducts();
-  }catch(e){
-    console.error("Create product:",e);
-    alert("❌ افزودن محصول انجام نشد:\n"+(e.message||"خطای نامشخص"));
-  }
+  }catch(e){console.error("Create product:",e);alert("❌ افزودن محصول انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
 async function deleteProduct(id){if(!confirm("آیا از حذف کامل این محصول مطمئن هستید؟"))return;try{await postJson("/api/admin/delete-product",{product_id:Number(id)});alert("✅ محصول حذف شد.");await loadProducts();await loadAdminProducts();}catch(e){alert("❌ حذف محصول انجام نشد:\n"+e.message);}}
 async function createCustomerUser(){const p={first_name:$("newUserFirstName")?.value.trim(),last_name:$("newUserLastName")?.value.trim(),username:$("newUserUsername")?.value.trim(),password:$("newUserPassword")?.value||""};try{await postJson("/api/admin/create-customer",p);alert("✅ نماینده اضافه شد.");["newUserFirstName","newUserLastName","newUserUsername","newUserPassword"].forEach(id=>{if($(id))$(id).value=""});await loadCustomers();}catch(e){alert("❌ افزودن نماینده انجام نشد:\n"+e.message);}}
 async function deleteCustomerUser(id){if(!confirm("آیا از حذف این نماینده مطمئن هستید؟"))return;try{await postJson("/api/admin/delete-customer",{customer_id:String(id)});alert("✅ نماینده حذف شد.");await loadCustomers();}catch(e){alert("❌ حذف نماینده انجام نشد:\n"+e.message);}}
-async function updateCustomerUser(id){const p={customer_id:String(id),first_name:$("ufirst-"+id)?.value.trim()||"",last_name:$("ulast-"+id)?.value.trim()||"",username:$("uuser-"+id)?.value.trim()||"",status:$("ustatus-"+id)?.value||"active"};const pass=$("upass-"+id)?.value||"";if(pass)p.password=pass;try{await postJson("/api/admin/customer-profile",p);alert("✅ اطلاعات نماینده ذخیره شد.");await loadCustomers();}catch(e){alert("❌ ویرایش نماینده انجام نشد:\n"+e.message);}}
+async function updateCustomerUser(id){const p={customer_id:String(id),first_name:adminVisibleElement("ufirst-"+id)?.value.trim()||"",last_name:adminVisibleElement("ulast-"+id)?.value.trim()||"",username:adminVisibleElement("uuser-"+id)?.value.trim()||"",status:adminVisibleElement("ustatus-"+id)?.value||"active"};const pass=adminVisibleElement("upass-"+id)?.value||"";if(pass)p.password=pass;try{await postJson("/api/admin/customer-profile",p);alert("✅ اطلاعات نماینده ذخیره شد.");await loadCustomers();}catch(e){alert("❌ ویرایش نماینده انجام نشد:\n"+e.message);}}
 
 /* =========================================================
    AUTHENTICATION
@@ -1043,17 +1047,9 @@ function renderAdminAccount() {
    ADMIN PRODUCTS
 ========================================================= */
 
-async function loadAdminProducts() {
-  const container = $("adminProducts");
-  if (!container) return;
-
-  try {
-    const result = await postJson("/api/admin/products", {});
-    const list = Array.isArray(result)
-      ? result
-      : (Array.isArray(result?.products) ? result.products : products);
-
-    container.innerHTML = list.map(product => {
+function renderAdminProductList(list, container){
+  if(!container) return;
+  container.innerHTML = list.map(product => {
       const id = Number(product.id);
       const nameFa = product.name_fa || "";
       const nameEn = product.name_en || "";
@@ -1073,7 +1069,7 @@ async function loadAdminProducts() {
             <label>دسته‌بندی<input id="category-${id}" value="${escapeHtml(product.category || "")}"></label>
             <label>بسته‌بندی<input id="package-${id}" value="${escapeHtml(product.package || "")}"></label>
             <label>سازنده<input id="maker-${id}" value="${escapeHtml(product.maker || "")}"></label>
-            <label>قیمت پایه<input type="number" id="price-${id}" value="${product.base_price ?? ""}" placeholder="قیمت پایه"></label>
+            <label>قیمت پایه<input type="text" inputmode="decimal" id="price-${id}" value="${product.base_price ?? ""}" placeholder="قیمت پایه"></label>
           </div>
 
           <div class="admin-edit-grid admin-edit-grid-wide">
@@ -1110,53 +1106,40 @@ async function loadAdminProducts() {
           </div>
         </div>`;
     }).join("");
+}
+
+async function loadAdminProducts() {
+  const containers = [$('adminProducts'), $('adminEditProducts')].filter(Boolean);
+  if (!containers.length) return;
+  try {
+    const result = await postJson('/api/admin/products', {});
+    const list = Array.isArray(result) ? result : (Array.isArray(result?.products) ? result.products : products);
+    containers.forEach(container => renderAdminProductList(list, container));
   } catch (error) {
-    console.error("Admin products:", error);
-    container.innerHTML = `<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>`;
+    console.error('Admin products:', error);
+    containers.forEach(container => { container.innerHTML = '<div class="message error">دریافت محصولات مدیریت انجام نشد.</div>'; });
   }
 }
 
+function adminVisibleElement(id){
+  const nodes=Array.from(document.querySelectorAll(`[id="${CSS.escape(id)}"]`));
+  return nodes.find(el=>{const sec=el.closest('[id^="adminSection-"]');return sec && !sec.classList.contains('hidden') && el.offsetParent!==null;}) || $(id);
+}
+function adminNumber(value){
+  const raw=String(value??'').trim().replace(/[٬,\s]/g,'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+  return raw===''?null:Number(raw);
+}
 async function saveProduct(productId) {
-  const id = Number(productId);
-  const value = id => $(id);
-  const benefitsText = value(`benefits-${id}`)?.value || "";
-  const benefits = benefitsText.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
-  const payload = {
-    product_id: id,
-    name_fa: value(`namefa-${id}`)?.value.trim() || "",
-    name_en: value(`nameen-${id}`)?.value.trim() || "",
-    category: value(`category-${id}`)?.value.trim() || "",
-    package: value(`package-${id}`)?.value.trim() || "",
-    maker: value(`maker-${id}`)?.value.trim() || "",
-    intro: value(`intro-${id}`)?.value || "",
-    composition: value(`composition-${id}`)?.value || "",
-    use_text: value(`use-${id}`)?.value || "",
-    warnings: value(`warnings-${id}`)?.value || "",
-    benefits,
-    active: !!value(`active-${id}`)?.checked,
-    base_price: (() => { const raw = (value(`price-${id}`)?.value || "").trim().replace(/[٬,]/g, "").replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)); return raw === "" ? null : Number(raw); })(),
-    base_currency: "تومان"
-  };
-
-  try {
-    const result = await postJson("/api/admin/update-product", payload);
-    // بلافاصله مقدار ذخیره‌شده را در صفحه اصلی هم اعمال کن
-    const saved = Array.isArray(result?.product) ? result.product[0] : (result?.product || null);
-    if (saved) {
-      const index = products.findIndex(p => Number(p.id) === id);
-      if (index >= 0) products[index] = { ...products[index], ...saved };
-      renderProducts();
-    }
-    alert("✅ اطلاعات محصول ذخیره شد.");
-    await loadProducts();
-    await loadAdminProducts();
-  } catch (error) {
-    alert("❌ خطا در ذخیره محصول:\n" + error.message);
-  }
+  const id=Number(productId);
+  const value=adminVisibleElement;
+  const benefitsText=value(`benefits-${id}`)?.value||'';
+  const payload={product_id:id,name_fa:value(`namefa-${id}`)?.value.trim()||'',name_en:value(`nameen-${id}`)?.value.trim()||'',category:value(`category-${id}`)?.value.trim()||'',package:value(`package-${id}`)?.value.trim()||'',maker:value(`maker-${id}`)?.value.trim()||'',intro:value(`intro-${id}`)?.value||'',composition:value(`composition-${id}`)?.value||'',use_text:value(`use-${id}`)?.value||'',warnings:value(`warnings-${id}`)?.value||'',benefits:benefitsText.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),active:!!value(`active-${id}`)?.checked,base_price:adminNumber(value(`price-${id}`)?.value),base_currency:'تومان'};
+  if(!payload.name_fa){alert('نام فارسی محصول نمی‌تواند خالی باشد.');return;}
+  try{const result=await postJson('/api/admin/update-product',payload);if(!result?.product?.length && !result?.product?.id)throw new Error('سرور رکورد محصول را تغییر نداد.');alert('✅ اطلاعات محصول ذخیره شد.');await loadProducts();await loadAdminProducts();}catch(error){console.error('Save product:',error);alert('❌ خطا در ذخیره محصول:\n'+error.message);}
 }
 
 async function uploadProductImage(productId) {
-  const input = $(`image-${Number(productId)}`);
+  const input = adminVisibleElement(`image-${Number(productId)}`);
   if (!input?.files?.length) return alert("لطفاً تصویر را انتخاب کنید.");
   const fd = new FormData();
   fd.append("product_id", String(productId));
@@ -1178,7 +1161,7 @@ async function removeProductImage(productId) {
 }
 
 async function uploadProductCatalog(productId) {
-  const input = $(`catalog-${Number(productId)}`);
+  const input = adminVisibleElement(`catalog-${Number(productId)}`);
   if (!input?.files?.length) return alert("لطفاً کاتالوگ را انتخاب کنید.");
   const fd = new FormData(); fd.append("product_id", String(productId)); fd.append("file", input.files[0], input.files[0].name);
   try {
@@ -1198,43 +1181,20 @@ async function removeProductCatalog(productId) {
 }
 
 async function updateProductPrice(productId) {
-  const input =
-    $(`price-${Number(productId)}`);
-
-  if (!input) return;
-
-  const value = input.value.trim();
-
+  const input = adminVisibleElement(`price-${Number(productId)}`);
+  if (!input) { alert("کادر قیمت محصول پیدا نشد."); return; }
+  const raw = String(input.value ?? "").trim();
+  const normalized = raw.replace(/[٬,\s]/g, "").replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+  const price = normalized === "" ? null : Number(normalized);
+  if (price !== null && !Number.isFinite(price)) { alert("قیمت واردشده معتبر نیست."); return; }
   try {
-    const result = await postJson(
-      "/api/admin/update-price",
-      {
-        product_id: Number(productId),
-        price:
-          value === ""
-            ? null
-            : Number(value),
-        currency: "تومان"
-      }
-    );
-
-    // مقدار برگشتی Worker را همان لحظه روی کارت محصول اعمال کن
-    const saved = Array.isArray(result?.product) ? result.product[0] : (result?.product || null);
-    if (saved) {
-      const index = products.findIndex(p => Number(p.id) === Number(productId));
-      if (index >= 0) products[index] = { ...products[index], ...saved };
-      renderProducts();
-    }
-
+    const result = await postJson("/api/admin/update-price", { product_id:Number(productId), price, currency:"تومان" });
+    if (!result?.product || (Array.isArray(result.product) && !result.product.length)) throw new Error("سرور قیمت را تغییر نداد.");
     alert("✅ قیمت ذخیره شد.");
     await loadProducts();
     await loadAdminProducts();
-
   } catch (error) {
-    alert(
-      "❌ خطا در ذخیره قیمت:\n" +
-      error.message
-    );
+    alert("❌ خطا در ذخیره قیمت:\n" + error.message);
   }
 }
 
@@ -1382,9 +1342,9 @@ async function loadCustomers() {
   } catch (error) {
     console.error("Customers:", error);
   }
-  const usersBox=$("adminUsers");
-  if(usersBox){
-    try{const r=await postJson("/api/admin/customers",{});const cs=Array.isArray(r?.customers)?r.customers:(Array.isArray(r)?r:[]);usersBox.innerHTML=cs.length?cs.map(c=>{const id=String(c.id);return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button onclick="updateCustomerUser(${JSON.stringify(id)})">💾 ذخیره</button><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف</button></div>`}).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;}catch(e){usersBox.innerHTML=`<div class="message error">خطا در دریافت کاربران.</div>`;}}
+  const userBoxes=[$("adminUsers"),$("adminUsersDelete")].filter(Boolean);
+  if(userBoxes.length){
+    try{const r=await postJson("/api/admin/customers",{});const cs=Array.isArray(r?.customers)?r.customers:(Array.isArray(r)?r:[]);const html=cs.length?cs.map(c=>{const id=String(c.id);return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button onclick="updateCustomerUser(${JSON.stringify(id)})">💾 ذخیره</button><button class="admin-danger" onclick="deleteCustomerUser(${JSON.stringify(id)})">🗑️ حذف</button></div>`}).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;userBoxes.forEach(box=>box.innerHTML=html);}catch(e){userBoxes.forEach(box=>box.innerHTML=`<div class="message error">خطا در دریافت کاربران.</div>`);}}
 }
 
 async function loadCustomerPrices(customerId) {
@@ -1433,14 +1393,12 @@ async function setCustomerPrice(
   customerId,
   productId
 ) {
-  const input =
-    $(
-      `customer-price-${Number(productId)}`
-    );
+  const input = adminVisibleElement(`customer-price-${Number(productId)}`);
 
   if (!input) return;
 
   const value = input.value.trim();
+  const normalized = value.replace(/[٬,\s]/g, "").replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
 
   try {
     await postJson(
@@ -1449,9 +1407,9 @@ async function setCustomerPrice(
         customer_id: customerId,
         product_id: Number(productId),
         price:
-          value === ""
+          normalized === ""
             ? null
-            : Number(value),
+            : Number(normalized),
         currency: "تومان"
       }
     );
@@ -1763,16 +1721,10 @@ async function showAdminSection(sectionName) {
   try {
     if (sectionName === "products" || sectionName === "edit-products") {
       await loadAdminProducts();
-      const source = $("adminProducts");
-      const editBox = $("adminEditProducts");
-      if (source && editBox) editBox.innerHTML = source.innerHTML;
     }
 
     if (sectionName === "customers" || sectionName === "edit-customers" || sectionName === "prices") {
       await loadCustomers();
-      const editBox = $("adminUsers");
-      const deleteBox = $("adminUsersDelete");
-      if (editBox && deleteBox) deleteBox.innerHTML = editBox.innerHTML;
     }
 
     if (sectionName === "requests") {

@@ -110,6 +110,11 @@
   </div>
 
 
+  <button id="cartButton" class="cart-floating-button" type="button" onclick="openCart()" aria-label="سبد خرید">
+    🛒
+    <span id="cartCount" class="cart-count empty">۰</span>
+  </button>
+
   <div
     id="account"
     class="account hidden"
@@ -321,13 +326,12 @@
 <!-- CART MODAL -->
 <div id="cartModal" class="modal hidden">
   <div class="modal-backdrop" onclick="closeCart()"></div>
-  <div class="modal-card cart-card">
-    <button class="close" onclick="closeCart()">×</button>
+  <div class="modal-card cart-modal-card">
+    <button class="close" type="button" onclick="closeCart()">×</button>
     <h2>🛒 سبد خرید</h2>
-    <p class="request-help">تعداد هر کالا را انتخاب کنید و مجموع سفارش را ببینید.</p>
     <div id="cartItems" class="cart-items"></div>
-    <div class="cart-total-box">مجموع کل: <strong id="cartTotal">۰ تومان</strong></div>
-    <button class="admin-primary request-submit" onclick="submitCartOrder()">📨 ثبت سفارش سبد خرید</button>
+    <div class="cart-total"><span>مجموع:</span><strong id="cartTotal">۰ تومان</strong></div>
+    <button type="button" class="admin-primary cart-submit" onclick="submitCartOrder()">📨 ثبت سفارش سبد خرید</button>
   </div>
 </div>
 
@@ -447,7 +451,6 @@
       <div class="admin-search-wrap"><input id="customerPriceSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر نماینده..." oninput="searchCustomerPriceCustomer()"></div>
       <label class="admin-select-label">انتخاب مشتری<select id="customerSelect"><option value="">انتخاب مشتری</option></select></label>
       <div id="customerInfo" class="customer-info hidden"></div>
-      <button id="resetCustomerPricesButton" type="button" class="admin-danger reset-customer-prices-button hidden" onclick="resetCustomerPrices($('#customerSelect').value)">↩️ برگرداندن تمام قیمت‌ها به قیمت عمومی</button>
       <div id="customerPrices" class="customer-prices"></div>
     </section>
 

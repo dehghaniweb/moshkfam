@@ -60,8 +60,7 @@ let activeCategory = "";
 let currentUser = null;
 let isAdmin = false;
 let selectedCustomer = null;
-let cart = {};
-const CART_KEY_PREFIX = "moshkfam_cart_";
+let cartItems = {};
 
 
 /* =========================================================
@@ -119,90 +118,68 @@ function formatDate(value) {
   }
 }
 
-function getPriceText(product) {
-  const publicPrice = product?.base_price;
-  const customPrice = product?.custom_price;
-  const hasPublic = publicPrice !== null && publicPrice !== undefined && publicPrice !== "" && Number.isFinite(Number(publicPrice));
-  const hasCustom = customPrice !== null && customPrice !== undefined && customPrice !== "" && Number.isFinite(Number(customPrice));
-  const different = hasPublic && hasCustom && Number(publicPrice) !== Number(customPrice);
-  const currency = escapeHtml(product?.base_currency || product?.custom_currency || "تومان");
-
-  if (different) {
-    return `
-      <div class="price price-with-custom">
-        <span class="public-price-old">${formatNumber(publicPrice)} ${currency}</span>
-        <span class="custom-price-current">${formatNumber(customPrice)} ${escapeHtml(product.custom_currency || product.base_currency || "تومان")}</span>
-      </div>`;
+function getEffectivePrice(product) {
+  if (product?.custom_price !== null && product?.custom_price !== undefined && product?.custom_price !== "") {
+    return Number(product.custom_price);
   }
-  if (hasPublic) return `<div class="price">${formatNumber(publicPrice)} ${currency}</div>`;
+  return (product?.base_price !== null && product?.base_price !== undefined && product?.base_price !== "") ? Number(product.base_price) : null;
+}
+
+function getPriceText(product) {
+  const publicPrice = Number(product?.base_price);
+  const customPrice = product?.custom_price !== null && product?.custom_price !== undefined && product?.custom_price !== "" ? Number(product.custom_price) : null;
+  const hasPublic = Number.isFinite(publicPrice);
+  const hasCustom = Number.isFinite(customPrice);
+  if (hasCustom && (!hasPublic || customPrice !== publicPrice)) {
+    return `<div class="price price-custom-wrap"><span class="public-price-old">${formatNumber(publicPrice)} ${escapeHtml(product.base_currency || "تومان")}</span><span class="custom-price-current">${formatNumber(customPrice)} ${escapeHtml(product.base_currency || "تومان")}</span></div>`;
+  }
+  if (hasPublic) return `<div class="price">${formatNumber(publicPrice)} ${escapeHtml(product.base_currency || "تومان")}</div>`;
   return `<div class="price private-price">برای اطلاع از قیمت تماس بگیرید.</div>`;
 }
 
-function effectiveProductPrice(product) {
-  const custom = Number(product?.custom_price);
-  if (Number.isFinite(custom) && custom >= 0) return custom;
-  const base = Number(product?.base_price);
-  return Number.isFinite(base) ? base : null;
+function cartStorageKey(){
+  const id = currentUser?.id || currentUser?.telegram_user_id || currentUser?.username || "guest";
+  return "moshkfam_cart_" + String(id);
 }
-
-function currentCartKey() {
-  const id = currentUser?.id || currentUser?.telegram_user_id || currentUser?.username;
-  return id ? CART_KEY_PREFIX + String(id) : "";
-}
-function loadCart() {
-  const key=currentCartKey();
-  if (!key) { cart={}; return; }
-  try { cart=JSON.parse(localStorage.getItem(key)||"{}"); } catch { cart={}; }
-}
-function saveCart() {
-  const key=currentCartKey();
-  if (!key) return;
-  try { localStorage.setItem(key, JSON.stringify(cart)); } catch {}
-}
-function cartCount() { return Object.values(cart).reduce((sum,item)=>sum+Number(item.qty||0),0); }
-function cartTotal() { return Object.values(cart).reduce((sum,item)=>sum+(Number(item.price||0)*Number(item.qty||0)),0); }
-function addToCart(productId, qty=1) {
-  if (!currentUser) { alert("لطفاً ابتدا وارد حساب کاربری شوید."); return; }
+function loadCart(){ try { cartItems = JSON.parse(localStorage.getItem(cartStorageKey()) || "{}"); } catch { cartItems = {}; } updateCartBadge(); }
+function saveCart(){ try { localStorage.setItem(cartStorageKey(), JSON.stringify(cartItems)); } catch {} updateCartBadge(); }
+function updateCartBadge(){ const badge=$("cartCount"); if(!badge)return; const n=Object.values(cartItems).reduce((a,x)=>a+(Number(x.quantity)||0),0); badge.textContent=formatNumber(n); badge.classList.toggle("empty", n===0); }
+function addToCart(productId,event){
+  if(event){ event.preventDefault(); event.stopPropagation(); }
+  if(!currentUser){ appAlert("⚠️ ابتدا وارد حساب کاربری خود شوید."); return; }
   const product=products.find(p=>Number(p.id)===Number(productId));
-  if (!product) return;
-  const price=effectiveProductPrice(product);
-  if (price===null) { alert("برای این محصول هنوز قیمت ثبت نشده است."); return; }
-  const key=String(product.id), old=cart[key];
-  cart[key]={product_id:Number(product.id),name_fa:product.name_fa||product.name_en||"محصول",price,currency:product.custom_currency||product.base_currency||"تومان",qty:Math.max(1,Number(old?.qty||0)+Number(qty||1))};
-  saveCart(); renderCart(); updateCartButton();
+  if(!product){ appAlert("❌ محصول پیدا نشد."); return; }
+  const price=getEffectivePrice(product);
+  if(!Number.isFinite(price)){ appAlert("⚠️ این محصول هنوز قیمت مشخصی ندارد."); return; }
+  const key=String(productId);
+  if(!cartItems[key]) cartItems[key]={productId:Number(productId),quantity:0};
+  cartItems[key].quantity++;
+  saveCart();
+  appAlert("✅ محصول به سبد خرید اضافه شد.");
 }
-function changeCartQty(productId, delta) {
-  const key=String(productId); if (!cart[key]) return;
-  cart[key].qty=Math.max(0,Number(cart[key].qty||0)+Number(delta));
-  if (!cart[key].qty) delete cart[key];
-  saveCart(); renderCart(); updateCartButton();
-}
-function removeCartItem(productId) { delete cart[String(productId)]; saveCart(); renderCart(); updateCartButton(); }
-function updateCartButton() {
-  const b=$("cartButton"); if(!b) return; b.textContent=`🛒 سبد خرید${cartCount()?` (${formatNumber(cartCount())})`:""}`;
-}
-function openCart() { if(!currentUser){alert("لطفاً ابتدا وارد حساب کاربری شوید.");return;} loadCart(); renderCart(); $("cartModal")?.classList.remove("hidden"); }
-function closeCart() { $("cartModal")?.classList.add("hidden"); }
-function renderCart() {
-  const c=$("cartItems"), total=$("cartTotal"); if(!c||!total) return;
-  const entries=Object.values(cart);
-  if(!entries.length){c.innerHTML='<div class="message">سبد خرید شما خالی است.</div>';total.textContent="۰ تومان";return;}
-  c.innerHTML=entries.map(item=>`<div class="cart-row"><div class="cart-row-main"><strong>${escapeHtml(item.name_fa)}</strong><span>${formatNumber(item.price)} ${escapeHtml(item.currency)}</span></div><div class="cart-controls"><button onclick="changeCartQty(${item.product_id},-1)">−</button><b>${formatNumber(item.qty)}</b><button onclick="changeCartQty(${item.product_id},1)">+</button><button class="cart-remove" onclick="removeCartItem(${item.product_id})">🗑️</button></div><div class="cart-line-total">${formatNumber(item.price*item.qty)} ${escapeHtml(item.currency)}</div></div>`).join("");
-  total.textContent=`${formatNumber(cartTotal())} تومان`;
+function changeCartQty(productId,delta){ const key=String(productId); if(!cartItems[key])return; cartItems[key].quantity=Math.max(0,(Number(cartItems[key].quantity)||0)+delta); if(cartItems[key].quantity===0)delete cartItems[key]; saveCart(); renderCart(); }
+function removeFromCart(productId){ delete cartItems[String(productId)]; saveCart(); renderCart(); appAlert("✅ کالا از سبد خرید حذف شد."); }
+function openCart(){ if(!currentUser){appAlert("⚠️ ابتدا وارد حساب کاربری خود شوید.");return;} loadCart(); renderCart(); $("cartModal")?.classList.remove("hidden"); }
+function closeCart(){ $("cartModal")?.classList.add("hidden"); }
+function renderCart(){
+  const box=$("cartItems"); const totalEl=$("cartTotal"); if(!box)return;
+  const rows=Object.values(cartItems).filter(x=>(Number(x.quantity)||0)>0).map(item=>{
+    const p=products.find(x=>Number(x.id)===Number(item.productId)); if(!p)return "";
+    const price=getEffectivePrice(p); const total=price*(Number(item.quantity)||0);
+    return `<div class="cart-row"><div class="cart-row-info"><strong>${escapeHtml(p.name_fa||p.name_en||"محصول")}</strong><span>${formatNumber(price)} ${escapeHtml(p.base_currency||"تومان")}</span></div><div class="cart-qty"><button type="button" onclick="changeCartQty(${Number(p.id)},-1)">−</button><b>${formatNumber(item.quantity)}</b><button type="button" onclick="changeCartQty(${Number(p.id)},1)">+</button></div><strong class="cart-line-total">${formatNumber(total)} تومان</strong><button type="button" class="cart-remove" onclick="removeFromCart(${Number(p.id)})">🗑️</button></div>`;
+  }).filter(Boolean);
+  box.innerHTML=rows.length?rows.join(""):"<div class=\"message\">سبد خرید خالی است.</div>";
+  const total=Object.values(cartItems).reduce((sum,item)=>{const p=products.find(x=>Number(x.id)===Number(item.productId));const price=getEffectivePrice(p);return sum+(Number.isFinite(price)?price*(Number(item.quantity)||0):0)},0);
+  if(totalEl) totalEl.textContent=formatNumber(total)+" تومان";
 }
 async function submitCartOrder(){
-  const entries=Object.values(cart); if(!entries.length){alert("سبد خرید خالی است.");return;}
-  const lines=entries.map(x=>`• ${x.name_fa} — تعداد: ${x.qty} — قیمت واحد: ${formatNumber(x.price)} ${x.currency} — جمع: ${formatNumber(x.price*x.qty)} ${x.currency}`);
-  const text=`🛒 سفارش سبد خرید\n\n${lines.join("\n")}\n\n💰 مجموع: ${formatNumber(cartTotal())} تومان`;
-  try { await postJson("/api/customer/request",{type:"order",text}); cart={}; saveCart(); renderCart(); updateCartButton(); closeCart(); alert("✅ سفارش سبد خرید با موفقیت ثبت شد."); } catch(e){alert("❌ ثبت سفارش انجام نشد:\n"+(e.message||"خطا"));}
+  if(!currentUser){appAlert("⚠️ ابتدا وارد حساب کاربری شوید.");return;}
+  const entries=Object.values(cartItems).filter(x=>(Number(x.quantity)||0)>0); if(!entries.length){appAlert("⚠️ سبد خرید خالی است.");return;}
+  const lines=entries.map(item=>{const p=products.find(x=>Number(x.id)===Number(item.productId));const price=getEffectivePrice(p);return `${p?.name_fa||p?.name_en||"محصول"} × ${item.quantity} = ${formatNumber(price*(Number(item.quantity)||0))} تومان`;});
+  const total=entries.reduce((sum,item)=>{const p=products.find(x=>Number(x.id)===Number(item.productId));const price=getEffectivePrice(p);return sum+(Number.isFinite(price)?price*(Number(item.quantity)||0):0)},0);
+  try{ await postJson("/api/customer/request",{type:"order",text:"🛒 سفارش سبد خرید\n"+lines.join("\n")+`\nمجموع: ${formatNumber(total)} تومان`}); cartItems={}; saveCart(); renderCart(); closeCart(); appAlert("✅ سفارش سبد خرید با موفقیت ثبت شد."); }catch(e){appAlert("❌ ثبت سفارش انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
-function formatPriceInputValue(value){
-  const raw=String(value??"").replace(/[٬,\s']/g,"").replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
-  if(!raw) return ""; const digits=raw.replace(/\D/g,""); return digits.replace(/\B(?=(\d{3})+(?!\d))/g,"'");
-}
-function setupPriceInputFormatting(root=document){
-  root.querySelectorAll('input[data-price-input]').forEach(input=>{ if(input.dataset.priceBound) return; input.dataset.priceBound="1"; input.value=formatPriceInputValue(input.value); input.addEventListener("input",()=>{const pos=input.selectionStart; const before=input.value.slice(0,pos); input.value=formatPriceInputValue(input.value); input.setSelectionRange(input.value.length,input.value.length);}); });
-}
+
 
 
 /* =========================================================
@@ -314,10 +291,10 @@ async function loginWithUsernamePassword(){
   const username=$("loginUsername")?.value.trim()||"", password=$("loginPassword")?.value||"", msg=$("loginMessage");
   if(!username||!password){if(msg)msg.textContent="نام کاربری و رمز عبور را وارد کنید.";return;}
   if(msg)msg.textContent="در حال ورود...";
-  try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=false;if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();await loadProducts();}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
+  try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=false;if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();loadCart();await loadProducts();}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
 }
-async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=false;updateAccountUI();}else setStoredToken("");}catch{setStoredToken("");}}
-async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;updateAccountUI();await loadProducts();}
+async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=false;updateAccountUI();loadCart();}else setStoredToken("");}catch{setStoredToken("");}}
+async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;cartItems={};updateCartBadge();updateAccountUI();await loadProducts();}
 async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
 async function createProduct(){
@@ -450,8 +427,6 @@ function updateAccountUI() {
   const loginBox = $("loginBox");
   const logoutButton = $("logoutButton");
 
-  loadCart();
-  updateCartButton();
   if (!currentUser) {
     if(loginBox) loginBox.classList.remove("hidden");
     if(logoutButton) logoutButton.classList.add("hidden");
@@ -462,8 +437,7 @@ function updateAccountUI() {
     if (adminButton) {
       adminButton.classList.add("hidden");
     }
-    const cartButton=$("cartButton");
-    if(cartButton) cartButton.classList.add("hidden");
+
     return;
   }
 
@@ -514,10 +488,12 @@ function updateAccountUI() {
   }
 
   if (customerButton) {
-    if (isAdmin) customerButton.classList.add("hidden"); else customerButton.classList.remove("hidden");
+    if (isAdmin) {
+      customerButton.classList.add("hidden");
+    } else {
+      customerButton.classList.remove("hidden");
+    }
   }
-  const cartButton=$("cartButton");
-  if(cartButton){ if(isAdmin) cartButton.classList.add("hidden"); else cartButton.classList.remove("hidden"); updateCartButton(); }
 }
 
 
@@ -795,12 +771,12 @@ function renderProductCard(product) {
         }
 
         ${getPriceText(product)}
-        ${currentUser && effectiveProductPrice(product)!==null ? `<button class="add-cart-button" onclick="event.stopPropagation(); addToCart(${Number(id)},1)">🛒 افزودن به سبد</button>` : ""}
+
+        <button type="button" class="product-cart-button" onclick="addToCart(${Number(id)}, event)">🛒 افزودن به سبد</button>
 
       </div>
     </article>
   `;
-  return html;
 }
 
 
@@ -932,7 +908,6 @@ function openProduct(id) {
       }
 
       ${getPriceText(product)}
-      ${currentUser && effectiveProductPrice(product)!==null ? `<button class="add-cart-button detail-add-cart" onclick="addToCart(${Number(product.id)},1)">🛒 افزودن به سبد خرید</button>` : ""}
 
       ${
         product.category
@@ -1537,7 +1512,7 @@ async function loadCustomers() {
       const deleteHtml=cs.length?cs.map(c=>{
         const id=String(c.id);
         const name=[c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "نماینده";
-        return `<div class="admin-user-row admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${escapeHtml(c.username?"@"+c.username:"")}</small></div><button type="button" class="admin-danger admin-delete-customer-button" data-delete-customer="${escapeHtml(id)}">🗑️ حذف نماینده</button></div>`;
+        return `<div class="admin-user-row admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${escapeHtml(c.username?c.username:"")}</small></div><button type="button" class="admin-danger admin-delete-customer-button" data-delete-customer="${escapeHtml(id)}">🗑️ حذف نماینده</button></div>`;
       }).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
       if(editBox) editBox.innerHTML=editHtml;
       if(deleteBox) deleteBox.innerHTML=deleteHtml;
@@ -1568,7 +1543,6 @@ async function loadCustomerPrices(customerId) {
         ${customer.telegram_user_id ? `<span> | Telegram ID: ${escapeHtml(customer.telegram_user_id)}</span>` : ""}
       ` : "";
       info.classList.remove("hidden");
-      const resetBtn=$("resetCustomerPricesButton"); if(resetBtn) resetBtn.classList.remove("hidden");
     }
 
     if (!products.length) {
@@ -1576,20 +1550,30 @@ async function loadCustomerPrices(customerId) {
       return;
     }
 
-    container.innerHTML = products.map(product => {
+    container.innerHTML = `<div class="customer-price-tools"><button type="button" class="admin-danger" onclick="resetCustomerPrices('${escapeHtml(customerId)}')">↩️ برگرداندن تمام قیمت‌ها به قیمت عمومی</button><span>با این کار همه قیمت‌های اختصاصی این مشتری حذف می‌شود.</span></div>` + products.map(product => {
       const pid = Number(product.id);
       const item = priceMap.get(pid);
       return `
         <div class="customer-price-row">
-          <div><strong>${escapeHtml(product.name_fa || product.name_en || `محصول ${pid}`)}</strong><small class="customer-price-public">قیمت عمومی: ${product.base_price!=null?formatNumber(product.base_price)+" "+escapeHtml(product.base_currency||"تومان"):"ثبت نشده"}</small></div>
-          <input type="text" inputmode="numeric" data-price-input id="customer-price-${pid}" value="${item?.price ?? ""}" placeholder="قیمت اختصاصی (خالی = حذف)">
+          <div>${escapeHtml(product.name_fa || product.name_en || `محصول ${pid}`)}</div>
+          <input type="text" inputmode="numeric" id="customer-price-${pid}" value="${item?.price ?? ""}" placeholder="قیمت اختصاصی (خالی = حذف)" oninput="formatCustomerPriceInput(this)">
           <button onclick="setCustomerPrice('${escapeHtml(customerId)}', ${pid})">ذخیره</button>
         </div>`;
     }).join("");
-    setupPriceInputFormatting(container);
   } catch (error) {
     container.innerHTML = `<div class="message error">خطا در دریافت قیمت مشتری.</div>`;
   }
+}
+
+function formatCustomerPriceInput(input){
+  const digits=String(input.value||"").replace(/[^0-9۰-۹٠-٩]/g,"").replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
+  if(!digits){input.value="";return;}
+  input.value=digits.replace(/\B(?=(\d{3})+(?!\d))/g,"'");
+}
+async function resetCustomerPrices(customerId){
+  if(!(await appConfirm("آیا تمام قیمت‌های اختصاصی این مشتری به قیمت عمومی برگردانده شود؟")))return;
+  try{const r=await postJson("/api/admin/reset-customer-prices",{customer_id:customerId}); if(!r?.ok)throw new Error(r?.error||"سرور تأیید نکرد."); await loadCustomerPrices(customerId); appAlert("✅ تمام قیمت‌های این مشتری به قیمت عمومی برگشت داده شد.");}
+  catch(e){appAlert("❌ بازگردانی قیمت‌ها انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
 
 async function setCustomerPrice(
@@ -1601,7 +1585,7 @@ async function setCustomerPrice(
   if (!input) return;
 
   const value = input.value.trim();
-  const normalized = value.replace(/[٬,\s']/g, "").replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+  const normalized = value.replace(/[٬,\s]/g, "").replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
 
   try {
     await postJson(
@@ -1627,18 +1611,6 @@ async function setCustomerPrice(
       error.message
     );
   }
-}
-
-
-async function resetCustomerPrices(customerId){
-  if(!customerId) return;
-  if(!(await appConfirm("تمام قیمت‌های اختصاصی این مشتری حذف و قیمت‌های عمومی فعال شود؟"))) return;
-  try{
-    await postJson("/api/admin/reset-customer-prices",{customer_id:customerId});
-    alert("✅ تمام قیمت‌های این مشتری به قیمت عمومی برگشت.");
-    await loadCustomerPrices(customerId);
-    await loadProducts();
-  }catch(e){alert("❌ بازگردانی قیمت‌ها انجام نشد:\n"+(e.message||"خطا"));}
 }
 
 
@@ -1727,7 +1699,7 @@ async function loadAdminRequests() {
           <select onchange="updateCustomerRequestStatus(${Number(r.id)}, this.value)">
             ${Object.entries(statusLabels).map(([key,label]) => `<option value="${key}" ${r.status===key?"selected":""}>${label}</option>`).join("")}
           </select>
-          <button type="button" class="admin-danger admin-request-delete" onclick="deleteCustomerRequest(${Number(r.id)})">🗑️ حذف</button>
+          <button type="button" class="admin-danger" onclick="deleteCustomerRequest(${Number(r.id)})">🗑️ حذف</button>
         </div>
       </div>`;
     }).join("");
@@ -1737,9 +1709,9 @@ async function loadAdminRequests() {
 }
 
 async function deleteCustomerRequest(id){
-  if(!(await appConfirm("این سفارش/یادداشت حذف شود؟"))) return;
-  try{ await postJson("/api/admin/delete-customer-request",{id:Number(id)}); await loadAdminRequests(); alert("✅ حذف شد."); }
-  catch(e){alert("❌ حذف انجام نشد:\n"+(e.message||"خطا"));}
+  if(!(await appConfirm("آیا این سفارش/یادداشت حذف شود؟"))) return;
+  try{ const r=await postJson("/api/admin/delete-request",{id:Number(id)}); if(!r?.ok)throw new Error(r?.error||"سرور تأیید نکرد."); await loadAdminRequests(); appAlert("✅ مورد با موفقیت حذف شد."); }
+  catch(e){ appAlert("❌ حذف انجام نشد:\n"+(e.message||"خطای نامشخص")); }
 }
 
 async function updateCustomerRequestStatus(id, status) {
@@ -1791,9 +1763,9 @@ function setupEvents() {
     }
 
     const customerButton = $("customerButton");
-    if (customerButton) { customerButton.addEventListener("click", openCustomerRequest); }
-    const cartButton=$("cartButton");
-    if(cartButton) cartButton.addEventListener("click",openCart);
+    if (customerButton) {
+      customerButton.addEventListener("click", openCustomerRequest);
+    }
 
     const customerSelect =
       $("customerSelect");
@@ -1822,8 +1794,9 @@ function setupEvents() {
               info.classList.add("hidden");
             }
 
-            if (prices) prices.innerHTML = "";
-            const resetBtn=$("resetCustomerPricesButton"); if(resetBtn) resetBtn.classList.add("hidden");
+            if (prices) {
+              prices.innerHTML = "";
+            }
           }
         }
       );
@@ -1906,6 +1879,7 @@ function finishBootLoader() {
   try {
     await loadCurrentUser();
     await loadWebSession();
+    loadCart();
   } catch (error) {
     console.error(
       "User init:",
@@ -1916,7 +1890,6 @@ function finishBootLoader() {
   try {
     await loadSiteSettings();
     await loadProducts();
-    loadCart(); updateCartButton();
   } finally {
     finishBootLoader();
   }
@@ -1931,6 +1904,16 @@ function finishBootLoader() {
 
 window.openProduct =
   openProduct;
+window.openCart=openCart;
+window.closeCart=closeCart;
+window.addToCart=addToCart;
+window.changeCartQty=changeCartQty;
+window.removeFromCart=removeFromCart;
+window.submitCartOrder=submitCartOrder;
+window.setCustomerPrice=setCustomerPrice;
+window.resetCustomerPrices=resetCustomerPrices;
+window.formatCustomerPriceInput=formatCustomerPriceInput;
+window.deleteCustomerRequest=deleteCustomerRequest;
 
 window.closeModal =
   closeModal;
@@ -1938,7 +1921,6 @@ window.openCatalog = openCatalog;
 window.closeCatalog = closeCatalog;
 window.appDialogOk = appDialogOk;
 window.appDialogCancel = appDialogCancel;
-window.openCart=openCart; window.closeCart=closeCart; window.addToCart=addToCart; window.changeCartQty=changeCartQty; window.removeCartItem=removeCartItem; window.submitCartOrder=submitCartOrder; window.deleteCustomerRequest=deleteCustomerRequest; window.resetCustomerPrices=resetCustomerPrices;
 
 
 /* =========================================================

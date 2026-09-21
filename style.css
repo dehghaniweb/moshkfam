@@ -1737,27 +1737,27 @@ footer span{font-size:12px}
 .app-dialog-cancel{background:#f3f4f6;color:#374151}
 .app-dialog-cancel.hidden{display:none}
 
-
-/* ===== MOSHKFAM CART + CUSTOMER PRICING V2 ===== */
-.price-with-custom{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.public-price-old{color:#6b7280;text-decoration:line-through;text-decoration-color:#dc2626;text-decoration-thickness:1px;text-decoration-line:line-through}
+/* ===== CART + CUSTOM PRICES FINAL ===== */
+.header{position:relative;}
+.cart-floating-button{position:absolute!important;left:16px;top:16px;width:48px;height:48px;border:1px solid #bbf7d0;border-radius:50%;background:#ecfdf5;color:#166534;font-size:23px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 5px 16px rgba(22,101,52,.12);z-index:5;transition:.18s}
+.cart-floating-button:hover{background:#dcfce7;transform:translateY(-1px)}
+.cart-count{position:absolute;right:-4px;top:-5px;min-width:21px;height:21px;padding:0 5px;border-radius:999px;background:#166534;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.cart-count.empty{background:#d1d5db;color:#374151}
+.product-card{position:relative;}
+.product-cart-button{width:auto!important;display:inline-flex!important;align-items:center;justify-content:center;margin-top:9px!important;padding:6px 9px!important;border:1px solid #bbf7d0!important;border-radius:8px!important;background:#f0fdf4!important;color:#166534!important;font-size:11px!important;font-weight:800!important;cursor:pointer!important}
+.product-cart-button:hover{background:#dcfce7!important}
+.product-cart-button:active{transform:scale(.97)}
+.price-custom-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.public-price-old{text-decoration:line-through;text-decoration-color:#ef4444;text-decoration-thickness:1.5px;color:#6b7280;font-weight:700}
 .custom-price-current{color:#166534;font-weight:900}
-.add-cart-button{margin-top:10px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:#166534;color:#fff;font:inherit;font-weight:800;cursor:pointer}
-.detail-add-cart{max-width:360px}
-.cart-button{padding:9px 12px;border:1px solid #86efac;border-radius:10px;background:#ecfdf5;color:#166534;font:inherit;font-weight:800}
-.cart-card{max-width:700px}
-.cart-items{display:flex;flex-direction:column;gap:10px}
-.cart-row{padding:13px;border:1px solid #e5e7eb;border-radius:13px;background:#fff}
-.cart-row-main{display:flex;justify-content:space-between;gap:10px;line-height:1.8}
-.cart-row-main span{color:#166534;font-weight:700}
-.cart-controls{display:flex;align-items:center;gap:8px;margin-top:10px}
-.cart-controls button{min-width:38px;height:38px;border:1px solid #d1d5db;border-radius:9px;background:#f8fafc;font:inherit;font-weight:900;cursor:pointer}
-.cart-controls .cart-remove{margin-right:auto;color:#b91c1c}
-.cart-line-total{margin-top:8px;font-weight:900;color:#166534}
-.cart-total-box{margin:14px 0;padding:15px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;display:flex;justify-content:space-between}
-.customer-price-public{display:block;margin-top:4px;color:#6b7280;font-size:11px}
-.customer-price-row input[data-price-input]{min-height:48px;font-size:15px;font-weight:800;text-align:center}
-.reset-customer-prices-button{width:100%;margin:12px 0;padding:13px;border-radius:11px;cursor:pointer;font:inherit;font-weight:900}
-.admin-request-actions{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
-.admin-request-delete{padding:10px 13px;border-radius:10px;font:inherit;font-weight:800;cursor:pointer;white-space:nowrap}
-@media(max-width:700px){.cart-row-main{flex-direction:column}.admin-request-actions{grid-template-columns:1fr}.admin-request-delete{width:100%}.header-actions{gap:7px}}
+.cart-modal-card{max-width:760px!important}
+.cart-items{display:flex;flex-direction:column;gap:9px;margin:14px 0}
+.cart-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:10px;align-items:center;padding:11px;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
+.cart-row-info{display:flex;flex-direction:column;gap:3px;min-width:0}.cart-row-info span{font-size:11px;color:#6b7280}
+.cart-qty{display:flex;align-items:center;gap:7px}.cart-qty button{width:31px;height:31px;border:1px solid #bbf7d0;border-radius:8px;background:#ecfdf5;color:#166534;font-size:20px;line-height:1;cursor:pointer}.cart-qty b{min-width:24px;text-align:center}.cart-line-total{white-space:nowrap;color:#166534;font-size:12px}.cart-remove{border:0;background:#fff1f2;color:#b91c1c;border-radius:8px;padding:7px;cursor:pointer}
+.cart-total{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:14px;border-radius:12px;background:#f0fdf4;color:#166534;font-size:16px}.cart-submit{width:100%;margin-top:10px;min-height:48px}
+.customer-price-tools{display:flex;align-items:center;gap:10px;justify-content:space-between;margin:10px 0 14px;padding:11px;border:1px solid #fecaca;border-radius:11px;background:#fff7f7}.customer-price-tools span{font-size:11px;color:#6b7280}.customer-price-tools .admin-danger{min-height:42px}
+.customer-price-row input{min-height:48px;font-size:16px;font-weight:800;direction:ltr;text-align:left;padding:9px 11px}
+.admin-request-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.admin-request-actions .admin-danger{min-height:40px}
+.admin-menu-item{min-height:96px!important}
+@media(max-width:700px){.cart-floating-button{left:10px;top:10px;width:44px;height:44px}.header{padding-left:64px!important}.cart-row{grid-template-columns:1fr auto;}.cart-line-total{grid-column:1}.cart-remove{grid-column:2;grid-row:2}.customer-price-tools{align-items:stretch;flex-direction:column}.customer-price-tools .admin-danger{width:100%}.admin-menu-item{min-height:88px!important}}

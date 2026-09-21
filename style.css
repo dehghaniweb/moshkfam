@@ -1750,3 +1750,17 @@ footer span{font-size:12px}
 .admin-request-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .admin-delete-request{border:1px solid #fecaca;background:#fff1f2;color:#b91c1c;border-radius:8px;padding:7px 10px;font-family:inherit;font-weight:700}
 @media(max-width:700px){.cart-item{grid-template-columns:1fr}.cart-item-controls{justify-content:flex-start}.cart-line-total{white-space:normal}}
+
+
+/* =========================
+   CUSTOMER PRICING - IMPROVED
+========================= */
+.customer-info{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.customer-info-main{line-height:1.9}
+.admin-reset-customer-prices{border:1px solid #fecaca;background:#fff7f7;color:#b91c1c;border-radius:10px;padding:10px 13px;font-family:inherit;font-weight:800;cursor:pointer}
+.admin-reset-customer-prices:hover{background:#fee2e2}
+.customer-price-row input{min-height:52px;padding:12px 14px;font-size:16px;font-weight:700;letter-spacing:.3px}
+.price-custom-wrap{flex-direction:row;align-items:baseline;gap:8px;flex-wrap:wrap}
+.price-public-old{font-size:.88em;font-weight:600;text-decoration-thickness:1px}
+.price-custom{font-size:1em}
+@media(max-width:700px){.customer-info{align-items:stretch}.admin-reset-customer-prices{width:100%}.customer-price-row input{min-height:56px}}

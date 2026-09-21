@@ -409,7 +409,7 @@ async function loginWithUsernamePassword(){
   if(msg)msg.textContent="در حال ورود...";
   try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=false;if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();await loadProducts();}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
 }
-async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=false;updateAccountUI();}else setStoredToken("");}catch{setStoredToken("");}}
+async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=false;updateAccountUI();await loadProducts();}else setStoredToken("");}catch{setStoredToken("");}}
 async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;updateAccountUI();await loadProducts();}
 async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
@@ -1551,7 +1551,7 @@ async function loadCustomers() {
 
       option.textContent =
         customer.username
-          ? `${name} (@${customer.username})`
+          ? `${name} (${customer.username})`
           : name;
 
       option.dataset.customer =
@@ -1575,7 +1575,7 @@ async function loadCustomers() {
       const deleteHtml=cs.length?cs.map(c=>{
         const id=String(c.id);
         const name=[c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "نماینده";
-        return `<div class="admin-user-row admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${escapeHtml(c.username?"@"+c.username:"")}</small></div><button type="button" class="admin-danger admin-delete-customer-button" data-delete-customer="${escapeHtml(id)}">🗑️ حذف نماینده</button></div>`;
+        return `<div class="admin-user-row admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${escapeHtml(c.username?c.username:"")}</small></div><button type="button" class="admin-danger admin-delete-customer-button" data-delete-customer="${escapeHtml(id)}">🗑️ حذف نماینده</button></div>`;
       }).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
       if(editBox) editBox.innerHTML=editHtml;
       if(deleteBox) deleteBox.innerHTML=deleteHtml;
@@ -1584,6 +1584,22 @@ async function loadCustomers() {
       if(deleteBox) deleteBox.innerHTML=`<div class="message error">خطا در دریافت کاربران.</div>`;
     }
   }
+}
+
+function formatAdminPriceInput(value) {
+  const raw = String(value ?? "")
+    .replace(/[٬,\s']/g, "")
+    .replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+    .replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+  if (!raw || !/^\d+$/.test(raw)) return raw;
+  return raw.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+}
+
+function normalizeAdminPrice(value) {
+  return String(value ?? "")
+    .replace(/[٬,\s']/g, "")
+    .replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+    .replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
 }
 
 async function loadCustomerPrices(customerId) {
@@ -1602,8 +1618,12 @@ async function loadCustomerPrices(customerId) {
       const opt = $("customerSelect")?.selectedOptions?.[0];
       const customer = opt?.dataset?.customer ? JSON.parse(opt.dataset.customer) : null;
       info.innerHTML = customer ? `
-        <strong>مشتری:</strong> ${escapeHtml([customer.first_name, customer.last_name].filter(Boolean).join(" ") || customer.username || "مشتری")}
-        ${customer.telegram_user_id ? `<span> | Telegram ID: ${escapeHtml(customer.telegram_user_id)}</span>` : ""}
+        <div class="customer-info-main">
+          <strong>مشتری:</strong> ${escapeHtml([customer.first_name, customer.last_name].filter(Boolean).join(" ") || customer.username || "مشتری")}
+          ${customer.username ? `<span> | ${escapeHtml(customer.username)}</span>` : ""}
+          ${customer.telegram_user_id ? `<span> | Telegram ID: ${escapeHtml(customer.telegram_user_id)}</span>` : ""}
+        </div>
+        <button type="button" class="admin-reset-customer-prices" onclick="resetCustomerPrices('${escapeHtml(customerId)}')">↩️ برگرداندن تمام قیمت‌ها به قیمت عمومی</button>
       ` : "";
       info.classList.remove("hidden");
     }
@@ -1619,7 +1639,7 @@ async function loadCustomerPrices(customerId) {
       return `
         <div class="customer-price-row">
           <div>${escapeHtml(product.name_fa || product.name_en || `محصول ${pid}`)}</div>
-          <input type="number" id="customer-price-${pid}" value="${item?.price ?? ""}" placeholder="قیمت اختصاصی (خالی = حذف)">
+          <input type="text" inputmode="numeric" autocomplete="off" id="customer-price-${pid}" value="${escapeHtml(formatAdminPriceInput(item?.price ?? ""))}" placeholder="مثلاً 1'000'000" oninput="this.value=formatAdminPriceInput(this.value)">
           <button onclick="setCustomerPrice('${escapeHtml(customerId)}', ${pid})">ذخیره</button>
         </div>`;
     }).join("");
@@ -1637,7 +1657,7 @@ async function setCustomerPrice(
   if (!input) return;
 
   const value = input.value.trim();
-  const normalized = value.replace(/[٬,\s]/g, "").replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+  const normalized = normalizeAdminPrice(value);
 
   try {
     await postJson(
@@ -1664,6 +1684,23 @@ async function setCustomerPrice(
     );
   }
 }
+
+
+async function resetCustomerPrices(customerId) {
+  if (!customerId) return;
+  const opt = $("customerSelect")?.selectedOptions?.[0];
+  const customer = opt?.dataset?.customer ? JSON.parse(opt.dataset.customer) : null;
+  const name = [customer?.first_name, customer?.last_name].filter(Boolean).join(" ") || customer?.username || "این مشتری";
+  if (!confirm(`آیا تمام قیمت‌های اختصاصی «${name}» حذف و به قیمت عمومی برگردانده شود؟`)) return;
+  try {
+    await postJson("/api/admin/reset-customer-prices", { customer_id: customerId });
+    alert("✅ تمام قیمت‌های این مشتری به قیمت عمومی برگشت.");
+    await loadCustomerPrices(customerId);
+  } catch (error) {
+    alert("❌ بازگردانی قیمت‌ها انجام نشد:\n" + (error?.message || "خطای نامشخص"));
+  }
+}
+
 
 
 /* =========================================================
@@ -1740,7 +1777,7 @@ async function loadAdminRequests() {
     container.innerHTML = requests.map(r => {
       const c = r.customers || {};
       const name = [c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "مشتری";
-      const username = c.username ? `@${escapeHtml(c.username)}` : "";
+      const username = c.username ? escapeHtml(c.username) : "";
       const typeLabel = r.request_type === "note" ? "📝 یادداشت" : "🛒 سفارش";
       const date = r.created_at ? new Date(r.created_at).toLocaleString("fa-IR") : "";
       return `<div class="admin-request-card">
@@ -2052,6 +2089,10 @@ window.loadCustomerPrices =
 
 window.setCustomerPrice =
   setCustomerPrice;
+window.resetCustomerPrices =
+  resetCustomerPrices;
+window.formatAdminPriceInput =
+  formatAdminPriceInput;
 window.openCustomerRequest = openCustomerRequest;
 window.openCart = openCart;
 window.closeCart = closeCart;

@@ -165,10 +165,6 @@
     >
       📝 ثبت سفارش / یادداشت
     </button>
-
-    <button id="cartButton" class="customer-button cart-button hidden" type="button">
-      🛒 سبد خرید <span id="cartBadge" class="cart-badge hidden">۰</span>
-    </button>
   </div>
 
 </header>
@@ -292,6 +288,49 @@
 </div>
 
 
+<!-- CATALOG VIEWER MODAL -->
+<div id="catalogModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-backdrop" onclick="closeCatalog()"></div>
+  <div class="modal-card catalog-modal-card">
+    <button class="close" type="button" onclick="closeCatalog()" aria-label="بستن">×</button>
+    <div class="catalog-modal-head">
+      <strong id="catalogModalTitle">کاتالوگ</strong>
+      <button type="button" class="catalog-back-button" onclick="closeCatalog()">← بازگشت</button>
+    </div>
+    <div class="catalog-modal-frame">
+      <iframe id="catalogModalFrame" title="کاتالوگ محصول" loading="eager"></iframe>
+    </div>
+    <a id="catalogModalExternal" class="catalog-external" href="#" target="_blank" rel="noopener">باز کردن فایل کاتالوگ</a>
+  </div>
+</div>
+
+<!-- APP NOTICE / CONFIRM DIALOG -->
+<div id="appDialog" class="modal hidden" aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card app-dialog-card" role="dialog" aria-modal="true">
+    <button id="appDialogClose" class="close" type="button" onclick="appDialogCancel()" aria-label="بستن">×</button>
+    <div id="appDialogIcon" class="app-dialog-icon">ℹ️</div>
+    <div id="appDialogMessage" class="app-dialog-message"></div>
+    <div class="app-dialog-actions">
+      <button id="appDialogCancel" type="button" class="app-dialog-cancel" onclick="appDialogCancel()">انصراف</button>
+      <button id="appDialogOk" type="button" class="app-dialog-ok" onclick="appDialogOk()">باشه</button>
+    </div>
+  </div>
+</div>
+
+<!-- CART MODAL -->
+<div id="cartModal" class="modal hidden">
+  <div class="modal-backdrop" onclick="closeCart()"></div>
+  <div class="modal-card cart-card">
+    <button class="close" onclick="closeCart()">×</button>
+    <h2>🛒 سبد خرید</h2>
+    <p class="request-help">تعداد هر کالا را انتخاب کنید و مجموع سفارش را ببینید.</p>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-total-box">مجموع کل: <strong id="cartTotal">۰ تومان</strong></div>
+    <button class="admin-primary request-submit" onclick="submitCartOrder()">📨 ثبت سفارش سبد خرید</button>
+  </div>
+</div>
+
 <!-- CUSTOMER REQUEST MODAL -->
 <div id="customerRequestModal" class="modal hidden">
   <div class="modal-backdrop" onclick="closeCustomerRequest()"></div>
@@ -308,19 +347,6 @@
   </div>
 </div>
 
-
-<!-- CART MODAL -->
-<div id="cartModal" class="modal hidden">
-  <div class="modal-backdrop" onclick="closeCart()"></div>
-  <div class="modal-card cart-card">
-    <button class="close" onclick="closeCart()">×</button>
-    <h2>🛒 سبد خرید</h2>
-    <p class="request-help">تعداد هر کالا را انتخاب کنید و مجموع خرید را ببینید.</p>
-    <div id="cartItems"></div>
-    <div class="cart-summary"><span>مجموع سبد خرید</span><strong id="cartTotal">۰ تومان</strong></div>
-    <button class="admin-primary" onclick="submitCartOrder()">📨 ارسال سفارش</button>
-  </div>
-</div>
 
 <!-- ADMIN MODAL -->
 <div id="adminModal" class="modal hidden">
@@ -421,6 +447,7 @@
       <div class="admin-search-wrap"><input id="customerPriceSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر نماینده..." oninput="searchCustomerPriceCustomer()"></div>
       <label class="admin-select-label">انتخاب مشتری<select id="customerSelect"><option value="">انتخاب مشتری</option></select></label>
       <div id="customerInfo" class="customer-info hidden"></div>
+      <button id="resetCustomerPricesButton" type="button" class="admin-danger reset-customer-prices-button hidden" onclick="resetCustomerPrices($('#customerSelect').value)">↩️ برگرداندن تمام قیمت‌ها به قیمت عمومی</button>
       <div id="customerPrices" class="customer-prices"></div>
     </section>
 

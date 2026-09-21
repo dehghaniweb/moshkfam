@@ -117,28 +117,186 @@ function formatDate(value) {
   }
 }
 
+function getEffectiveProductPrice(product) {
+  if (!product) return null;
+  const custom = Number(product.custom_price);
+  if (Number.isFinite(custom) && custom >= 0) return custom;
+  const base = Number(product.base_price);
+  return Number.isFinite(base) ? base : null;
+}
+
 function getPriceText(product) {
-  if (
-    product &&
-    product.base_price !== null &&
-    product.base_price !== undefined &&
-    product.base_price !== ""
-  ) {
+  const base = Number(product?.base_price);
+  const custom = Number(product?.custom_price);
+  const hasBase = Number.isFinite(base);
+  const hasCustom = Number.isFinite(custom);
+  const baseCurrency = product?.base_currency || "تومان";
+  const currency = product?.custom_currency || baseCurrency;
+
+  if (hasCustom && hasBase && custom !== base) {
     return `
-      <div class="price">
-        ${formatNumber(product.base_price)}
-        ${escapeHtml(product.base_currency || "تومان")}
+      <div class="price price-custom-wrap">
+        <span class="price-public-old">${formatNumber(base)} ${escapeHtml(baseCurrency)}</span>
+        <span class="price-custom">${formatNumber(custom)} ${escapeHtml(currency)}</span>
       </div>
     `;
   }
 
-  return `
-    <div class="price private-price">
-      برای اطلاع از قیمت تماس بگیرید.
-    </div>
-  `;
+  if (hasCustom || hasBase) {
+    const price = hasCustom ? custom : base;
+    return `<div class="price">${formatNumber(price)} ${escapeHtml(currency)}</div>`;
+  }
+
+  return `<div class="price private-price">برای اطلاع از قیمت تماس بگیرید.</div>`;
 }
 
+function getCartKey() {
+  const id = currentUser?.id || currentUser?.telegram_user_id || currentUser?.username;
+  return id ? `moshkfam_cart_${id}` : "moshkfam_cart_guest";
+}
+
+function loadCart() {
+  try {
+    const value = JSON.parse(localStorage.getItem(getCartKey()) || "[]");
+    return Array.isArray(value) ? value : [];
+  } catch { return []; }
+}
+
+function saveCart(cart) {
+  localStorage.setItem(getCartKey(), JSON.stringify(cart));
+  updateCartBadge();
+}
+
+function getCartCount() {
+  return loadCart().reduce((sum,item) => sum + Math.max(0, Number(item.quantity) || 0), 0);
+}
+
+function addToCart(productId) {
+  if (!currentUser) {
+    alert("برای استفاده از سبد خرید ابتدا وارد حساب کاربری شوید.");
+    return;
+  }
+  const product = products.find(p => Number(p.id) === Number(productId));
+  const price = getEffectiveProductPrice(product);
+  if (!product || price === null) {
+    alert("این محصول در حال حاضر قیمت قابل خرید ندارد.");
+    return;
+  }
+  const cart = loadCart();
+  const found = cart.find(item => Number(item.product_id) === Number(productId));
+  if (found) found.quantity = Math.min(9999, Number(found.quantity || 0) + 1);
+  else cart.push({product_id:Number(productId), quantity:1});
+  saveCart(cart);
+  renderCart();
+}
+
+function changeCartQuantity(productId, delta) {
+  const cart = loadCart();
+  const item = cart.find(x => Number(x.product_id) === Number(productId));
+  if (!item) return;
+  item.quantity = Math.max(0, Math.min(9999, Number(item.quantity || 0) + Number(delta)));
+  saveCart(cart.filter(x => x.quantity > 0));
+  renderCart();
+}
+
+function removeFromCart(productId) {
+  saveCart(loadCart().filter(x => Number(x.product_id) !== Number(productId)));
+  renderCart();
+}
+
+function cartTotal() {
+  return loadCart().reduce((sum,item) => {
+    const product = products.find(p => Number(p.id) === Number(item.product_id));
+    const price = getEffectiveProductPrice(product);
+    return sum + (price === null ? 0 : price * Number(item.quantity || 0));
+  }, 0);
+}
+
+function updateCartBadge() {
+  const badge = $("cartBadge");
+  const count = getCartCount();
+  if (badge) {
+    badge.textContent = formatNumber(count);
+    badge.classList.toggle("hidden", count === 0);
+  }
+}
+
+function openCart() {
+  if (!currentUser) {
+    alert("برای مشاهده سبد خرید ابتدا وارد حساب کاربری شوید.");
+    return;
+  }
+  renderCart();
+  $("cartModal")?.classList.remove("hidden");
+}
+
+function closeCart() {
+  $("cartModal")?.classList.add("hidden");
+}
+
+function renderCart() {
+  const container = $("cartItems");
+  const total = $("cartTotal");
+  if (!container || !total) return;
+  const cart = loadCart();
+
+  if (!cart.length) {
+    container.innerHTML = `<div class="message">🛒 سبد خرید شما خالی است.</div>`;
+    total.textContent = "۰ تومان";
+    return;
+  }
+
+  container.innerHTML = cart.map(item => {
+    const p = products.find(x => Number(x.id) === Number(item.product_id));
+    if (!p) return "";
+    const price = getEffectiveProductPrice(p);
+    const qty = Number(item.quantity || 0);
+    const currency = p.custom_currency || p.base_currency || "تومان";
+    return `
+      <div class="cart-item">
+        <div class="cart-item-main">
+          ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="">` : `<div class="cart-no-image">🌱</div>`}
+          <div>
+            <strong>${escapeHtml(p.name_fa || p.name_en || "محصول")}</strong>
+            <div class="cart-unit-price">${price === null ? "بدون قیمت" : formatNumber(price) + " " + escapeHtml(currency)}</div>
+          </div>
+        </div>
+        <div class="cart-item-controls">
+          <button type="button" onclick="changeCartQuantity(${Number(p.id)},1)">+</button>
+          <span>${formatNumber(qty)}</span>
+          <button type="button" onclick="changeCartQuantity(${Number(p.id)},-1)">−</button>
+          <button type="button" class="cart-remove" onclick="removeFromCart(${Number(p.id)})">حذف</button>
+        </div>
+        <strong class="cart-line-total">${price === null ? "—" : formatNumber(price * qty) + " " + escapeHtml(currency)}</strong>
+      </div>`;
+  }).join("");
+
+  total.textContent = formatNumber(cartTotal()) + " تومان";
+}
+
+async function submitCartOrder() {
+  const cart = loadCart();
+  if (!cart.length) {
+    alert("سبد خرید خالی است.");
+    return;
+  }
+  const lines = cart.map(item => {
+    const p = products.find(x => Number(x.id) === Number(item.product_id));
+    if (!p) return null;
+    const price = getEffectiveProductPrice(p);
+    return `• ${p.name_fa || p.name_en || "محصول"} × ${item.quantity} = ${price === null ? "بدون قیمت" : formatNumber(price * Number(item.quantity)) + " تومان"}`;
+  }).filter(Boolean);
+  const text = `🛒 سفارش از سبد خرید\n\n${lines.join("\n")}\n\n💰 مجموع: ${formatNumber(cartTotal())} تومان`;
+  try {
+    await postJson("/api/customer/request", {type:"order", text});
+    localStorage.removeItem(getCartKey());
+    updateCartBadge();
+    closeCart();
+    alert("✅ سفارش سبد خرید برای مشکفام فارس ارسال شد.");
+  } catch (error) {
+    alert("❌ ارسال سفارش انجام نشد:\n" + (error?.message || "خطای نامشخص"));
+  }
+}
 
 /* =========================================================
    API - AUTOMATIC NO CACHE
@@ -395,6 +553,8 @@ function updateAccountUI() {
     if (adminButton) {
       adminButton.classList.add("hidden");
     }
+    const cartButton = $("cartButton");
+    if (cartButton) cartButton.classList.add("hidden");
 
     return;
   }
@@ -434,6 +594,7 @@ function updateAccountUI() {
   }
 
   const customerButton = $("customerButton");
+  const cartButton = $("cartButton");
   if(loginBox) loginBox.classList.add("hidden");
   if(logoutButton) logoutButton.classList.remove("hidden");
 
@@ -450,6 +611,14 @@ function updateAccountUI() {
       customerButton.classList.add("hidden");
     } else {
       customerButton.classList.remove("hidden");
+    }
+  }
+  if (cartButton) {
+    if (isAdmin) {
+      cartButton.classList.add("hidden");
+    } else {
+      cartButton.classList.remove("hidden");
+      updateCartBadge();
     }
   }
 }
@@ -730,6 +899,10 @@ function renderProductCard(product) {
 
         ${getPriceText(product)}
 
+        ${currentUser && getEffectiveProductPrice(product) !== null ? `
+          <button class="add-cart-button" type="button" onclick="event.stopPropagation();addToCart(${Number(product.id)})">🛒 افزودن به سبد</button>
+        ` : ""}
+
       </div>
     </article>
   `;
@@ -792,6 +965,10 @@ function openProduct(id) {
       }
 
       ${getPriceText(product)}
+
+      ${currentUser && getEffectiveProductPrice(product) !== null ? `
+        <button class="add-cart-button detail-add-cart" type="button" onclick="addToCart(${Number(product.id)})">🛒 افزودن به سبد</button>
+      ` : ""}
 
       ${
         product.category
@@ -1574,11 +1751,22 @@ async function loadAdminRequests() {
           <select onchange="updateCustomerRequestStatus(${Number(r.id)}, this.value)">
             ${Object.entries(statusLabels).map(([key,label]) => `<option value="${key}" ${r.status===key?"selected":""}>${label}</option>`).join("")}
           </select>
+          <button type="button" class="admin-delete-request" onclick="deleteCustomerRequest(${Number(r.id)})">🗑️ حذف</button>
         </div>
       </div>`;
     }).join("");
   } catch (error) {
     container.innerHTML = `<div class="message error">خطا در دریافت سفارش‌ها و یادداشت‌ها.<br>${escapeHtml(error.message || "")}</div>`;
+  }
+}
+
+async function deleteCustomerRequest(id) {
+  if (!confirm("آیا از حذف این سفارش/یادداشت مطمئن هستید؟")) return;
+  try {
+    await postJson("/api/admin/delete-customer-request", {id:Number(id)});
+    await loadAdminRequests();
+  } catch (error) {
+    alert("❌ حذف سفارش/یادداشت انجام نشد:\n" + error.message);
   }
 }
 
@@ -1627,6 +1815,8 @@ function setupEvents() {
     if (customerButton) {
       customerButton.addEventListener("click", openCustomerRequest);
     }
+    const cartButton = $("cartButton");
+    if (cartButton) cartButton.addEventListener("click", openCart);
 
     const customerSelect =
       $("customerSelect");
@@ -1737,6 +1927,8 @@ function finishBootLoader() {
   try {
     await loadSiteSettings();
     await loadProducts();
+    updateCartBadge();
+    renderCart();
   } finally {
     finishBootLoader();
   }
@@ -1861,6 +2053,13 @@ window.loadCustomerPrices =
 window.setCustomerPrice =
   setCustomerPrice;
 window.openCustomerRequest = openCustomerRequest;
+window.openCart = openCart;
+window.closeCart = closeCart;
+window.addToCart = addToCart;
+window.changeCartQuantity = changeCartQuantity;
+window.removeFromCart = removeFromCart;
+window.submitCartOrder = submitCartOrder;
+window.deleteCustomerRequest = deleteCustomerRequest;
 window.closeCustomerRequest = closeCustomerRequest;
 window.submitCustomerRequest = submitCustomerRequest;
 window.updateCustomerRequestStatus = updateCustomerRequestStatus;

@@ -165,6 +165,10 @@
     >
       📝 ثبت سفارش / یادداشت
     </button>
+
+    <button id="cartButton" class="customer-button cart-button hidden" type="button">
+      🛒 سبد خرید <span id="cartBadge" class="cart-badge hidden">۰</span>
+    </button>
   </div>
 
 </header>
@@ -304,6 +308,19 @@
   </div>
 </div>
 
+
+<!-- CART MODAL -->
+<div id="cartModal" class="modal hidden">
+  <div class="modal-backdrop" onclick="closeCart()"></div>
+  <div class="modal-card cart-card">
+    <button class="close" onclick="closeCart()">×</button>
+    <h2>🛒 سبد خرید</h2>
+    <p class="request-help">تعداد هر کالا را انتخاب کنید و مجموع خرید را ببینید.</p>
+    <div id="cartItems"></div>
+    <div class="cart-summary"><span>مجموع سبد خرید</span><strong id="cartTotal">۰ تومان</strong></div>
+    <button class="admin-primary" onclick="submitCartOrder()">📨 ارسال سفارش</button>
+  </div>
+</div>
 
 <!-- ADMIN MODAL -->
 <div id="adminModal" class="modal hidden">

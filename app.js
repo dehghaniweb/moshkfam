@@ -219,6 +219,34 @@ function setCartUnit(productId,unit){
   cartItems[key].unit=unit==="ton"?"ton":"kg";
   saveCart();renderCart();
 }
+function updateCartAmountLive(productId,value){
+  const key=String(productId); if(!cartItems[key])return;
+  const p=products.find(x=>Number(x.id)===Number(productId)); if(!p)return;
+  const unit=cartItems[key].unit==="ton"?"ton":"kg";
+  const entered=Number(normalizeDigits(value).replace(/,/g,"."));
+  if(!Number.isFinite(entered)||entered<=0)return;
+  const amountKg=unit==="ton"?entered*1000:entered;
+  const packageKg=getProductPackageKg(p);
+  const packages=amountKg/packageKg;
+  const price=getEffectivePrice(p);
+  if(!Number.isFinite(price))return;
+  const lineTotal=price*packages;
+  const lineEl=$("cart-line-total-"+Number(productId));
+  if(lineEl) lineEl.textContent=formatNumber(Math.round(lineTotal))+" تومان";
+  const helpEl=$("cart-weight-help-"+Number(productId));
+  if(helpEl) helpEl.innerHTML=`مقدار سفارش: <b>${formatDecimal(amountKg)} کیلوگرم</b> · معادل <b>${formatDecimal(packages)} بسته ${formatDecimal(packageKg)} کیلویی</b>`;
+  let grand=0;
+  Object.values(cartItems).forEach(item=>{
+    const pr=products.find(x=>Number(x.id)===Number(item.productId));
+    if(!pr) return;
+    const effectivePrice=getEffectivePrice(pr);
+    if(!Number.isFinite(effectivePrice)) return;
+    if(String(item.productId)===key) grand+=lineTotal;
+    else grand+=effectivePrice*(Number(item.quantity)||0);
+  });
+  const totalEl=$("cartTotal");
+  if(totalEl) totalEl.textContent=formatNumber(Math.round(grand))+" تومان";
+}
 function setCartAmount(productId,value){
   const key=String(productId); if(!cartItems[key])return;
   const p=products.find(x=>Number(x.id)===Number(productId)); if(!p)return;
@@ -245,15 +273,15 @@ function renderCart(){
     const p=products.find(x=>Number(x.id)===Number(item.productId)); if(!p)return "";
     const price=getEffectivePrice(p), packageKg=getProductPackageKg(p), amountKg=getCartAmountKg(item,p), unit=item.unit==="ton"?"ton":"kg", unitValue=getCartUnitValue(item,p), total=price*(Number(item.quantity)||0);
     return `<div class="cart-row cart-row-weight">
-      <div class="cart-row-info"><strong>${escapeHtml(p.name_fa||p.name_en||"محصول")}</strong><span>قیمت هر بسته: ${formatNumber(price)} ${escapeHtml(p.base_currency||"تومان")} · بسته ${formatDecimal(packageKg)} کیلوگرمی</span></div>
+      <div class="cart-row-info"><strong>${escapeHtml(p.name_fa||p.name_en||"محصول")}</strong><span>${formatNumber(price)} ${escapeHtml(p.base_currency||"تومان")} · بسته ${formatDecimal(packageKg)} کیلوگرمی</span></div>
       <div class="cart-weight-editor">
         <label>واحد<select onchange="setCartUnit(${Number(p.id)},this.value)"><option value="kg" ${unit==="kg"?"selected":""}>کیلوگرم</option><option value="ton" ${unit==="ton"?"selected":""}>تن</option></select></label>
-        <label>مقدار<input type="text" inputmode="decimal" autocomplete="off" value="${unitValue}" onchange="setCartAmount(${Number(p.id)},this.value)" onkeydown="if(event.key==='Enter'){this.blur();}"></label>
+        <label>مقدار<input type="number" min="0.001" step="0.001" value="${unitValue}" oninput="updateCartAmountLive(${Number(p.id)},this.value)" onchange="setCartAmount(${Number(p.id)},this.value)" onkeydown="if(event.key==='Enter'){this.blur();}"></label>
       </div>
       <div class="cart-qty"><button type="button" onclick="changeCartQty(${Number(p.id)},-1)">−</button><b>${formatNumber(item.quantity)} بسته</b><button type="button" onclick="changeCartQty(${Number(p.id)},1)">+</button></div>
-      <strong class="cart-line-total">${formatNumber(total)} تومان</strong>
+      <strong id="cart-line-total-${Number(p.id)}" class="cart-line-total">${formatNumber(total)} تومان</strong>
       <button type="button" class="cart-remove" onclick="removeFromCart(${Number(p.id)})">🗑️</button>
-      <div class="cart-weight-help">مقدار سفارش: <b>${formatDecimal(amountKg)} کیلوگرم</b> · معادل <b>${formatNumber(item.quantity)} بسته ${formatDecimal(packageKg)} کیلویی</b></div>
+      <div id="cart-weight-help-${Number(p.id)}" class="cart-weight-help">مقدار سفارش: <b>${formatDecimal(amountKg)} کیلوگرم</b> · معادل <b>${formatNumber(item.quantity)} بسته ${formatDecimal(packageKg)} کیلویی</b></div>
     </div>`;
   }).filter(Boolean);
   box.innerHTML=rows.length?rows.join(""):"<div class=\"message\">سبد خرید خالی است.</div>";
@@ -1782,8 +1810,8 @@ async function loadAdminUsers(){
         <div class="admin-edit-grid admin-system-edit-grid">
           <label>نام<input id="afirst-${escapeHtml(key)}" value="${escapeHtml(a.first_name||"")}"></label>
           <label>نام خانوادگی<input id="alast-${escapeHtml(key)}" value="${escapeHtml(a.last_name||"")}"></label>
-          <label>Telegram ID<input id="atele-${escapeHtml(key)}" value="${escapeHtml(a.telegram_user_id||"")}" data-original-value="${escapeHtml(a.telegram_user_id||"")}" inputmode="numeric"></label>
-          <label>نام کاربری وب<input id="auser-${escapeHtml(key)}" value="${escapeHtml(a.username||"")}" data-original-value="${escapeHtml(a.username||"")}" autocomplete="off"></label>
+          <label>Telegram ID<input id="atele-${escapeHtml(key)}" value="${escapeHtml(a.telegram_user_id||"")}" inputmode="numeric"></label>
+          <label>نام کاربری وب<input id="auser-${escapeHtml(key)}" value="${escapeHtml(a.username||"")}" autocomplete="off"></label>
           <label>رمز جدید<input id="apass-${escapeHtml(key)}" type="password" placeholder="بدون تغییر" autocomplete="new-password"></label>
           <label>وضعیت<select id="astatus-${escapeHtml(key)}"><option value="active" ${a.status!=="disabled"?'selected':''}>فعال</option><option value="disabled" ${a.status==="disabled"?'selected':''}>غیرفعال</option></select></label>
         </div>

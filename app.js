@@ -1618,6 +1618,52 @@ async function setCustomerPrice(
    SYSTEM ADMINS
 ========================================================= */
 
+async function createAdminUser(){
+  const first_name=$("newAdminFirstName")?.value.trim()||"";
+  const last_name=$("newAdminLastName")?.value.trim()||"";
+  const telegram_user_id=$("newAdminTelegramId")?.value.trim()||"";
+  const username=$("newAdminUsername")?.value.trim()||"";
+  const password=$("newAdminPassword")?.value||"";
+
+  if(!telegram_user_id && !(username && password)){
+    appAlert("⚠️ حداقل Telegram ID یا هر دو مورد نام کاربری و رمز عبور وب را وارد کنید.");
+    return;
+  }
+  if(username && username.length < 3){
+    appAlert("⚠️ نام کاربری وب باید حداقل ۳ کاراکتر باشد.");
+    return;
+  }
+  if(username && !/^[a-zA-Z0-9_.-]+$/.test(username)){
+    appAlert("⚠️ نام کاربری وب فقط می‌تواند شامل حروف انگلیسی، عدد، نقطه، خط تیره و زیرخط باشد.");
+    return;
+  }
+  if(username && !password){
+    appAlert("⚠️ برای نام کاربری وب، رمز عبور را هم وارد کنید.");
+    return;
+  }
+
+  const button=document.querySelector('.admin-admin-create .admin-add-user-button');
+  if(button){button.disabled=true;button.textContent="⏳ در حال افزودن...";}
+  try{
+    const r=await postJson("/api/admin/create-admin",{
+      first_name,last_name,telegram_user_id,username,password
+    });
+    if(!r?.ok) throw new Error(r?.error||"سرور مدیر را ایجاد نکرد.");
+
+    ["newAdminFirstName","newAdminLastName","newAdminTelegramId","newAdminUsername","newAdminPassword"].forEach(id=>{
+      const el=$(id);
+      if(el) el.value="";
+    });
+    await loadAdminUsers();
+    appAlert("✅ مدیر جدید با موفقیت اضافه شد.");
+  }catch(e){
+    console.error("Create admin:",e);
+    appAlert("❌ افزودن مدیر انجام نشد:\n"+(e.message||"خطای نامشخص"));
+  }finally{
+    if(button){button.disabled=false;button.textContent="🛡️ افزودن مدیر";}
+  }
+}
+
 async function loadAdminUsers(){
   const container=$("adminUsersList");
   if(!container) return;

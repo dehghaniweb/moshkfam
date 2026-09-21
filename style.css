@@ -163,8 +163,6 @@ button{
   border:0;
 
   padding:10px 14px;
-  min-height:40px;
-  box-sizing:border-box;
 
   border-radius:10px;
 
@@ -191,12 +189,6 @@ button{
   align-items:center;
   justify-content:flex-end;
 }
-
-/* ترتیب دکمه‌های حساب: ثبت سفارش سمت راست و خروج سمت چپ آن */
-.header-actions .customer-button{order:1}
-.header-actions .logout-button{order:2}
-.header-actions .admin-button{order:0}
-
 
 .customer-button{
   border:1px solid #166534;
@@ -1545,7 +1537,7 @@ header,
 .login-fields input:focus{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.10)}
 .login-fields button{padding:9px 12px;border:0;border-radius:10px;background:#166534;color:#fff;font:inherit;font-weight:800;font-size:12px;white-space:nowrap}
 .login-message{min-height:18px;font-size:11px;color:#6b7280;line-height:1.6}
-.logout-button{padding:10px 14px;min-height:40px;border:1px solid #fecaca;border-radius:10px;background:#fff;color:#991b1b;font:inherit;font-weight:700;box-sizing:border-box}
+.logout-button{padding:9px 12px;border:1px solid #fecaca;border-radius:10px;background:#fff;color:#991b1b;font:inherit;font-weight:700}
 .product-body{display:flex;flex-direction:column;align-items:stretch;min-width:0;padding:18px 28px 22px 18px!important}
 .product-body h3{color:#166534;font-size:16px;line-height:1.8;font-weight:800;margin:0}
 .product-en{margin-top:5px;color:#374151;font-size:12px;line-height:1.7}
@@ -1565,7 +1557,6 @@ footer{display:flex;flex-direction:column;align-items:center;gap:7px;padding:24p
 footer strong{color:#166534;font-size:16px}
 footer span{font-size:12px}
 @media(min-width:1000px){.app{max-width:1280px}.header{padding:16px 28px}.main,main{padding-left:30px;padding-right:30px}.product-grid{gap:18px}.product-body{padding-right:34px!important;padding-top:20px!important;padding-bottom:24px!important}.product-body h3{font-size:17px}}
-@media(min-width:901px){.header{padding-bottom:78px!important}.header-actions{margin-left:64px!important}}
 @media(max-width:900px){.header{flex-wrap:wrap}.login-box{order:3;flex:1 1 100%;max-width:none}.login-fields input{flex:1;width:auto}.header-actions{margin-right:auto}}
 @media(max-width:600px){.login-fields{display:grid;grid-template-columns:1fr 1fr auto}.login-fields input{width:100%}.product-body{padding:16px 22px 20px 16px!important}.product-body h3{font-size:15px}.admin-edit-grid-wide-label{grid-column:auto}}
 .brand img{width:150px;height:60px;border-radius:0;background:transparent}
@@ -1738,7 +1729,6 @@ footer span{font-size:12px}
 .catalog-modal-frame iframe{width:100%;height:100%;min-height:60vh;border:0;display:block;background:#fff}
 .catalog-external{display:block;margin-top:10px;text-align:center}
 .app-dialog-card{max-width:430px;text-align:center;padding:28px 22px 20px}
-#appDialog{z-index:1000!important}
 .app-dialog-icon{font-size:38px;margin:2px 0 12px}
 .app-dialog-message{white-space:pre-wrap;line-height:1.9;color:#1f2937;font-size:14px;min-height:24px}
 .app-dialog-actions{display:flex;gap:10px;justify-content:center;margin-top:20px}
@@ -1749,7 +1739,7 @@ footer span{font-size:12px}
 
 /* ===== CART + CUSTOM PRICES FINAL ===== */
 .header{position:relative;}
-.cart-floating-button{position:absolute!important;left:16px;top:auto!important;bottom:16px;width:48px;height:48px;border:1px solid #bbf7d0;border-radius:50%;background:#ecfdf5;color:#166534;font-size:23px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 5px 16px rgba(22,101,52,.12);z-index:5;transition:.18s}
+.cart-floating-button{position:absolute!important;left:16px;top:16px;width:48px;height:48px;border:1px solid #bbf7d0;border-radius:50%;background:#ecfdf5;color:#166534;font-size:23px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 5px 16px rgba(22,101,52,.12);z-index:5;transition:.18s}
 .cart-floating-button:hover{background:#dcfce7;transform:translateY(-1px)}
 .cart-count{position:absolute;right:-4px;top:-5px;min-width:21px;height:21px;padding:0 5px;border-radius:999px;background:#166534;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
 .cart-count.empty{background:#d1d5db;color:#374151}
@@ -1770,4 +1760,65 @@ footer span{font-size:12px}
 .customer-price-row input{min-height:48px;font-size:16px;font-weight:800;direction:ltr;text-align:left;padding:9px 11px}
 .admin-request-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.admin-request-actions .admin-danger{min-height:40px}
 .admin-menu-item{min-height:96px!important}
-@media(max-width:700px){.cart-floating-button{left:10px;top:auto!important;bottom:10px;width:44px;height:44px}.header{padding-left:64px!important;padding-bottom:64px!important}.cart-row{grid-template-columns:1fr auto;}.cart-line-total{grid-column:1}.cart-remove{grid-column:2;grid-row:2}.customer-price-tools{align-items:stretch;flex-direction:column}.customer-price-tools .admin-danger{width:100%}.admin-menu-item{min-height:88px!important}}
+@media(max-width:700px){.cart-floating-button{left:10px;top:10px;width:44px;height:44px}.header{padding-left:64px!important}.cart-row{grid-template-columns:1fr auto;}.cart-line-total{grid-column:1}.cart-remove{grid-column:2;grid-row:2}.customer-price-tools{align-items:stretch;flex-direction:column}.customer-price-tools .admin-danger{width:100%}.admin-menu-item{min-height:88px!important}}
+
+
+/* ===== ADMIN UI POLISH ===== */
+.admin-back{
+  background:#f59e0b!important;
+  border-color:#d97706!important;
+  color:#fff!important;
+  min-height:46px!important;
+  box-shadow:0 3px 10px rgba(217,119,6,.16)!important;
+}
+.admin-back:hover{background:#ea8a05!important;border-color:#c96b05!important;}
+.admin-search-wrap{margin:10px 0 16px!important;}
+.admin-search{
+  width:100%!important;
+  min-height:50px!important;
+  padding:11px 15px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  box-shadow:0 3px 12px rgba(15,23,42,.06)!important;
+  font:inherit!important;
+  outline:none!important;
+}
+.admin-search:focus{border-color:#86efac!important;box-shadow:0 0 0 3px rgba(134,239,172,.22)!important;}
+#productEditSearch{direction:rtl!important;text-align:right!important;}
+#customerEditSearch{min-height:50px!important;border-radius:15px!important;}
+#customerPriceSearch{min-height:50px!important;border-radius:15px!important;margin-bottom:10px!important;}
+.admin-select-label select{
+  min-height:50px!important;
+  padding:10px 13px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  box-shadow:0 3px 12px rgba(15,23,42,.06)!important;
+  font:inherit!important;
+}
+#adminSection-prices .admin-select-label{margin-top:4px!important;}
+#adminSection-prices .customer-info{margin-top:10px!important;border-radius:14px!important;}
+.admin-request-actions .admin-danger{min-width:82px!important;padding-left:13px!important;padding-right:13px!important;}
+#adminSection-footer .admin-primary{min-width:230px!important;padding-left:26px!important;padding-right:26px!important;}
+.admin-admin-create{padding:14px;border:1px solid #e5e7eb;border-radius:16px;background:#fff;margin-bottom:14px;}
+.admin-admin-create h4{margin:0 0 12px;color:#166534;}
+.admin-system-user-row{display:flex!important;align-items:center;justify-content:space-between;gap:12px;padding:14px!important;}
+.admin-system-user-main{min-width:0;}
+.admin-system-user-main strong{display:block;color:#166534;}
+.admin-system-user-main small{display:block;color:#6b7280;font-size:11px;line-height:1.8;margin-top:3px;overflow-wrap:anywhere;}
+.admin-primary-badge{white-space:nowrap;padding:7px 10px;border-radius:999px;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;font-size:11px;font-weight:800;}
+#appDialog{z-index:5000!important;}
+#appDialog .modal-backdrop{z-index:0!important;}
+#appDialog .app-dialog-card{z-index:2!important;}
+@media(max-width:700px){
+  .admin-back{min-height:44px!important;}
+  #adminSection-footer .admin-primary{width:100%!important;min-width:0!important;}
+  .admin-system-user-row{align-items:flex-start!important;}
+}
+
+.admin-system-edit-row{display:block!important;}
+.admin-system-edit-grid{margin-bottom:10px!important;}
+.admin-system-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.admin-system-actions .admin-save-customer-button,.admin-system-actions .admin-danger{margin-top:0!important;width:100%!important;min-height:48px!important;}
+@media(max-width:700px){.admin-system-actions{grid-template-columns:1fr;}}

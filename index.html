@@ -381,6 +381,7 @@
         <button class="admin-menu-item" onclick="showAdminSection('edit-customers')"><span>✏️</span><b>ویرایش نماینده‌ها</b><small>ویرایش مشخصات، نام کاربری و رمز</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('prices')"><span>💰</span><b>قیمت اختصاصی مشتری</b><small>تعیین قیمت مخصوص هر نماینده</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('requests')"><span>📨</span><b>سفارش‌ها و یادداشت‌ها</b><small>مشاهده و مدیریت درخواست‌های مشتریان</small></button>
+        <button class="admin-menu-item" onclick="showAdminSection('admins')"><span>🛡️</span><b>مدیران سیستم</b><small>اضافه، ویرایش و حذف مدیران پنل</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('footer')"><span>🏢</span><b>اطلاعات پایین صفحه</b><small>نام شرکت، تلفن و آدرس</small></button>
       </div>
     </div>
@@ -459,6 +460,26 @@
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3>📨 سفارش‌ها و یادداشت‌ها</h3>
       <div id="adminRequests"></div>
+    </section>
+
+    <!-- ADMINS -->
+    <section id="adminSection-admins" class="admin-view admin-inner-view hidden">
+      <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
+      <h3>🛡️ مدیران سیستم</h3>
+      <p class="admin-section-help">مدیر جدید می‌تواند از طریق تلگرام با شناسه تلگرام یا از طریق وب با نام کاربری و رمز عبور وارد شود. مدیر اصلی قابل حذف نیست.</p>
+      <div class="admin-admin-create">
+        <h4>➕ افزودن مدیر جدید</h4>
+        <div class="admin-edit-grid">
+          <label>نام<input id="newAdminFirstName"></label>
+          <label>نام خانوادگی<input id="newAdminLastName"></label>
+          <label>Telegram ID<input id="newAdminTelegramId" inputmode="numeric" placeholder="مثلاً 123456789"></label>
+          <label>نام کاربری وب<input id="newAdminUsername" autocomplete="off" placeholder="اختیاری"></label>
+          <label>رمز عبور وب<input id="newAdminPassword" type="password" autocomplete="new-password" placeholder="اختیاری"></label>
+        </div>
+        <button type="button" class="admin-primary admin-add-user-button" onclick="createAdminUser(); return false;">🛡️ افزودن مدیر</button>
+      </div>
+      <div class="admin-search-wrap admin-admin-search-wrap"><input id="adminUsersSearch" class="admin-search" type="search" placeholder="🔎 جستجوی مدیر..." oninput="searchAdminItems('adminUsersSearch', 'adminUsersList')"></div>
+      <div id="adminUsersList"></div>
     </section>
 
     <!-- FOOTER -->

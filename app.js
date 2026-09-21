@@ -291,9 +291,9 @@ async function loginWithUsernamePassword(){
   const username=$("loginUsername")?.value.trim()||"", password=$("loginPassword")?.value||"", msg=$("loginMessage");
   if(!username||!password){if(msg)msg.textContent="نام کاربری و رمز عبور را وارد کنید.";return;}
   if(msg)msg.textContent="در حال ورود...";
-  try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=false;if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();loadCart();await loadProducts();}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
+  try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=String(r.user?.role||"").toLowerCase()==="admin" || String(r.user?.role||"").toLowerCase()==="super_admin";if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();loadCart();await loadProducts();}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
 }
-async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=false;updateAccountUI();loadCart();}else setStoredToken("");}catch{setStoredToken("");}}
+async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=String(r.user.role||"").toLowerCase()==="admin" || String(r.user.role||"").toLowerCase()==="super_admin";updateAccountUI();loadCart();}else setStoredToken("");}catch{setStoredToken("");}}
 async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;cartItems={};updateCartBadge();updateAccountUI();await loadProducts();}
 async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
@@ -1615,6 +1615,74 @@ async function setCustomerPrice(
 
 
 /* =========================================================
+   SYSTEM ADMINS
+========================================================= */
+
+async function loadAdminUsers(){
+  const container=$("adminUsersList");
+  if(!container) return;
+  container.innerHTML='<div class="message">در حال دریافت مدیران سیستم...</div>';
+  try{
+    const r=await postJson("/api/admin/admin-users",{});
+    const admins=Array.isArray(r?.admins)?r.admins:[];
+    if(!admins.length){container.innerHTML='<div class="message">هنوز مدیر دیگری تعریف نشده است.</div>';return;}
+    container.innerHTML=admins.map(a=>{
+      const id=String(a.id||"");
+      const main=!!a.is_primary;
+      const name=[a.first_name,a.last_name].filter(Boolean).join(" ")||a.username||"مدیر";
+      if(main){
+        return `<div class="admin-user-row admin-system-user-row admin-system-primary-row">
+          <div class="admin-system-user-main"><strong>${escapeHtml(name)}</strong><small>👑 مدیر اصلی${a.telegram_user_id?` · Telegram ID: ${escapeHtml(a.telegram_user_id)}`:''}</small></div>
+          <span class="admin-primary-badge">غیرقابل حذف</span>
+        </div>`;
+      }
+      return `<div class="admin-user-row admin-system-user-row admin-system-edit-row">
+        <div class="admin-edit-grid admin-system-edit-grid">
+          <label>نام<input id="afirst-${escapeHtml(id)}" value="${escapeHtml(a.first_name||"")}"></label>
+          <label>نام خانوادگی<input id="alast-${escapeHtml(id)}" value="${escapeHtml(a.last_name||"")}"></label>
+          <label>Telegram ID<input id="atele-${escapeHtml(id)}" value="${escapeHtml(a.telegram_user_id||"")}" inputmode="numeric"></label>
+          <label>نام کاربری وب<input id="auser-${escapeHtml(id)}" value="${escapeHtml(a.username||"")}" autocomplete="off"></label>
+          <label>رمز جدید<input id="apass-${escapeHtml(id)}" type="password" placeholder="بدون تغییر" autocomplete="new-password"></label>
+          <label>وضعیت<select id="astatus-${escapeHtml(id)}"><option value="active" ${a.status!=="disabled"?'selected':''}>فعال</option><option value="disabled" ${a.status==="disabled"?'selected':''}>غیرفعال</option></select></label>
+        </div>
+        <div class="admin-system-actions">
+          <button type="button" class="admin-save-customer-button" data-update-admin="${escapeHtml(id)}">💾 ذخیره مدیر</button>
+          <button type="button" class="admin-danger admin-delete-admin-button" data-delete-admin="${escapeHtml(id)}">🗑️ حذف مدیر</button>
+        </div>
+      </div>`;
+    }).join("");
+  }catch(e){container.innerHTML=`<div class="message error">❌ دریافت مدیران انجام نشد.<br>${escapeHtml(e.message||"")}</div>`;}
+}
+
+async function updateAdminUser(id){
+  if(!id)return;
+  const payload={
+    id,
+    first_name:$("afirst-"+id)?.value.trim()||"",
+    last_name:$("alast-"+id)?.value.trim()||"",
+    telegram_user_id:$("atele-"+id)?.value.trim()||"",
+    username:$("auser-"+id)?.value.trim()||"",
+    password:$("apass-"+id)?.value||"",
+    status:$("astatus-"+id)?.value||"active"
+  };
+  try{
+    await postJson("/api/admin/update-admin",payload);
+    await loadAdminUsers();
+    appAlert("✅ اطلاعات مدیر با موفقیت ذخیره شد.");
+  }catch(e){appAlert("❌ ویرایش مدیر انجام نشد:\n"+(e.message||"خطای نامشخص"));}
+}
+
+async function deleteAdminUser(id){
+  if(!id)return;
+  if(!(await appConfirm("آیا این مدیر سیستم حذف شود؟")))return;
+  try{
+    await postJson("/api/admin/delete-admin",{id});
+    await loadAdminUsers();
+    appAlert("✅ مدیر سیستم حذف شد.");
+  }catch(e){appAlert("❌ حذف مدیر انجام نشد:\n"+(e.message||"خطای نامشخص"));}
+}
+
+/* =========================================================
    CUSTOMER ORDER / NOTE
 ========================================================= */
 
@@ -1960,6 +2028,10 @@ async function showAdminSection(sectionName) {
       await loadAdminRequests();
     }
 
+    if (sectionName === "admins") {
+      await loadAdminUsers();
+    }
+
     if (sectionName === "footer") {
       await loadSiteSettings();
     }
@@ -1982,6 +2054,21 @@ function searchAdminItems(inputId, containerId) {
 
 // حذف نماینده با event delegation؛ مستقل از onclick های HTML و مقاوم در برابر رندر مجدد
 document.addEventListener("click", function(event){
+  const updateAdminButton = event.target.closest("[data-update-admin]");
+  if (updateAdminButton) {
+    event.preventDefault(); event.stopPropagation();
+    const id=updateAdminButton.getAttribute("data-update-admin") || "";
+    updateAdminButton.disabled=true;
+    updateAdminButton.textContent="⏳ در حال ذخیره...";
+    updateAdminUser(id).finally(()=>{if(updateAdminButton.isConnected){updateAdminButton.disabled=false;updateAdminButton.textContent="💾 ذخیره مدیر";}});
+    return;
+  }
+  const deleteAdminButton = event.target.closest("[data-delete-admin]");
+  if (deleteAdminButton) {
+    event.preventDefault(); event.stopPropagation();
+    deleteAdminUser(deleteAdminButton.getAttribute("data-delete-admin") || "");
+    return;
+  }
   const deleteButton = event.target.closest("[data-delete-customer]");
   if (deleteButton) {
     event.preventDefault(); event.stopPropagation();
@@ -2003,6 +2090,10 @@ document.addEventListener("click", function(event){
 window.showAdminSection = showAdminSection;
 window.showAdminHome = showAdminHome;
 window.searchAdminItems = searchAdminItems;
+window.createAdminUser = createAdminUser;
+window.deleteAdminUser = deleteAdminUser;
+window.updateAdminUser = updateAdminUser;
+window.loadAdminUsers = loadAdminUsers;
 
 window.openAdmin =
   openAdmin;

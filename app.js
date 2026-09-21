@@ -61,6 +61,9 @@ let currentUser = null;
 let isAdmin = false;
 let selectedCustomer = null;
 let cartItems = {};
+let adminPermissions = [];
+const ADMIN_PERMISSION_KEYS = ["products","customers","prices","requests","footer"];
+
 
 
 /* =========================================================
@@ -137,49 +140,137 @@ function getPriceText(product) {
   return `<div class="price private-price">برای اطلاع از قیمت تماس بگیرید.</div>`;
 }
 
+function normalizeDigits(value){
+  return String(value ?? "").replace(/[۰-۹]/g,d=>String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))).replace(/[٠-٩]/g,d=>String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+}
+function getProductPackageKg(product){
+  const raw=normalizeDigits(product?.package||"").replace(/٬/g,",").replace(/,/g,".");
+  const m=raw.match(/(\d+(?:\.\d+)?)\s*(?:کیلوگرم|کیلوگرمی|کیلو|kg|kgs)/i);
+  const kg=m?Number(m[1]):NaN;
+  return Number.isFinite(kg)&&kg>0?kg:1;
+}
+function formatDecimal(value){
+  const n=Number(value);
+  if(!Number.isFinite(n)) return "۰";
+  return formatNumber(Number.isInteger(n)?n:Number(n.toFixed(3)));
+}
+function getCartAmountKg(item,product){
+  const packageKg=getProductPackageKg(product);
+  if(Number.isFinite(Number(item.amountKg)) && Number(item.amountKg)>0) return Number(item.amountKg);
+  return (Number(item.quantity)||0)*packageKg;
+}
+function getCartUnitValue(item,product){
+  const kg=getCartAmountKg(item,product);
+  return item.unit==="ton" ? kg/1000 : kg;
+}
 function cartStorageKey(){
   const id = currentUser?.id || currentUser?.telegram_user_id || currentUser?.username || "guest";
   return "moshkfam_cart_" + String(id);
 }
-function loadCart(){ try { cartItems = JSON.parse(localStorage.getItem(cartStorageKey()) || "{}"); } catch { cartItems = {}; } updateCartBadge(); }
-function saveCart(){ try { localStorage.setItem(cartStorageKey(), JSON.stringify(cartItems)); } catch {} updateCartBadge(); }
-function updateCartBadge(){ const badge=$("cartCount"); if(!badge)return; const n=Object.values(cartItems).reduce((a,x)=>a+(Number(x.quantity)||0),0); badge.textContent=formatNumber(n); badge.classList.toggle("empty", n===0); }
-function addToCart(productId,event){
-  if(event){ event.preventDefault(); event.stopPropagation(); }
-  if(!currentUser){ appAlert("⚠️ ابتدا وارد حساب کاربری خود شوید."); return; }
-  const product=products.find(p=>Number(p.id)===Number(productId));
-  if(!product){ appAlert("❌ محصول پیدا نشد."); return; }
-  const price=getEffectivePrice(product);
-  if(!Number.isFinite(price)){ appAlert("⚠️ این محصول هنوز قیمت مشخصی ندارد."); return; }
-  const key=String(productId);
-  if(!cartItems[key]) cartItems[key]={productId:Number(productId),quantity:0};
-  cartItems[key].quantity++;
-  saveCart();
-  appAlert("✅ محصول به سبد خرید اضافه شد.");
+function loadCart(){
+  try{
+    cartItems=JSON.parse(localStorage.getItem(cartStorageKey())||"{}");
+    Object.values(cartItems).forEach(item=>{
+      const p=products.find(x=>Number(x.id)===Number(item.productId));
+      if(p){
+        item.unit=item.unit==="ton"?"ton":"kg";
+        item.amountKg=getCartAmountKg(item,p);
+        item.quantity=Math.round(item.amountKg/getProductPackageKg(p));
+      }
+    });
+  }catch{cartItems={};}
+  updateCartBadge();
 }
-function changeCartQty(productId,delta){ const key=String(productId); if(!cartItems[key])return; cartItems[key].quantity=Math.max(0,(Number(cartItems[key].quantity)||0)+delta); if(cartItems[key].quantity===0)delete cartItems[key]; saveCart(); renderCart(); }
-function removeFromCart(productId){ delete cartItems[String(productId)]; saveCart(); renderCart(); appAlert("✅ کالا از سبد خرید حذف شد."); }
-function openCart(){ if(!currentUser){appAlert("⚠️ ابتدا وارد حساب کاربری خود شوید.");return;} loadCart(); renderCart(); $("cartModal")?.classList.remove("hidden"); }
-function closeCart(){ $("cartModal")?.classList.add("hidden"); }
+function saveCart(){try{localStorage.setItem(cartStorageKey(),JSON.stringify(cartItems));}catch{}updateCartBadge();}
+function updateCartBadge(){
+  const badge=$("cartCount"); if(!badge)return;
+  const n=Object.keys(cartItems).length;
+  badge.textContent=formatNumber(n); badge.classList.toggle("empty",n===0);
+}
+function addToCart(productId,event){
+  if(event){event.preventDefault();event.stopPropagation();}
+  if(!currentUser){appAlert("⚠️ ابتدا وارد حساب کاربری خود شوید.");return;}
+  const product=products.find(p=>Number(p.id)===Number(productId));
+  if(!product){appAlert("❌ محصول پیدا نشد.");return;}
+  const price=getEffectivePrice(product);
+  if(!Number.isFinite(price)){appAlert("⚠️ این محصول هنوز قیمت مشخصی ندارد.");return;}
+  const key=String(productId), packageKg=getProductPackageKg(product);
+  if(!cartItems[key]) cartItems[key]={productId:Number(productId),quantity:1,amountKg:packageKg,unit:"kg"};
+  else{
+    cartItems[key].unit=cartItems[key].unit==="ton"?"ton":"kg";
+    cartItems[key].amountKg=getCartAmountKg(cartItems[key],product)+packageKg;
+    cartItems[key].quantity=Math.round(cartItems[key].amountKg/packageKg);
+  }
+  saveCart();
+  appAlert(`✅ ${product.name_fa||product.name_en||"محصول"} به سبد خرید اضافه شد.\nمقدار اولیه: ${formatDecimal(packageKg)} کیلوگرم`);
+}
+function changeCartQty(productId,delta){
+  const key=String(productId); if(!cartItems[key])return;
+  const p=products.find(x=>Number(x.id)===Number(productId)); if(!p)return;
+  const packageKg=getProductPackageKg(p);
+  const currentKg=getCartAmountKg(cartItems[key],p);
+  const nextKg=Math.max(0,currentKg+(Number(delta)||0)*packageKg);
+  if(nextKg===0){delete cartItems[key];}
+  else{cartItems[key].amountKg=nextKg;cartItems[key].quantity=Math.round(nextKg/packageKg);}
+  saveCart();renderCart();
+}
+function setCartUnit(productId,unit){
+  const key=String(productId); if(!cartItems[key])return;
+  cartItems[key].unit=unit==="ton"?"ton":"kg";
+  saveCart();renderCart();
+}
+function setCartAmount(productId,value){
+  const key=String(productId); if(!cartItems[key])return;
+  const p=products.find(x=>Number(x.id)===Number(productId)); if(!p)return;
+  const unit=cartItems[key].unit==="ton"?"ton":"kg";
+  const entered=Number(normalizeDigits(value).replace(/,/g,"."));
+  if(!Number.isFinite(entered)||entered<=0){return;}
+  const amountKg=unit==="ton"?entered*1000:entered;
+  const packageKg=getProductPackageKg(p);
+  const packages=amountKg/packageKg;
+  if(Math.abs(packages-Math.round(packages))>1e-9){
+    appAlert(`⚠️ مقدار ${formatDecimal(amountKg)} کیلوگرم برای بسته ${formatDecimal(packageKg)} کیلوگرمی قابل ثبت نیست.\nلطفاً مقدار را مضربی از ${formatDecimal(packageKg)} کیلوگرم وارد کنید.`);
+    renderCart();return;
+  }
+  cartItems[key].amountKg=amountKg;
+  cartItems[key].quantity=Math.round(packages);
+  saveCart();renderCart();
+}
+function removeFromCart(productId){delete cartItems[String(productId)];saveCart();renderCart();appAlert("✅ کالا از سبد خرید حذف شد.");}
+function openCart(){if(!currentUser){appAlert("⚠️ ابتدا وارد حساب کاربری خود شوید.");return;}loadCart();renderCart();$("cartModal")?.classList.remove("hidden");}
+function closeCart(){$("cartModal")?.classList.add("hidden");}
 function renderCart(){
-  const box=$("cartItems"); const totalEl=$("cartTotal"); if(!box)return;
+  const box=$("cartItems"),totalEl=$("cartTotal"); if(!box)return;
   const rows=Object.values(cartItems).filter(x=>(Number(x.quantity)||0)>0).map(item=>{
     const p=products.find(x=>Number(x.id)===Number(item.productId)); if(!p)return "";
-    const price=getEffectivePrice(p); const total=price*(Number(item.quantity)||0);
-    return `<div class="cart-row"><div class="cart-row-info"><strong>${escapeHtml(p.name_fa||p.name_en||"محصول")}</strong><span>${formatNumber(price)} ${escapeHtml(p.base_currency||"تومان")}</span></div><div class="cart-qty"><button type="button" onclick="changeCartQty(${Number(p.id)},-1)">−</button><b>${formatNumber(item.quantity)}</b><button type="button" onclick="changeCartQty(${Number(p.id)},1)">+</button></div><strong class="cart-line-total">${formatNumber(total)} تومان</strong><button type="button" class="cart-remove" onclick="removeFromCart(${Number(p.id)})">🗑️</button></div>`;
+    const price=getEffectivePrice(p), packageKg=getProductPackageKg(p), amountKg=getCartAmountKg(item,p), unit=item.unit==="ton"?"ton":"kg", unitValue=getCartUnitValue(item,p), total=price*(Number(item.quantity)||0);
+    return `<div class="cart-row cart-row-weight">
+      <div class="cart-row-info"><strong>${escapeHtml(p.name_fa||p.name_en||"محصول")}</strong><span>${formatNumber(price)} ${escapeHtml(p.base_currency||"تومان")} · بسته ${formatDecimal(packageKg)} کیلوگرمی</span></div>
+      <div class="cart-weight-editor">
+        <label>واحد<select onchange="setCartUnit(${Number(p.id)},this.value)"><option value="kg" ${unit==="kg"?"selected":""}>کیلوگرم</option><option value="ton" ${unit==="ton"?"selected":""}>تن</option></select></label>
+        <label>مقدار<input type="number" min="0.001" step="0.001" value="${unitValue}" onchange="setCartAmount(${Number(p.id)},this.value)" onkeydown="if(event.key==='Enter'){this.blur();}"></label>
+      </div>
+      <div class="cart-qty"><button type="button" onclick="changeCartQty(${Number(p.id)},-1)">−</button><b>${formatNumber(item.quantity)} بسته</b><button type="button" onclick="changeCartQty(${Number(p.id)},1)">+</button></div>
+      <strong class="cart-line-total">${formatNumber(total)} تومان</strong>
+      <button type="button" class="cart-remove" onclick="removeFromCart(${Number(p.id)})">🗑️</button>
+      <div class="cart-weight-help">مقدار سفارش: <b>${formatDecimal(amountKg)} کیلوگرم</b> · معادل <b>${formatNumber(item.quantity)} بسته ${formatDecimal(packageKg)} کیلویی</b></div>
+    </div>`;
   }).filter(Boolean);
   box.innerHTML=rows.length?rows.join(""):"<div class=\"message\">سبد خرید خالی است.</div>";
   const total=Object.values(cartItems).reduce((sum,item)=>{const p=products.find(x=>Number(x.id)===Number(item.productId));const price=getEffectivePrice(p);return sum+(Number.isFinite(price)?price*(Number(item.quantity)||0):0)},0);
-  if(totalEl) totalEl.textContent=formatNumber(total)+" تومان";
+  if(totalEl)totalEl.textContent=formatNumber(total)+" تومان";
 }
 async function submitCartOrder(){
   if(!currentUser){appAlert("⚠️ ابتدا وارد حساب کاربری شوید.");return;}
   const entries=Object.values(cartItems).filter(x=>(Number(x.quantity)||0)>0); if(!entries.length){appAlert("⚠️ سبد خرید خالی است.");return;}
-  const lines=entries.map(item=>{const p=products.find(x=>Number(x.id)===Number(item.productId));const price=getEffectivePrice(p);return `${p?.name_fa||p?.name_en||"محصول"} × ${item.quantity} = ${formatNumber(price*(Number(item.quantity)||0))} تومان`;});
+  const lines=entries.map(item=>{
+    const p=products.find(x=>Number(x.id)===Number(item.productId)); if(!p)return "";
+    const price=getEffectivePrice(p),packageKg=getProductPackageKg(p),amountKg=getCartAmountKg(item,p),unit=item.unit==="ton"?"ton":"kg",unitValue=getCartUnitValue(item,p);
+    return `${p.name_fa||p.name_en||"محصول"} × ${formatDecimal(unitValue)} ${unit==="ton"?"تن":"کیلوگرم"} = ${formatNumber(item.quantity)} بسته ${formatDecimal(packageKg)} کیلویی = ${formatNumber(price*(Number(item.quantity)||0))} تومان`;
+  }).filter(Boolean);
   const total=entries.reduce((sum,item)=>{const p=products.find(x=>Number(x.id)===Number(item.productId));const price=getEffectivePrice(p);return sum+(Number.isFinite(price)?price*(Number(item.quantity)||0):0)},0);
-  try{ await postJson("/api/customer/request",{type:"order",text:"🛒 سفارش سبد خرید\n"+lines.join("\n")+`\nمجموع: ${formatNumber(total)} تومان`}); cartItems={}; saveCart(); renderCart(); closeCart(); appAlert("✅ سفارش سبد خرید با موفقیت ثبت شد."); }catch(e){appAlert("❌ ثبت سفارش انجام نشد:\n"+(e.message||"خطای نامشخص"));}
+  try{await postJson("/api/customer/request",{type:"order",text:"🛒 سفارش سبد خرید\n"+lines.join("\n")+`\nمجموع: ${formatNumber(total)} تومان`});cartItems={};saveCart();renderCart();closeCart();appAlert("✅ سفارش سبد خرید با موفقیت ثبت شد.");}catch(e){appAlert("❌ ثبت سفارش انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
-
 
 
 /* =========================================================
@@ -293,7 +384,7 @@ async function loginWithUsernamePassword(){
   if(msg)msg.textContent="در حال ورود...";
   try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=String(r.user?.role||"").toLowerCase()==="admin" || String(r.user?.role||"").toLowerCase()==="super_admin";if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();loadCart();await loadProducts();}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
 }
-async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=String(r.user.role||"").toLowerCase()==="admin" || String(r.user.role||"").toLowerCase()==="super_admin";updateAccountUI();loadCart();}else setStoredToken("");}catch{setStoredToken("");}}
+async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=!!r.isAdmin || String(r.user.role||"").toLowerCase()==="admin" || String(r.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(r.permissions)?r.permissions:[];updateAccountUI();loadCart();}else setStoredToken("");}catch{setStoredToken("");}}
 async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;cartItems={};updateCartBadge();updateAccountUI();await loadProducts();}
 async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
@@ -382,6 +473,7 @@ async function authenticate() {
 
     if (result && result.isAdmin) {
       isAdmin = true;
+      adminPermissions = Array.isArray(result.permissions) ? result.permissions : [];
     }
 
     updateAccountUI();
@@ -407,6 +499,7 @@ async function loadCurrentUser() {
 
     if (result && typeof result.isAdmin === "boolean") {
       isAdmin = result.isAdmin;
+      adminPermissions = Array.isArray(result.permissions) ? result.permissions : [];
     }
 
     updateAccountUI();
@@ -1624,6 +1717,7 @@ async function createAdminUser(){
   const telegram_user_id=$("newAdminTelegramId")?.value.trim()||"";
   const username=$("newAdminUsername")?.value.trim()||"";
   const password=$("newAdminPassword")?.value||"";
+  const permissions=ADMIN_PERMISSION_KEYS.filter(key=>$("newAdminPerm-"+key)?.checked);
 
   if(!telegram_user_id && !(username && password)){
     appAlert("⚠️ حداقل Telegram ID یا هر دو مورد نام کاربری و رمز عبور وب را وارد کنید.");
@@ -1646,7 +1740,7 @@ async function createAdminUser(){
   if(button){button.disabled=true;button.textContent="⏳ در حال افزودن...";}
   try{
     const r=await postJson("/api/admin/create-admin",{
-      first_name,last_name,telegram_user_id,username,password
+      first_name,last_name,telegram_user_id,username,password,permissions
     });
     if(!r?.ok) throw new Error(r?.error||"سرور مدیر را ایجاد نکرد.");
 
@@ -1674,47 +1768,55 @@ async function loadAdminUsers(){
     if(!admins.length){container.innerHTML='<div class="message">هنوز مدیر دیگری تعریف نشده است.</div>';return;}
     container.innerHTML=admins.map(a=>{
       const id=String(a.id||"");
+      const key=id || String(a.telegram_user_id||"");
       const main=!!a.is_primary;
       const name=[a.first_name,a.last_name].filter(Boolean).join(" ")||a.username||"مدیر";
       if(main){
         return `<div class="admin-user-row admin-system-user-row admin-system-primary-row">
           <div class="admin-system-user-main"><strong>${escapeHtml(name)}</strong><small>👑 مدیر اصلی${a.telegram_user_id?` · Telegram ID: ${escapeHtml(a.telegram_user_id)}`:''}</small></div>
-          <span class="admin-primary-badge">غیرقابل حذف</span>
+          <span class="admin-primary-badge">دسترسی کامل · غیرقابل حذف</span>
         </div>`;
       }
+      const perms=Array.isArray(a.permissions)?a.permissions:[];
       return `<div class="admin-user-row admin-system-user-row admin-system-edit-row">
         <div class="admin-edit-grid admin-system-edit-grid">
-          <label>نام<input id="afirst-${escapeHtml(id)}" value="${escapeHtml(a.first_name||"")}"></label>
-          <label>نام خانوادگی<input id="alast-${escapeHtml(id)}" value="${escapeHtml(a.last_name||"")}"></label>
-          <label>Telegram ID<input id="atele-${escapeHtml(id)}" value="${escapeHtml(a.telegram_user_id||"")}" inputmode="numeric"></label>
-          <label>نام کاربری وب<input id="auser-${escapeHtml(id)}" value="${escapeHtml(a.username||"")}" autocomplete="off"></label>
-          <label>رمز جدید<input id="apass-${escapeHtml(id)}" type="password" placeholder="بدون تغییر" autocomplete="new-password"></label>
-          <label>وضعیت<select id="astatus-${escapeHtml(id)}"><option value="active" ${a.status!=="disabled"?'selected':''}>فعال</option><option value="disabled" ${a.status==="disabled"?'selected':''}>غیرفعال</option></select></label>
+          <label>نام<input id="afirst-${escapeHtml(key)}" value="${escapeHtml(a.first_name||"")}"></label>
+          <label>نام خانوادگی<input id="alast-${escapeHtml(key)}" value="${escapeHtml(a.last_name||"")}"></label>
+          <label>Telegram ID<input id="atele-${escapeHtml(key)}" value="${escapeHtml(a.telegram_user_id||"")}" inputmode="numeric"></label>
+          <label>نام کاربری وب<input id="auser-${escapeHtml(key)}" value="${escapeHtml(a.username||"")}" autocomplete="off"></label>
+          <label>رمز جدید<input id="apass-${escapeHtml(key)}" type="password" placeholder="بدون تغییر" autocomplete="new-password"></label>
+          <label>وضعیت<select id="astatus-${escapeHtml(key)}"><option value="active" ${a.status!=="disabled"?'selected':''}>فعال</option><option value="disabled" ${a.status==="disabled"?'selected':''}>غیرفعال</option></select></label>
         </div>
+        <div class="admin-permission-box"><strong>سطح دسترسی مدیر</strong><div class="admin-permission-grid">${ADMIN_PERMISSION_KEYS.map(k=>`<label><input type="checkbox" id="aperm-${escapeHtml(key)}-${k}" ${perms.includes(k)?'checked':''}> ${({products:'محصولات',customers:'نماینده‌ها',prices:'قیمت‌های اختصاصی',requests:'سفارش‌ها و یادداشت‌ها',footer:'اطلاعات شرکت'})[k]}</label>`).join('')}</div></div>
         <div class="admin-system-actions">
-          <button type="button" class="admin-save-customer-button" data-update-admin="${escapeHtml(id)}">💾 ذخیره مدیر</button>
-          <button type="button" class="admin-danger admin-delete-admin-button" data-delete-admin="${escapeHtml(id)}">🗑️ حذف مدیر</button>
+          <button type="button" class="admin-save-customer-button" data-update-admin="${escapeHtml(key)}">💾 ذخیره مدیر</button>
+          <button type="button" class="admin-danger admin-delete-admin-button" data-delete-admin="${escapeHtml(key)}">🗑️ حذف مدیر</button>
         </div>
       </div>`;
     }).join("");
   }catch(e){container.innerHTML=`<div class="message error">❌ دریافت مدیران انجام نشد.<br>${escapeHtml(e.message||"")}</div>`;}
 }
 
-async function updateAdminUser(id){
-  if(!id)return;
+async function updateAdminUser(key){
+  if(!key)return;
+  const permissions=ADMIN_PERMISSION_KEYS.filter(k=>$("aperm-"+key+"-"+k)?.checked);
   const payload={
-    id,
-    first_name:$("afirst-"+id)?.value.trim()||"",
-    last_name:$("alast-"+id)?.value.trim()||"",
-    telegram_user_id:$("atele-"+id)?.value.trim()||"",
-    username:$("auser-"+id)?.value.trim()||"",
-    password:$("apass-"+id)?.value||"",
-    status:$("astatus-"+id)?.value||"active"
+    id:key,
+    first_name:$("afirst-"+key)?.value.trim()||"",
+    last_name:$("alast-"+key)?.value.trim()||"",
+    telegram_user_id:$("atele-"+key)?.value.trim()||"",
+    username:$("auser-"+key)?.value.trim()||"",
+    password:$("apass-"+key)?.value||"",
+    status:$("astatus-"+key)?.value||"active",
+    permissions
   };
+  if(!payload.telegram_user_id && !payload.username){
+    appAlert("⚠️ Telegram ID یا نام کاربری وب باید باقی بماند."); return;
+  }
   try{
     await postJson("/api/admin/update-admin",payload);
     await loadAdminUsers();
-    appAlert("✅ اطلاعات مدیر با موفقیت ذخیره شد.");
+    appAlert("✅ اطلاعات مدیر و سطح دسترسی با موفقیت ذخیره شد.");
   }catch(e){appAlert("❌ ویرایش مدیر انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
 
@@ -1722,7 +1824,9 @@ async function deleteAdminUser(id){
   if(!id)return;
   if(!(await appConfirm("آیا این مدیر سیستم حذف شود؟")))return;
   try{
-    await postJson("/api/admin/delete-admin",{id});
+    const row=document.querySelector(`[data-delete-admin="${CSS.escape(String(id))}"]`)?.closest('.admin-system-edit-row');
+    const tgId=row?.querySelector('input[id^="atele-"]')?.value.trim()||"";
+    await postJson("/api/admin/delete-admin",{id,telegram_user_id:tgId});
     await loadAdminUsers();
     appAlert("✅ مدیر سیستم حذف شد.");
   }catch(e){appAlert("❌ حذف مدیر انجام نشد:\n"+(e.message||"خطای نامشخص"));}
@@ -2051,6 +2155,12 @@ function showAdminHome() {
 }
 
 async function showAdminSection(sectionName) {
+  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",admins:"admins"};
+  const needed=permissionMap[sectionName];
+  if(needed && !(adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins")){
+    appAlert("❌ سطح دسترسی این بخش برای شما فعال نیست.");
+    return;
+  }
   const home = $("adminHome");
   const sections = document.querySelectorAll("[id^='adminSection-']");
 

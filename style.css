@@ -1822,3 +1822,36 @@ footer span{font-size:12px}
 .admin-system-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
 .admin-system-actions .admin-save-customer-button,.admin-system-actions .admin-danger{margin-top:0!important;width:100%!important;min-height:48px!important;}
 @media(max-width:700px){.admin-system-actions{grid-template-columns:1fr;}}
+
+
+/* ===== SYSTEM ADMINS / PERMISSIONS ===== */
+.admin-permission-box{margin:10px 0 12px;padding:12px 14px;border:1px solid #fed7aa;border-radius:14px;background:#fff7ed;direction:rtl!important;}
+.admin-permission-box strong{display:block;color:#9a3412;font-size:13px;margin-bottom:9px;}
+.admin-permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.admin-permission-grid label{display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid #fed7aa;border-radius:10px;background:#fff;font-size:12px;color:#374151;cursor:pointer;}
+.admin-permission-grid input{width:17px;height:17px;accent-color:#ea580c;}
+.admin-new-admin-permissions{margin-top:12px;}
+@media(max-width:700px){.admin-permission-grid{grid-template-columns:1fr;}.admin-permission-grid label{min-height:42px;}}
+.admin-system-actions .admin-danger{min-width:0!important;}
+
+/* ===== سفارش بر اساس کیلوگرم / تن ===== */
+.cart-row-weight{grid-template-columns:minmax(0,1.2fr) minmax(220px,.9fr) auto auto auto;position:relative;align-items:start;}
+.cart-weight-editor{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:220px;}
+.cart-weight-editor label{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:800;color:#374151;}
+.cart-weight-editor select,.cart-weight-editor input{width:100%;height:42px;border:1px solid #d1d5db;border-radius:10px;background:#fff;padding:7px 9px;font:inherit;outline:none;}
+.cart-weight-editor select:focus,.cart-weight-editor input:focus{border-color:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.10);}
+.cart-weight-help{grid-column:1/-1;padding:7px 10px;border-radius:9px;background:#f8fafc;color:#6b7280;font-size:11px;line-height:1.8;}
+.cart-weight-help b{color:#166534;}
+.cart-row-weight .cart-qty{white-space:nowrap;}
+@media(max-width:900px){
+  .cart-row-weight{grid-template-columns:1fr auto;}
+  .cart-weight-editor{grid-column:1/-1;grid-row:2;min-width:0;width:100%;}
+  .cart-row-weight .cart-qty{grid-column:1;grid-row:3;}
+  .cart-row-weight .cart-line-total{grid-column:2;grid-row:3;align-self:center;}
+  .cart-row-weight .cart-remove{grid-column:2;grid-row:4;justify-self:end;}
+  .cart-weight-help{grid-row:5;}
+}
+@media(max-width:520px){
+  .cart-weight-editor{grid-template-columns:1fr;}
+  .cart-row-weight .cart-line-total{font-size:11px;}
+}

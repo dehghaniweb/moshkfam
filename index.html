@@ -476,6 +476,13 @@
           <label>نام کاربری وب<input id="newAdminUsername" autocomplete="off" placeholder="اختیاری"></label>
           <label>رمز عبور وب<input id="newAdminPassword" type="password" autocomplete="new-password" placeholder="اختیاری"></label>
         </div>
+        <div class="admin-permission-box admin-new-admin-permissions"><strong>سطح دسترسی مدیر جدید</strong><div class="admin-permission-grid">
+          <label><input type="checkbox" id="newAdminPerm-products" checked> 📦 محصولات</label>
+          <label><input type="checkbox" id="newAdminPerm-customers" checked> 👥 نماینده‌ها</label>
+          <label><input type="checkbox" id="newAdminPerm-prices" checked> 💰 قیمت‌های اختصاصی</label>
+          <label><input type="checkbox" id="newAdminPerm-requests" checked> 📨 سفارش‌ها و یادداشت‌ها</label>
+          <label><input type="checkbox" id="newAdminPerm-footer" checked> 🏢 اطلاعات شرکت</label>
+        </div></div>
         <button type="button" class="admin-primary admin-add-user-button" onclick="createAdminUser(); return false;">🛡️ افزودن مدیر</button>
       </div>
       <div class="admin-search-wrap admin-admin-search-wrap"><input id="adminUsersSearch" class="admin-search" type="search" placeholder="🔎 جستجوی مدیر..." oninput="searchAdminItems('adminUsersSearch', 'adminUsersList')"></div>

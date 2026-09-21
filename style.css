@@ -1855,3 +1855,37 @@ footer span{font-size:12px}
   .cart-weight-editor{grid-template-columns:1fr;}
   .cart-row-weight .cart-line-total{font-size:11px;}
 }
+
+/* ===== مدیران سیستم: ویرایش و حذف فعال + سبد خرید حرفه‌ای ===== */
+.admin-system-edit-row{
+  border:1px solid #e5e7eb!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  padding:16px!important;
+  margin:12px 0!important;
+  box-shadow:0 5px 18px rgba(0,0,0,.05)!important;
+}
+.admin-system-actions{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:10px!important;
+  margin-top:14px!important;
+}
+.admin-system-actions button{min-height:48px!important;font-weight:900!important;}
+.admin-delete-admin-button{background:#fee2e2!important;color:#991b1b!important;border:1px solid #fecaca!important;border-radius:11px!important;cursor:pointer!important;}
+.admin-delete-admin-button:hover{background:#fecaca!important;}
+.admin-system-primary-row{border:1px solid #bbf7d0!important;background:#f0fdf4!important;border-radius:14px!important;padding:14px!important;margin:12px 0!important;}
+.admin-primary-badge{color:#166534!important;font-weight:900!important;font-size:12px!important;}
+
+.cart-row-weight{box-shadow:0 4px 14px rgba(0,0,0,.045)!important;}
+.cart-row-weight .cart-row-info strong{font-size:14px!important;color:#166534!important;}
+.cart-row-weight .cart-row-info span{display:block!important;margin-top:5px!important;line-height:1.8!important;}
+.cart-weight-editor label{font-size:12px!important;color:#374151!important;}
+.cart-weight-editor select,.cart-weight-editor input{height:44px!important;font-size:14px!important;font-weight:800!important;}
+.cart-weight-editor input{direction:ltr!important;text-align:center!important;}
+.cart-weight-help{background:linear-gradient(135deg,#f0fdf4,#f8fafc)!important;border:1px solid #dcfce7!important;font-size:12px!important;}
+.cart-line-total{font-size:13px!important;font-weight:900!important;}
+.cart-total{font-size:17px!important;font-weight:900!important;box-shadow:0 5px 16px rgba(22,101,52,.08)!important;}
+@media(max-width:700px){
+  .admin-system-actions{grid-template-columns:1fr!important;}
+}

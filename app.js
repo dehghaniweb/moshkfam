@@ -278,9 +278,10 @@ function renderCart(){
         <label>واحد<select onchange="setCartUnit(${Number(p.id)},this.value)"><option value="kg" ${unit==="kg"?"selected":""}>کیلوگرم</option><option value="ton" ${unit==="ton"?"selected":""}>تن</option></select></label>
         <label>مقدار<input type="number" min="0.001" step="0.001" value="${unitValue}" oninput="updateCartAmountLive(${Number(p.id)},this.value)" onchange="setCartAmount(${Number(p.id)},this.value)" onkeydown="if(event.key==='Enter'){this.blur();}"></label>
       </div>
+      <div class="cart-qty"><button type="button" onclick="changeCartQty(${Number(p.id)},-1)">−</button><b>${formatNumber(item.quantity)} بسته</b><button type="button" onclick="changeCartQty(${Number(p.id)},1)">+</button></div>
       <strong id="cart-line-total-${Number(p.id)}" class="cart-line-total">${formatNumber(total)} تومان</strong>
       <button type="button" class="cart-remove" onclick="removeFromCart(${Number(p.id)})">🗑️</button>
-      <div id="cart-weight-help-${Number(p.id)}" class="cart-weight-help">📦 هر بسته <b>${formatDecimal(packageKg)} کیلوگرم</b> است.</div>
+      <div id="cart-weight-help-${Number(p.id)}" class="cart-weight-help">مقدار سفارش: <b>${formatDecimal(amountKg)} کیلوگرم</b> · معادل <b>${formatNumber(item.quantity)} بسته ${formatDecimal(packageKg)} کیلویی</b></div>
     </div>`;
   }).filter(Boolean);
   box.innerHTML=rows.length?rows.join(""):"<div class=\"message\">سبد خرید خالی است.</div>";
@@ -433,25 +434,15 @@ async function createProduct(){
 }
 async function deleteProduct(id){if(!(await appConfirm("آیا از حذف کامل این محصول مطمئن هستید؟")))return;try{await postJson("/api/admin/delete-product",{product_id:Number(id)});alert("✅ محصول حذف شد.");await loadProducts();await loadAdminProducts();}catch(e){alert("❌ حذف محصول انجام نشد:\n"+e.message);}}
 async function createCustomerUser(){const p={first_name:$("newUserFirstName")?.value.trim(),last_name:$("newUserLastName")?.value.trim(),username:$("newUserUsername")?.value.trim(),password:$("newUserPassword")?.value||""};try{await postJson("/api/admin/create-customer",p);alert("✅ نماینده اضافه شد.");["newUserFirstName","newUserLastName","newUserUsername","newUserPassword"].forEach(id=>{if($(id))$(id).value=""});await loadCustomers();}catch(e){alert("❌ افزودن نماینده انجام نشد:\n"+e.message);}}
-function showDeleteDebug(title, data, isError=false){
-  const el=$("customerDeleteDebug");
-  if(!el)return;
-  el.classList.remove("hidden");
-  el.classList.toggle("error", !!isError);
-  el.textContent=title+"\n"+(typeof data === "string" ? data : JSON.stringify(data,null,2));
-}
 async function deleteCustomerUser(id){
   const customerId=String(id||"").trim();
-  if(!customerId){showDeleteDebug("❌ شناسه نماینده خالی است.","customer_id خالی است.",true);return false;}
-  showDeleteDebug("⏳ کلیک دریافت شد؛ در حال حذف نماینده...", {customer_id:customerId});
+  if(!customerId){alert("❌ شناسه نماینده مشخص نیست.");return false;}
   try{
-    const result=await postJson("/api/admin/delete-customer",{customer_id:customerId});
-    showDeleteDebug("✅ خروجی حذف نماینده",result,false);
+    await postJson("/api/admin/delete-customer",{customer_id:customerId});
     alert("✅ نماینده با موفقیت حذف شد.");
     await loadCustomers();
   }catch(e){
     const detail=e?.message||String(e||"خطای نامشخص");
-    showDeleteDebug("❌ خروجی خطای حذف نماینده",detail,true);
     alert("❌ حذف نماینده انجام نشد:\n"+detail);
   }
   return false;

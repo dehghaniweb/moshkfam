@@ -18,7 +18,7 @@
    ========================================================= */
 (async function forceClearCacheFromApp() {
   try {
-    const version = "moshkfam-app-20260916-01";
+    const version = "moshkfam-app-20260923-01";
     const flag = "moshkfam_cache_cleared_" + version;
 
     if (sessionStorage.getItem(flag)) return;
@@ -97,13 +97,22 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+function normalizeNumericValue(value) {
+  if (value === null || value === undefined) return null;
+  const text = String(value)
+    .replace(/[۰-۹]/g, d => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
+    .replace(/[٠-٩]/g, d => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)))
+    .replace(/[٬،]/g, ",")
+    .replace(/\s+/g, "")
+    .replace(/,/g, "");
+  if (text === "") return null;
+  const n = Number(text);
+  return Number.isFinite(n) ? n : null;
+}
+
 function formatNumber(value) {
-  const n = Number(value);
-
-  if (!Number.isFinite(n)) {
-    return "";
-  }
-
+  const n = normalizeNumericValue(value);
+  if (n === null) return "";
   return new Intl.NumberFormat("fa-IR").format(n);
 }
 
@@ -122,21 +131,22 @@ function formatDate(value) {
 }
 
 function getEffectivePrice(product) {
-  if (product?.custom_price !== null && product?.custom_price !== undefined && product?.custom_price !== "") {
-    return Number(product.custom_price);
-  }
-  return (product?.base_price !== null && product?.base_price !== undefined && product?.base_price !== "") ? Number(product.base_price) : null;
+  const custom = normalizeNumericValue(product?.custom_price);
+  if (custom !== null) return custom;
+  return normalizeNumericValue(product?.base_price);
 }
 
 function getPriceText(product) {
-  const publicPrice = Number(product?.base_price);
-  const customPrice = product?.custom_price !== null && product?.custom_price !== undefined && product?.custom_price !== "" ? Number(product.custom_price) : null;
-  const hasPublic = Number.isFinite(publicPrice);
-  const hasCustom = Number.isFinite(customPrice);
+  const publicPrice = normalizeNumericValue(product?.base_price);
+  const customPrice = normalizeNumericValue(product?.custom_price);
+  const hasPublic = publicPrice !== null;
+  const hasCustom = customPrice !== null;
+  const publicCurrency = product?.base_currency || "تومان";
+  const customCurrency = product?.custom_currency || publicCurrency;
   if (hasCustom && (!hasPublic || customPrice !== publicPrice)) {
-    return `<div class="price price-custom-wrap"><span class="public-price-old">${formatNumber(publicPrice)} ${escapeHtml(product.base_currency || "تومان")}</span><span class="custom-price-current">${formatNumber(customPrice)} ${escapeHtml(product.base_currency || "تومان")}</span></div>`;
+    return `<div class="price price-custom-wrap"><span class="public-price-old">${formatNumber(publicPrice)} ${escapeHtml(publicCurrency)}</span><span class="custom-price-current">${formatNumber(customPrice)} ${escapeHtml(customCurrency)}</span></div>`;
   }
-  if (hasPublic) return `<div class="price">${formatNumber(publicPrice)} ${escapeHtml(product.base_currency || "تومان")}</div>`;
+  if (hasPublic) return `<div class="price">${formatNumber(publicPrice)} ${escapeHtml(publicCurrency)}</div>`;
   return `<div class="price private-price">برای اطلاع از قیمت تماس بگیرید.</div>`;
 }
 
@@ -187,6 +197,27 @@ function updateCartBadge(){
   const n=Object.keys(cartItems).length;
   badge.textContent=formatNumber(n); badge.classList.toggle("empty",n===0);
 }
+let cartToastTimer = null;
+function showCartToast(message = "به سبد خرید اضافه شد") {
+  let toast = $("cartToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "cartToast";
+    toast.className = "cart-toast";
+    document.body.appendChild(toast);
+  }
+  toast.textContent = `✓ ${message}`;
+  toast.classList.remove("show", "hide");
+  void toast.offsetWidth;
+  toast.classList.add("show");
+  clearTimeout(cartToastTimer);
+  cartToastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+    setTimeout(() => toast.classList.remove("hide"), 280);
+  }, 1700);
+}
+
 function addToCart(productId,event){
   if(event){event.preventDefault();event.stopPropagation();}
   if(!currentUser){appAlert("⚠️ ابتدا وارد حساب کاربری خود شوید.");return;}
@@ -202,7 +233,7 @@ function addToCart(productId,event){
     cartItems[key].quantity=Math.round(cartItems[key].amountKg/packageKg);
   }
   saveCart();
-  appAlert(`✅ ${product.name_fa||product.name_en||"محصول"} به سبد خرید اضافه شد.\nمقدار اولیه: ${formatDecimal(packageKg)} کیلوگرم`);
+  showCartToast("به سبد خرید اضافه شد");
 }
 function changeCartQty(productId,delta){
   const key=String(productId); if(!cartItems[key])return;
@@ -1336,15 +1367,25 @@ function toggleAdminAccordion(id){
   if(!item) return;
   item.classList.toggle("open");
   const button=item.querySelector(":scope > .admin-accordion-title");
-  if(button) button.setAttribute("aria-expanded", item.classList.contains("open") ? "true" : "false");
+  if(button) {
+    const open = item.classList.contains("open");
+    button.setAttribute("aria-expanded", open ? "true" : "false");
+    const chevron = button.querySelector(".admin-accordion-chevron");
+    if (chevron) chevron.setAttribute("data-open", open ? "1" : "0");
+  }
 }
 function adminAccordion(id,title,body,extraClass=""){
   return `<div id="${escapeHtml(id)}" class="admin-accordion ${escapeHtml(extraClass)}">
     <button type="button" class="admin-accordion-title" aria-expanded="false" onclick="toggleAdminAccordion('${escapeHtml(id)}'); return false;">
-      <span class="admin-accordion-title-text">${title}</span><span class="admin-accordion-chevron">⌄</span>
+      <span class="admin-accordion-title-text">${title}</span><span class="admin-accordion-chevron" aria-hidden="true">❯</span>
     </button>
     <div class="admin-accordion-body">${body}</div>
   </div>`;
+}
+
+function setAdminCount(id, count) {
+  const el = $(id);
+  if (el) el.textContent = formatNumber(count);
 }
 
 function renderAdminProductList(list, container){
@@ -1399,6 +1440,8 @@ async function loadAdminProducts() {
   try {
     const result = await postJson('/api/admin/products', {});
     const list = Array.isArray(result) ? result : (Array.isArray(result?.products) ? result.products : products);
+    setAdminCount("adminProductCountAdd", list.length);
+    setAdminCount("adminProductCountEdit", list.length);
     containers.forEach(container => renderAdminProductList(list, container));
   } catch (error) {
     console.error('Admin products:', error);
@@ -1630,6 +1673,8 @@ async function loadCustomers() {
     try{
       const r=await postJson("/api/admin/customers",{});
       const cs=Array.isArray(r?.customers)?r.customers:(Array.isArray(r)?r:[]);
+      setAdminCount("adminCustomerCountAdd", cs.length);
+      setAdminCount("adminCustomerCountEdit", cs.length);
       const editHtml=cs.length?cs.map(c=>{
         const id=String(c.id);
         const name=[c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "نماینده";
@@ -1800,6 +1845,7 @@ async function loadAdminUsers(){
   try{
     const r=await postJson("/api/admin/admin-users",{});
     const admins=Array.isArray(r?.admins)?r.admins:[];
+    setAdminCount("adminManagerCount", admins.length);
     if(!admins.length){container.innerHTML='<div class="message">هنوز مدیر دیگری تعریف نشده است.</div>';return;}
     container.innerHTML=admins.map(a=>{
       const id=String(a.id||"");

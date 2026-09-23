@@ -389,7 +389,7 @@
     <!-- PRODUCTS: ADD / DELETE -->
     <section id="adminSection-products" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>📦 اضافه و حذف محصول</h3>
+      <h3 class="admin-section-title">📦 اضافه و حذف محصول<span id="adminProductCountAdd" class="admin-count-badge products">۰</span></h3>
       <div class="admin-create-product admin-accordion admin-static-accordion" id="admin-create-product-box">
         <button type="button" class="admin-accordion-title" aria-expanded="false" onclick="toggleAdminAccordion('admin-create-product-box'); return false;">
           <span class="admin-accordion-title-text"><strong>➕ افزودن محصول جدید</strong></span><span class="admin-accordion-chevron">⌄</span>
@@ -414,7 +414,7 @@
     <!-- PRODUCT EDIT -->
     <section id="adminSection-edit-products" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>✏️ ویرایش محصول</h3>
+      <h3 class="admin-section-title">✏️ ویرایش محصول<span id="adminProductCountEdit" class="admin-count-badge products">۰</span></h3>
       <p class="admin-section-help">محصول موردنظر را انتخاب و مشخصات آن را ویرایش کنید.</p>
       <div class="admin-search-wrap"><input id="productEditSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام محصول..." oninput="searchAdminItems('productEditSearch', 'adminEditProducts')"></div>
       <div id="adminEditProducts"></div>
@@ -423,7 +423,7 @@
     <!-- CUSTOMERS: ADD / DELETE -->
     <section id="adminSection-customers" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>👥 اضافه و حذف نماینده‌ها</h3>
+      <h3 class="admin-section-title">👥 اضافه و حذف نماینده‌ها<span id="adminCustomerCountAdd" class="admin-count-badge customers">۰</span></h3>
       <div class="admin-create-user admin-accordion admin-static-accordion" id="admin-create-user-box">
         <button type="button" class="admin-accordion-title" aria-expanded="false" onclick="toggleAdminAccordion('admin-create-user-box'); return false;">
           <span class="admin-accordion-title-text"><strong>➕ افزودن نماینده جدید</strong></span><span class="admin-accordion-chevron">⌄</span>
@@ -447,7 +447,7 @@
     <!-- CUSTOMER EDIT -->
     <section id="adminSection-edit-customers" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>✏️ ویرایش نماینده‌ها</h3>
+      <h3 class="admin-section-title">✏️ ویرایش نماینده‌ها<span id="adminCustomerCountEdit" class="admin-count-badge customers">۰</span></h3>
       <p class="admin-section-help">اطلاعات نماینده را ویرایش کنید. برای تغییر رمز، رمز جدید را وارد کنید.</p>
       <div class="admin-search-wrap"><input id="customerEditSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر..." oninput="searchAdminItems('customerEditSearch', 'adminUsers')"></div>
       <div id="adminUsers"></div>
@@ -473,7 +473,7 @@
     <!-- ADMINS -->
     <section id="adminSection-admins" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>🛡️ مدیران سیستم</h3>
+      <h3 class="admin-section-title">🛡️ مدیران سیستم<span id="adminManagerCount" class="admin-count-badge managers">۰</span></h3>
       <p class="admin-section-help">مدیر جدید می‌تواند از طریق تلگرام با شناسه تلگرام یا از طریق وب با نام کاربری و رمز عبور وارد شود. مدیر اصلی قابل حذف نیست.</p>
       <div class="admin-admin-create admin-accordion admin-static-accordion" id="admin-create-admin-box">
         <button type="button" class="admin-accordion-title" aria-expanded="false" onclick="toggleAdminAccordion('admin-create-admin-box'); return false;">

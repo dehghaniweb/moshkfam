@@ -1855,3 +1855,96 @@ footer span{font-size:12px}
   .cart-weight-editor{grid-template-columns:1fr;}
   .cart-row-weight .cart-line-total{font-size:11px;}
 }
+
+
+/* ===== Representative password visibility ===== */
+.password-field{
+  min-width:0;
+}
+.password-input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+  width:100%;
+}
+.password-input-wrap input{
+  width:100%;
+  padding-left:48px !important;
+}
+.password-eye{
+  position:absolute;
+  left:6px;
+  top:50%;
+  transform:translateY(-50%);
+  width:38px;
+  height:38px;
+  min-width:38px;
+  border:1px solid #d1d5db;
+  border-radius:9px;
+  background:#fff;
+  color:#374151;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  font-size:18px;
+  cursor:pointer;
+  z-index:2;
+}
+.password-eye:hover{
+  background:#f3f4f6;
+}
+
+/* ===== ACCORDION ADMIN LISTS ===== */
+.admin-accordion{
+  margin:0 0 12px!important;
+  border:1px solid #d8dee8!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  overflow:hidden!important;
+  box-shadow:0 3px 12px rgba(15,23,42,.06)!important;
+}
+.admin-accordion:last-child{margin-bottom:0!important;}
+.admin-accordion-title{
+  width:100%!important;
+  min-height:60px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  padding:13px 16px!important;
+  border:0!important;
+  background:linear-gradient(135deg,#f0fdf4,#fff)!important;
+  color:#166534!important;
+  font:inherit!important;
+  font-weight:900!important;
+  text-align:right!important;
+  cursor:pointer!important;
+}
+.admin-accordion-title:hover{background:linear-gradient(135deg,#dcfce7,#fff)!important;}
+.admin-accordion-title-text{display:flex!important;align-items:center!important;gap:8px!important;min-width:0!important;flex:1!important;}
+.admin-accordion-title-text strong{font-size:15px!important;color:#166534!important;}
+.admin-accordion-title-text small{display:block!important;margin-right:7px!important;font-size:11px!important;color:#6b7280!important;font-weight:600!important;}
+.admin-accordion-chevron{flex:0 0 auto!important;width:30px!important;height:30px!important;border-radius:50%!important;background:#dcfce7!important;color:#166534!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:20px!important;line-height:1!important;transition:transform .18s ease!important;}
+.admin-accordion.open .admin-accordion-chevron{transform:rotate(180deg)!important;}
+.admin-accordion-body{display:none!important;padding:14px 15px 16px!important;border-top:1px solid #e5e7eb!important;background:#fff!important;}
+.admin-accordion.open .admin-accordion-body{display:block!important;}
+.admin-accordion-summary{display:flex!important;flex-wrap:wrap!important;gap:7px 14px!important;margin-bottom:12px!important;padding:10px 12px!important;border-radius:11px!important;background:#f8fafc!important;border:1px solid #e5e7eb!important;color:#475569!important;font-size:12px!important;line-height:1.8!important;}
+.admin-product-accordion .admin-accordion-title{background:linear-gradient(135deg,#eff6ff,#fff)!important;color:#1d4ed8!important;}
+.admin-product-accordion .admin-accordion-title strong{color:#1d4ed8!important;}
+.admin-system-accordion .admin-accordion-title{background:linear-gradient(135deg,#f5f3ff,#fff)!important;}
+.admin-system-accordion .admin-accordion-title strong{color:#6d28d9!important;}
+.admin-primary-accordion .admin-accordion-title{background:linear-gradient(135deg,#fef3c7,#fff)!important;}
+.admin-primary-accordion .admin-accordion-title strong{color:#92400e!important;}
+.admin-customer-accordion .admin-accordion-title{background:linear-gradient(135deg,#ecfdf5,#fff)!important;}
+@media(max-width:600px){
+  .admin-accordion{margin-bottom:10px!important;border-radius:13px!important;}
+  .admin-accordion-title{min-height:56px!important;padding:11px 12px!important;}
+  .admin-accordion-title-text strong{font-size:14px!important;}
+  .admin-accordion-body{padding:12px 10px 14px!important;}
+}
+.admin-static-accordion.admin-create-product,
+.admin-static-accordion.admin-create-user,
+.admin-static-accordion.admin-admin-create{padding:0!important;margin:0 0 14px!important;background:#fff!important;}
+.admin-static-accordion .admin-accordion-body{padding:14px!important;}
+.admin-static-accordion .admin-accordion-body .admin-primary{margin-top:14px!important;}

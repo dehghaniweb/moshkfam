@@ -433,6 +433,19 @@ async function createProduct(){
   }catch(e){console.error("Create product:",e);alert("❌ افزودن محصول انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
 async function deleteProduct(id){if(!(await appConfirm("آیا از حذف کامل این محصول مطمئن هستید؟")))return;try{await postJson("/api/admin/delete-product",{product_id:Number(id)});alert("✅ محصول حذف شد.");await loadProducts();await loadAdminProducts();}catch(e){alert("❌ حذف محصول انجام نشد:\n"+e.message);}}
+function togglePasswordVisibility(inputId, buttonId) {
+  const input = $(inputId);
+  const button = $(buttonId);
+  if (!input) return;
+  const showing = input.type === "text";
+  input.type = showing ? "password" : "text";
+  if (button) {
+    button.textContent = showing ? "👁️" : "🙈";
+    button.setAttribute("aria-label", showing ? "نمایش رمز عبور" : "مخفی کردن رمز عبور");
+    button.title = showing ? "نمایش رمز عبور" : "مخفی کردن رمز عبور";
+  }
+}
+
 async function createCustomerUser(){const p={first_name:$("newUserFirstName")?.value.trim(),last_name:$("newUserLastName")?.value.trim(),username:$("newUserUsername")?.value.trim(),password:$("newUserPassword")?.value||""};try{await postJson("/api/admin/create-customer",p);alert("✅ نماینده اضافه شد.");["newUserFirstName","newUserLastName","newUserUsername","newUserPassword"].forEach(id=>{if($(id))$(id).value=""});await loadCustomers();}catch(e){alert("❌ افزودن نماینده انجام نشد:\n"+e.message);}}
 async function deleteCustomerUser(id){
   const customerId=String(id||"").trim();
@@ -1318,6 +1331,22 @@ function renderAdminAccount() {
    ADMIN PRODUCTS
 ========================================================= */
 
+function toggleAdminAccordion(id){
+  const item=$(id);
+  if(!item) return;
+  item.classList.toggle("open");
+  const button=item.querySelector(":scope > .admin-accordion-title");
+  if(button) button.setAttribute("aria-expanded", item.classList.contains("open") ? "true" : "false");
+}
+function adminAccordion(id,title,body,extraClass=""){
+  return `<div id="${escapeHtml(id)}" class="admin-accordion ${escapeHtml(extraClass)}">
+    <button type="button" class="admin-accordion-title" aria-expanded="false" onclick="toggleAdminAccordion('${escapeHtml(id)}'); return false;">
+      <span class="admin-accordion-title-text">${title}</span><span class="admin-accordion-chevron">⌄</span>
+    </button>
+    <div class="admin-accordion-body">${body}</div>
+  </div>`;
+}
+
 function renderAdminProductList(list, container){
   const allowDelete = container && container.id === "adminProducts";
   if(!container) return;
@@ -1326,17 +1355,9 @@ function renderAdminProductList(list, container){
       const id = Number(product.id);
       const nameFa = product.name_fa || product.name_en || "محصول";
       const nameEn = product.name_en || "";
-      return `
-        <div class="admin-product admin-product-delete-only">
-          <div class="admin-product-title">
-            <div>
-              <strong>${escapeHtml(nameFa)}</strong>
-              ${nameEn ? `<small class="admin-product-en">${escapeHtml(nameEn)}</small>` : ""}
-            </div>
-            <small>ID: ${escapeHtml(id)}</small>
-          </div>
-          <button type="button" class="admin-danger admin-delete-product-button" onclick="deleteProduct(${id}); return false;">🗑️ حذف محصول</button>
-        </div>`;
+      const body=`<div class="admin-accordion-summary"><span>شناسه محصول: ${escapeHtml(id)}</span></div>
+        <button type="button" class="admin-danger admin-delete-product-button" onclick="deleteProduct(${id}); return false;">🗑️ حذف محصول</button>`;
+      return adminAccordion(`admin-product-delete-${id}`, `<strong>📦 ${escapeHtml(nameFa)}</strong>${nameEn ? `<small>${escapeHtml(nameEn)}</small>` : ""}`, body, "admin-product-accordion");
     }).join("");
     return;
   }
@@ -1344,15 +1365,8 @@ function renderAdminProductList(list, container){
       const id = Number(product.id);
       const nameFa = product.name_fa || "";
       const nameEn = product.name_en || "";
-      const benefits = Array.isArray(product.benefits)
-        ? product.benefits.join("\n")
-        : (product.benefits || "");
-      return `
-        <div class="admin-product">
-          <div class="admin-product-title">
-            <strong>${escapeHtml(nameFa || nameEn || "محصول")}</strong>
-            <small>ID: ${escapeHtml(id)}</small>
-          </div>
+      const benefits = Array.isArray(product.benefits) ? product.benefits.join("\n") : (product.benefits || "");
+      const body=`
           <div class="admin-edit-grid">
             <label>نام فارسی<input id="namefa-${id}" value="${escapeHtml(nameFa)}"></label>
             <label>نام انگلیسی<input id="nameen-${id}" value="${escapeHtml(nameEn)}"></label>
@@ -1366,7 +1380,7 @@ function renderAdminProductList(list, container){
             <label>ترکیبات<textarea id="composition-${id}">${escapeHtml(product.composition || "")}</textarea></label>
             <label>نحوه مصرف<textarea id="use-${id}">${escapeHtml(product.use_text || "")}</textarea></label>
             <label>هشدارها<textarea id="warnings-${id}">${escapeHtml(product.warnings || "")}</textarea></label>
-            <label>مزایا (هر مورد در یک خط)<textarea id="benefits-${id}">${escapeHtml(benefits)}</textarea></label>
+            <label>مزایا<textarea id="benefits-${id}">${escapeHtml(benefits)}</textarea></label>
           </div>
           <label class="admin-active"><input type="checkbox" id="active-${id}" ${product.active !== false ? "checked" : ""}> محصول فعال و قابل نمایش برای مشتریان</label>
           <div class="admin-product-buttons"><button type="button" onclick="saveProduct(${id}); return false;">💾 ذخیره اطلاعات محصول</button></div>
@@ -1374,9 +1388,9 @@ function renderAdminProductList(list, container){
             <div class="admin-media-box"><label>🖼️ تصویر جدید<input type="file" id="image-${id}" accept="image/*"></label><button type="button" onclick="uploadProductImage(${id}); return false;">آپلود / جایگزینی تصویر</button>${product.image_url ? `<button type="button" class="danger" onclick="removeProductImage(${id}); return false;">بایگانی تصویر فعلی</button>` : ""}</div>
             <div class="admin-media-box"><label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label><button type="button" onclick="uploadProductVideo(${id}); return false;">آپلود / جایگزینی ویدئو</button>${product.video_url ? `<button type="button" class="danger" onclick="removeProductVideo(${id}); return false;">بایگانی ویدئو</button>` : ""}</div>
             <div class="admin-media-box"><label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label><button type="button" onclick="uploadProductCatalog(${id}); return false;">آپلود / جایگزینی کاتالوگ</button>${product.catalog_pdf_url ? `<button type="button" class="danger" onclick="removeProductCatalog(${id}); return false;">بایگانی کاتالوگ</button>` : ""}</div>
-          </div>
-        </div>`;
-    }).join("");
+          </div>`;
+      return adminAccordion(`admin-product-edit-${id}`, `<strong>📦 ${escapeHtml(nameFa || nameEn || "محصول")}</strong>${nameEn ? `<small>${escapeHtml(nameEn)}</small>` : ""}`, body, "admin-product-accordion");
+  }).join("");
 }
 
 async function loadAdminProducts() {
@@ -1618,12 +1632,15 @@ async function loadCustomers() {
       const cs=Array.isArray(r?.customers)?r.customers:(Array.isArray(r)?r:[]);
       const editHtml=cs.length?cs.map(c=>{
         const id=String(c.id);
-        return `<div class="admin-user-row"><div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label>رمز جدید<input id="upass-${id}" type="password" placeholder="بدون تغییر"></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button type="button" class="admin-save-customer-button" data-update-customer="${escapeHtml(id)}">💾 ذخیره</button></div>`;
+        const name=[c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "نماینده";
+        const body=`<div class="admin-edit-grid"><label>نام<input id="ufirst-${id}" value="${escapeHtml(c.first_name||"")}"></label><label>نام خانوادگی<input id="ulast-${id}" value="${escapeHtml(c.last_name||"")}"></label><label>یوزر<input id="uuser-${id}" value="${escapeHtml(c.username||"")}"></label><label class="password-field">رمز جدید<div class="password-input-wrap"><input id="upass-${id}" type="password" placeholder="رمز جدید را برای تغییر وارد کنید" autocomplete="new-password"><button type="button" class="password-eye" id="eye-upass-${id}" onclick="togglePasswordVisibility('upass-${id}','eye-upass-${id}'); return false;" aria-label="نمایش رمز جدید" title="نمایش رمز جدید">👁️</button></div></label><label>وضعیت<select id="ustatus-${id}"><option value="active" ${c.status!=="disabled"?"selected":""}>فعال</option><option value="disabled" ${c.status==="disabled"?"selected":""}>غیرفعال</option></select></label></div><button type="button" class="admin-save-customer-button" data-update-customer="${escapeHtml(id)}">💾 ذخیره</button>`;
+        return adminAccordion(`admin-customer-edit-${id}`, `<strong>👤 ${escapeHtml(name)}</strong><small>${escapeHtml(c.username?c.username:"")}</small>`, body, "admin-customer-accordion");
       }).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
       const deleteHtml=cs.length?cs.map(c=>{
         const id=String(c.id);
         const name=[c.first_name,c.last_name].filter(Boolean).join(" ") || c.username || "نماینده";
-        return `<div class="admin-user-row admin-delete-row"><div><strong>${escapeHtml(name)}</strong><small>${escapeHtml(c.username?c.username:"")}</small></div><button type="button" class="admin-danger admin-delete-customer-button" data-delete-customer="${escapeHtml(id)}">🗑️ حذف نماینده</button></div>`;
+        const body=`<div class="admin-accordion-summary"><span>نام کاربری: ${escapeHtml(c.username||"—")}</span>${c.phone?`<span>تلفن: ${escapeHtml(c.phone)}</span>`:""}</div><button type="button" class="admin-danger admin-delete-customer-button" data-delete-customer="${escapeHtml(id)}">🗑️ حذف نماینده</button>`;
+        return adminAccordion(`admin-customer-delete-${id}`, `<strong>👤 ${escapeHtml(name)}</strong><small>${escapeHtml(c.username?c.username:"")}</small>`, body, "admin-customer-accordion");
       }).join(""): `<div class="message">هنوز نماینده‌ای تعریف نشده است.</div>`;
       if(editBox) editBox.innerHTML=editHtml;
       if(deleteBox) deleteBox.innerHTML=deleteHtml;
@@ -1790,27 +1807,24 @@ async function loadAdminUsers(){
       const main=!!a.is_primary;
       const name=[a.first_name,a.last_name].filter(Boolean).join(" ")||a.username||"مدیر";
       if(main){
-        return `<div class="admin-user-row admin-system-user-row admin-system-primary-row">
-          <div class="admin-system-user-main"><strong>${escapeHtml(name)}</strong><small>👑 مدیر اصلی${a.telegram_user_id?` · Telegram ID: ${escapeHtml(a.telegram_user_id)}`:''}</small></div>
-          <span class="admin-primary-badge">دسترسی کامل · غیرقابل حذف</span>
-        </div>`;
+        const body=`<div class="admin-accordion-summary"><span>👑 مدیر اصلی</span><span>دسترسی کامل · غیرقابل حذف</span>${a.telegram_user_id?`<span>Telegram ID: ${escapeHtml(a.telegram_user_id)}</span>`:""}</div>`;
+        return adminAccordion(`admin-system-primary-${key}`, `<strong>🛡️ ${escapeHtml(name)}</strong><small>مدیر اصلی</small>`, body, "admin-system-accordion admin-primary-accordion");
       }
       const perms=Array.isArray(a.permissions)?a.permissions:[];
-      return `<div class="admin-user-row admin-system-user-row admin-system-edit-row">
-        <div class="admin-edit-grid admin-system-edit-grid">
+      const body=`<div class="admin-edit-grid admin-system-edit-grid">
           <label>نام<input id="afirst-${escapeHtml(key)}" value="${escapeHtml(a.first_name||"")}"></label>
           <label>نام خانوادگی<input id="alast-${escapeHtml(key)}" value="${escapeHtml(a.last_name||"")}"></label>
           <label>Telegram ID<input id="atele-${escapeHtml(key)}" value="${escapeHtml(a.telegram_user_id||"")}" inputmode="numeric"></label>
           <label>نام کاربری وب<input id="auser-${escapeHtml(key)}" value="${escapeHtml(a.username||"")}" autocomplete="off"></label>
-          <label>رمز جدید<input id="apass-${escapeHtml(key)}" type="password" placeholder="بدون تغییر" autocomplete="new-password"></label>
+          <label class="password-field">رمز جدید<div class="password-input-wrap"><input id="apass-${escapeHtml(key)}" type="password" placeholder="برای تغییر رمز وارد کنید" autocomplete="new-password"><button type="button" class="password-eye" id="eye-apass-${escapeHtml(key)}" onclick="togglePasswordVisibility('apass-${escapeHtml(key)}','eye-apass-${escapeHtml(key)}'); return false;" aria-label="نمایش رمز جدید" title="نمایش رمز جدید">👁️</button></div></label>
           <label>وضعیت<select id="astatus-${escapeHtml(key)}"><option value="active" ${a.status!=="disabled"?'selected':''}>فعال</option><option value="disabled" ${a.status==="disabled"?'selected':''}>غیرفعال</option></select></label>
         </div>
         <div class="admin-permission-box"><strong>سطح دسترسی مدیر</strong><div class="admin-permission-grid">${ADMIN_PERMISSION_KEYS.map(k=>`<label><input type="checkbox" id="aperm-${escapeHtml(key)}-${k}" ${perms.includes(k)?'checked':''}> ${({products:'محصولات',customers:'نماینده‌ها',prices:'قیمت‌های اختصاصی',requests:'سفارش‌ها و یادداشت‌ها',footer:'اطلاعات شرکت'})[k]}</label>`).join('')}</div></div>
         <div class="admin-system-actions">
           <button type="button" class="admin-save-customer-button" data-update-admin="${escapeHtml(key)}">💾 ذخیره مدیر</button>
           <button type="button" class="admin-danger admin-delete-admin-button" data-delete-admin="${escapeHtml(key)}">🗑️ حذف مدیر</button>
-        </div>
-      </div>`;
+        </div>`;
+      return adminAccordion(`admin-system-edit-${key}`, `<strong>🛡️ ${escapeHtml(name)}</strong><small>${a.username ? escapeHtml(a.username) : (a.telegram_user_id ? `Telegram: ${escapeHtml(a.telegram_user_id)}` : "مدیر سیستم")}</small>`, body, "admin-system-accordion");
     }).join("");
   }catch(e){container.innerHTML=`<div class="message error">❌ دریافت مدیران انجام نشد.<br>${escapeHtml(e.message||"")}</div>`;}
 }
@@ -2261,6 +2275,7 @@ document.addEventListener("click", function(event){
   }
 }, true);
 
+window.toggleAdminAccordion = toggleAdminAccordion;
 window.showAdminSection = showAdminSection;
 window.showAdminHome = showAdminHome;
 window.searchAdminItems = searchAdminItems;

@@ -390,17 +390,21 @@
     <section id="adminSection-products" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3>📦 اضافه و حذف محصول</h3>
-      <div class="admin-create-product">
-        <h4>➕ افزودن محصول جدید</h4>
-        <div class="admin-edit-grid">
-          <label>نام فارسی<input id="newProductNameFa"></label>
-          <label>نام انگلیسی<input id="newProductNameEn"></label>
-          <label>دسته‌بندی<input id="newProductCategory"></label>
-          <label>بسته‌بندی<input id="newProductPackage"></label>
-          <label>سازنده<input id="newProductMaker"></label>
-          <label>قیمت پایه<input id="newProductPrice" type="number"></label>
+      <div class="admin-create-product admin-accordion admin-static-accordion" id="admin-create-product-box">
+        <button type="button" class="admin-accordion-title" aria-expanded="false" onclick="toggleAdminAccordion('admin-create-product-box'); return false;">
+          <span class="admin-accordion-title-text"><strong>➕ افزودن محصول جدید</strong></span><span class="admin-accordion-chevron">⌄</span>
+        </button>
+        <div class="admin-accordion-body">
+          <div class="admin-edit-grid">
+            <label>نام فارسی<input id="newProductNameFa"></label>
+            <label>نام انگلیسی<input id="newProductNameEn"></label>
+            <label>دسته‌بندی<input id="newProductCategory"></label>
+            <label>بسته‌بندی<input id="newProductPackage"></label>
+            <label>سازنده<input id="newProductMaker"></label>
+            <label>قیمت پایه<input id="newProductPrice" type="number"></label>
+          </div>
+          <button class="admin-primary" onclick="createProduct()">➕ ایجاد محصول</button>
         </div>
-        <button class="admin-primary" onclick="createProduct()">➕ ایجاد محصول</button>
       </div>
       <div class="admin-search-wrap"><input id="productDeleteSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام محصول..." oninput="searchAdminItems('productDeleteSearch', 'adminProducts')"></div>
       <h4 class="admin-subtitle">محصولات موجود — حذف</h4>
@@ -420,15 +424,19 @@
     <section id="adminSection-customers" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3>👥 اضافه و حذف نماینده‌ها</h3>
-      <div class="admin-create-user">
-        <h4>➕ افزودن نماینده جدید</h4>
-        <div class="admin-edit-grid">
-          <label>نام<input id="newUserFirstName"></label>
-          <label>نام خانوادگی<input id="newUserLastName"></label>
-          <label>نام کاربری<input id="newUserUsername" autocomplete="off"></label>
-          <label>رمز عبور<input id="newUserPassword" type="password" autocomplete="new-password"></label>
+      <div class="admin-create-user admin-accordion admin-static-accordion" id="admin-create-user-box">
+        <button type="button" class="admin-accordion-title" aria-expanded="false" onclick="toggleAdminAccordion('admin-create-user-box'); return false;">
+          <span class="admin-accordion-title-text"><strong>➕ افزودن نماینده جدید</strong></span><span class="admin-accordion-chevron">⌄</span>
+        </button>
+        <div class="admin-accordion-body">
+          <div class="admin-edit-grid">
+            <label>نام<input id="newUserFirstName"></label>
+            <label>نام خانوادگی<input id="newUserLastName"></label>
+            <label>نام کاربری<input id="newUserUsername" autocomplete="off"></label>
+            <label class="password-field">رمز عبور<div class="password-input-wrap"><input id="newUserPassword" type="password" autocomplete="new-password"><button type="button" class="password-eye" id="eye-newUserPassword" onclick="togglePasswordVisibility('newUserPassword','eye-newUserPassword'); return false;" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">👁️</button></div></label>
+          </div>
+          <button type="button" class="admin-primary admin-add-user-button" onclick="createCustomerUser(); return false;">➕ افزودن نماینده</button>
         </div>
-        <button type="button" class="admin-primary admin-add-user-button" onclick="createCustomerUser(); return false;">➕ افزودن نماینده</button>
       </div>
       <div class="admin-search-wrap"><input id="customerDeleteSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر..." oninput="searchAdminItems('customerDeleteSearch', 'adminUsersDelete')"></div>
       <h4 class="admin-subtitle">نماینده‌های موجود — حذف</h4>
@@ -467,23 +475,27 @@
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3>🛡️ مدیران سیستم</h3>
       <p class="admin-section-help">مدیر جدید می‌تواند از طریق تلگرام با شناسه تلگرام یا از طریق وب با نام کاربری و رمز عبور وارد شود. مدیر اصلی قابل حذف نیست.</p>
-      <div class="admin-admin-create">
-        <h4>➕ افزودن مدیر جدید</h4>
-        <div class="admin-edit-grid">
-          <label>نام<input id="newAdminFirstName"></label>
-          <label>نام خانوادگی<input id="newAdminLastName"></label>
-          <label>Telegram ID<input id="newAdminTelegramId" inputmode="numeric" placeholder="مثلاً 123456789"></label>
-          <label>نام کاربری وب<input id="newAdminUsername" autocomplete="off" placeholder="اختیاری"></label>
-          <label>رمز عبور وب<input id="newAdminPassword" type="password" autocomplete="new-password" placeholder="اختیاری"></label>
+      <div class="admin-admin-create admin-accordion admin-static-accordion" id="admin-create-admin-box">
+        <button type="button" class="admin-accordion-title" aria-expanded="false" onclick="toggleAdminAccordion('admin-create-admin-box'); return false;">
+          <span class="admin-accordion-title-text"><strong>➕ افزودن مدیر جدید</strong></span><span class="admin-accordion-chevron">⌄</span>
+        </button>
+        <div class="admin-accordion-body">
+          <div class="admin-edit-grid">
+            <label>نام<input id="newAdminFirstName"></label>
+            <label>نام خانوادگی<input id="newAdminLastName"></label>
+            <label>Telegram ID<input id="newAdminTelegramId" inputmode="numeric" placeholder="مثلاً 123456789"></label>
+            <label>نام کاربری وب<input id="newAdminUsername" autocomplete="off" placeholder="اختیاری"></label>
+            <label class="password-field">رمز عبور وب<div class="password-input-wrap"><input id="newAdminPassword" type="password" autocomplete="new-password" placeholder="اختیاری"><button type="button" class="password-eye" id="eye-newAdminPassword" onclick="togglePasswordVisibility('newAdminPassword','eye-newAdminPassword'); return false;" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">👁️</button></div></label>
+          </div>
+          <div class="admin-permission-box admin-new-admin-permissions"><strong>سطح دسترسی مدیر جدید</strong><div class="admin-permission-grid">
+            <label><input type="checkbox" id="newAdminPerm-products" checked> 📦 محصولات</label>
+            <label><input type="checkbox" id="newAdminPerm-customers" checked> 👥 نماینده‌ها</label>
+            <label><input type="checkbox" id="newAdminPerm-prices" checked> 💰 قیمت‌های اختصاصی</label>
+            <label><input type="checkbox" id="newAdminPerm-requests" checked> 📨 سفارش‌ها و یادداشت‌ها</label>
+            <label><input type="checkbox" id="newAdminPerm-footer" checked> 🏢 اطلاعات شرکت</label>
+          </div></div>
+          <button type="button" class="admin-primary admin-add-user-button" onclick="createAdminUser(); return false;">🛡️ افزودن مدیر</button>
         </div>
-        <div class="admin-permission-box admin-new-admin-permissions"><strong>سطح دسترسی مدیر جدید</strong><div class="admin-permission-grid">
-          <label><input type="checkbox" id="newAdminPerm-products" checked> 📦 محصولات</label>
-          <label><input type="checkbox" id="newAdminPerm-customers" checked> 👥 نماینده‌ها</label>
-          <label><input type="checkbox" id="newAdminPerm-prices" checked> 💰 قیمت‌های اختصاصی</label>
-          <label><input type="checkbox" id="newAdminPerm-requests" checked> 📨 سفارش‌ها و یادداشت‌ها</label>
-          <label><input type="checkbox" id="newAdminPerm-footer" checked> 🏢 اطلاعات شرکت</label>
-        </div></div>
-        <button type="button" class="admin-primary admin-add-user-button" onclick="createAdminUser(); return false;">🛡️ افزودن مدیر</button>
       </div>
       <div class="admin-search-wrap admin-admin-search-wrap"><input id="adminUsersSearch" class="admin-search" type="search" placeholder="🔎 جستجوی مدیر..." oninput="searchAdminItems('adminUsersSearch', 'adminUsersList')"></div>
       <div id="adminUsersList"></div>

@@ -110,10 +110,16 @@
   </div>
 
 
-  <button id="cartButton" class="cart-floating-button" type="button" onclick="openCart()" aria-label="سبد خرید">
-    🛒
-    <span id="cartCount" class="cart-count empty">۰</span>
-  </button>
+  <div class="header-shopping-actions">
+    <button id="cartButton" class="cart-floating-button" type="button" onclick="openCart()" aria-label="سبد خرید" title="سبد خرید">
+      🛒
+      <span id="cartCount" class="cart-count empty">۰</span>
+    </button>
+    <button id="ordersButton" class="orders-floating-button" type="button" onclick="openOrderHistory()" aria-label="سفارش‌های قبلی" title="سفارش‌های قبلی">
+      📦
+      <span id="ordersCount" class="orders-count empty">۰</span>
+    </button>
+  </div>
 
   <div
     id="account"
@@ -145,8 +151,11 @@
 
   <div class="login-box" id="loginBox">
     <div class="login-fields">
-      <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username">
-      <input id="loginPassword" type="password" placeholder="رمز عبور" autocomplete="current-password">
+      <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username" dir="ltr" inputmode="email">
+      <div class="login-password-wrap">
+        <input id="loginPassword" type="password" placeholder="رمز عبور" autocomplete="current-password" dir="ltr">
+        <button type="button" class="login-password-eye" id="eye-loginPassword" onclick="togglePasswordVisibility('loginPassword','eye-loginPassword'); return false;" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">👁️</button>
+      </div>
       <button id="loginButton" type="button">🔐 ورود</button>
     </div>
     <div id="loginMessage" class="login-message"></div>
@@ -174,6 +183,7 @@
 
 </header>
 
+<div id="mobileAccountInfo" class="mobile-account-info hidden" aria-live="polite"></div>
 
 <main>
 
@@ -323,6 +333,17 @@
   </div>
 </div>
 
+<!-- ORDER HISTORY MODAL -->
+<div id="orderHistoryModal" class="modal hidden">
+  <div class="modal-backdrop" onclick="closeOrderHistory()"></div>
+  <div class="modal-card order-history-modal-card">
+    <button class="close" type="button" onclick="closeOrderHistory()">×</button>
+    <h2>📦 سفارش‌های قبلی</h2>
+    <p class="request-help">سفارش‌هایی که قبلاً ثبت کرده‌اید در اینجا نمایش داده می‌شود.</p>
+    <div id="orderHistoryItems" class="order-history-items"></div>
+  </div>
+</div>
+
 <!-- CART MODAL -->
 <div id="cartModal" class="modal hidden">
   <div class="modal-backdrop" onclick="closeCart()"></div>
@@ -380,7 +401,7 @@
         <button class="admin-menu-item" onclick="showAdminSection('customers')"><span>👥</span><b>اضافه و حذف نماینده‌ها</b><small>ساخت حساب نماینده یا حذف آن</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('edit-customers')"><span>✏️</span><b>ویرایش نماینده‌ها</b><small>ویرایش مشخصات، نام کاربری و رمز</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('prices')"><span>💰</span><b>قیمت اختصاصی مشتری</b><small>تعیین قیمت مخصوص هر نماینده</small></button>
-        <button class="admin-menu-item" onclick="showAdminSection('requests')"><span>📨</span><b>سفارش‌ها و یادداشت‌ها</b><small>مشاهده و مدیریت درخواست‌های مشتریان</small></button>
+        <button class="admin-menu-item admin-inbox-menu-item" onclick="showAdminSection('requests')"><span>📬</span><b>نامه‌ها <span id="adminInboxCount" class="admin-inbox-badge">۰</span></b><small>سفارش‌ها و یادداشت‌های جدید مشتریان</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('admins')"><span>🛡️</span><b>مدیران سیستم</b><small>اضافه، ویرایش و حذف مدیران پنل</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('footer')"><span>🏢</span><b>اطلاعات پایین صفحه</b><small>نام شرکت، تلفن و آدرس</small></button>
       </div>

@@ -2014,3 +2014,241 @@ footer span{font-size:12px}
   box-shadow:0 2px 7px rgba(22,101,52,.08);
 }
 .admin-accordion.open .admin-accordion-chevron{transform:rotate(-90deg)!important;background:#bbf7d0!important;box-shadow:0 3px 9px rgba(22,101,52,.14);}
+
+/* =========================================================
+   REQUESTED FINAL UI FIXES
+========================================================= */
+
+/* 1) Login credentials are Latin/number based: always LTR */
+#loginUsername,
+#loginPassword{
+  direction:ltr!important;
+  text-align:left!important;
+  unicode-bidi:plaintext;
+}
+.login-password-wrap{
+  position:relative;
+  width:100%;
+}
+.login-password-wrap input{
+  width:100%!important;
+  padding-right:44px!important;
+}
+.login-password-eye{
+  position:absolute;
+  right:7px;
+  top:50%;
+  transform:translateY(-50%);
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:8px;
+  background:#f0fdf4;
+  color:#166534;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:17px;
+  cursor:pointer;
+  z-index:2;
+}
+.login-password-eye:hover{background:#dcfce7}
+
+/* 3) Always give mobile users a clear signed-in identity */
+.mobile-account-info{
+  display:none;
+}
+@media(max-width:700px){
+  .mobile-account-info{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:8px 10px 0;
+    padding:10px 12px;
+    border:1px solid #dbeafe;
+    border-radius:13px;
+    background:linear-gradient(135deg,#f8fafc,#ecfdf5);
+    box-shadow:0 3px 12px rgba(15,23,42,.06);
+  }
+  .mobile-account-info.hidden{display:none!important}
+  .mobile-account-avatar{
+    width:36px;height:36px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:#dcfce7;font-size:18px;flex:0 0 auto;
+  }
+  .mobile-account-text{display:flex;flex-direction:column;min-width:0;line-height:1.6}
+  .mobile-account-text strong{color:#166534;font-size:13px;overflow-wrap:anywhere}
+  .mobile-account-text small{color:#64748b;font-size:11px;direction:ltr;text-align:left;overflow-wrap:anywhere}
+}
+
+/* 4) Modern customer picker */
+.customer-select-hidden{
+  position:absolute!important;
+  width:1px!important;height:1px!important;
+  opacity:0!important;pointer-events:none!important;
+}
+.customer-picker{
+  position:relative;
+  margin-top:7px;
+}
+.customer-picker-trigger{
+  width:100%;
+  min-height:54px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:11px 15px;
+  border:1px solid #cbd5e1;
+  border-radius:15px;
+  background:#fff;
+  color:#1f2937;
+  font:inherit;
+  font-weight:700;
+  box-shadow:0 3px 12px rgba(15,23,42,.06);
+}
+.customer-picker-trigger:hover{border-color:#86efac;background:#f8fffa}
+.customer-picker-trigger b{color:#166534;font-size:18px}
+.customer-picker-list{
+  position:absolute;
+  top:calc(100% + 7px);
+  right:0;
+  left:0;
+  z-index:100;
+  max-height:300px;
+  overflow:auto;
+  padding:7px;
+  border:1px solid #dbe3ea;
+  border-radius:15px;
+  background:#fff;
+  box-shadow:0 12px 35px rgba(15,23,42,.14);
+}
+.customer-picker-list.hidden{display:none}
+.customer-picker-option{
+  width:100%;
+  display:block;
+  padding:11px 13px;
+  margin:2px 0;
+  border:0;
+  border-radius:10px;
+  background:#fff;
+  color:#374151;
+  text-align:right;
+  font:inherit;
+  cursor:pointer;
+}
+.customer-picker-option:hover,
+.customer-picker-option.active{
+  background:#ecfdf5;
+  color:#166534;
+  font-weight:800;
+}
+
+/* 5) Move shopping actions to a dedicated lower row in the header */
+.header{
+  padding-bottom:72px!important;
+}
+.header-shopping-actions{
+  position:absolute;
+  left:16px;
+  bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  z-index:60;
+}
+.cart-floating-button,
+.orders-floating-button{
+  position:relative!important;
+  left:auto!important;
+  bottom:auto!important;
+  width:48px;height:48px;
+  border:1px solid #bbf7d0;
+  border-radius:50%;
+  background:#ecfdf5;
+  color:#166534;
+  font-size:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow:0 5px 16px rgba(22,101,52,.12);
+  transition:.18s;
+}
+.orders-floating-button{
+  border-color:#bfdbfe;
+  background:#eff6ff;
+  color:#1d4ed8;
+}
+.cart-floating-button:hover,.orders-floating-button:hover{transform:translateY(-1px)}
+.orders-count{
+  position:absolute;
+  right:-4px;top:-5px;
+  min-width:21px;height:21px;
+  padding:0 5px;border-radius:999px;
+  background:#1d4ed8;color:#fff;
+  font-size:11px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid #fff;
+}
+.orders-count.empty{background:#d1d5db;color:#374151}
+
+/* 7) Inbox badge */
+.admin-inbox-badge{
+  display:inline-flex;
+  min-width:25px;height:25px;
+  padding:0 7px;
+  align-items:center;justify-content:center;
+  margin-right:6px;
+  border-radius:999px;
+  background:#d1d5db;
+  color:#374151;
+  font-size:11px;
+  vertical-align:middle;
+}
+.admin-inbox-badge.has-unread{
+  background:#dc2626;
+  color:#fff;
+  animation:inboxPulse 1.5s infinite;
+}
+@keyframes inboxPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.20)}
+  50%{box-shadow:0 0 0 6px rgba(220,38,38,0)}
+}
+
+/* 8) Previous orders */
+.order-history-modal-card{max-width:760px!important}
+.order-history-items{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.order-history-card{
+  padding:13px;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 3px 10px rgba(15,23,42,.05);
+}
+.order-history-head{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:10px;margin-bottom:8px;
+}
+.order-history-head strong{color:#166534}
+.order-history-head span{font-size:11px;color:#6b7280}
+.order-history-text{
+  white-space:pre-wrap;
+  direction:rtl;
+  text-align:right;
+  color:#374151;
+  font-size:13px;
+  line-height:1.9;
+}
+
+/* 4) Price list rows stay readable */
+.customer-price-row{
+  border-radius:14px!important;
+  box-shadow:0 3px 12px rgba(15,23,42,.05)!important;
+}
+@media(max-width:700px){
+  .header{padding-bottom:66px!important}
+  .header-shopping-actions{left:10px;bottom:8px}
+  .cart-floating-button,.orders-floating-button{width:44px;height:44px;font-size:20px}
+  .customer-picker-list{max-height:250px}
+}

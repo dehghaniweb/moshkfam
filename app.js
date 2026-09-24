@@ -328,7 +328,7 @@ async function submitCartOrder(){
     return `${p.name_fa||p.name_en||"محصول"} × ${formatDecimal(unitValue)} ${unit==="ton"?"تن":"کیلوگرم"} = ${formatNumber(item.quantity)} بسته ${formatDecimal(packageKg)} کیلویی = ${formatNumber(price*(Number(item.quantity)||0))} تومان`;
   }).filter(Boolean);
   const total=entries.reduce((sum,item)=>{const p=products.find(x=>Number(x.id)===Number(item.productId));const price=getEffectivePrice(p);return sum+(Number.isFinite(price)?price*(Number(item.quantity)||0):0)},0);
-  try{await postJson("/api/customer/request",{type:"order",text:"🛒 سفارش سبد خرید\n"+lines.join("\n")+`\nمجموع: ${formatNumber(total)} تومان`});cartItems={};saveCart();renderCart();closeCart();appAlert("✅ سفارش سبد خرید با موفقیت ثبت شد.");}catch(e){appAlert("❌ ثبت سفارش انجام نشد:\n"+(e.message||"خطای نامشخص"));}
+  try{await postJson("/api/customer/request",{type:"order",text:"🛒 سفارش سبد خرید\n"+lines.join("\n")+`\nمجموع: ${formatNumber(total)} تومان`});cartItems={};saveCart();renderCart();closeCart();await loadOrderHistoryCount();appAlert("✅ سفارش سبد خرید با موفقیت ثبت شد.");}catch(e){appAlert("❌ ثبت سفارش انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
 
 
@@ -441,9 +441,9 @@ async function loginWithUsernamePassword(){
   const username=$("loginUsername")?.value.trim()||"", password=$("loginPassword")?.value||"", msg=$("loginMessage");
   if(!username||!password){if(msg)msg.textContent="نام کاربری و رمز عبور را وارد کنید.";return;}
   if(msg)msg.textContent="در حال ورود...";
-  try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=String(r.user?.role||"").toLowerCase()==="admin" || String(r.user?.role||"").toLowerCase()==="super_admin";if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();loadCart();await loadProducts();}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
+  try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=String(r.user?.role||"").toLowerCase()==="admin" || String(r.user?.role||"").toLowerCase()==="super_admin";if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();loadCart();await loadProducts();await loadOrderHistoryCount();if(isAdmin){await loadAdminInboxCount();startAdminInboxPolling();}}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
 }
-async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=!!r.isAdmin || String(r.user.role||"").toLowerCase()==="admin" || String(r.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(r.permissions)?r.permissions:[];updateAccountUI();loadCart();}else setStoredToken("");}catch{setStoredToken("");}}
+async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=!!r.isAdmin || String(r.user.role||"").toLowerCase()==="admin" || String(r.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(r.permissions)?r.permissions:[];updateAccountUI();loadCart();await loadOrderHistoryCount();if(isAdmin){await loadAdminInboxCount();startAdminInboxPolling();}}else setStoredToken("");}catch{setStoredToken("");}}
 async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;cartItems={};updateCartBadge();updateAccountUI();await loadProducts();}
 async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
@@ -593,6 +593,11 @@ function updateAccountUI() {
       adminButton.classList.add("hidden");
     }
 
+    const mobileAccount = $("mobileAccountInfo");
+    if (mobileAccount) mobileAccount.classList.add("hidden");
+    const ordersButton = $("ordersButton");
+    if (ordersButton) ordersButton.classList.add("hidden");
+
     return;
   }
 
@@ -648,6 +653,20 @@ function updateAccountUI() {
     } else {
       customerButton.classList.remove("hidden");
     }
+  }
+
+  const ordersButton = $("ordersButton");
+  if (ordersButton) ordersButton.classList.toggle("hidden", isAdmin);
+
+  const mobileAccount = $("mobileAccountInfo");
+  if (mobileAccount) {
+    mobileAccount.innerHTML = `
+      <span class="mobile-account-avatar">👤</span>
+      <span class="mobile-account-text">
+        <strong>${escapeHtml(name)}</strong>
+        <small>${username ? escapeHtml(username) + " · " : ""}${isAdmin ? "مدیر سیستم" : "نماینده"}</small>
+      </span>`;
+    mobileAccount.classList.remove("hidden");
   }
 }
 
@@ -1694,6 +1713,49 @@ async function loadCustomers() {
       if(deleteBox) deleteBox.innerHTML=`<div class="message error">خطا در دریافت کاربران.</div>`;
     }
   }
+  renderCustomerPicker();
+}
+
+function renderCustomerPicker(){
+  const select=$("customerSelect");
+  if(!select) return;
+  let picker=$("customerPicker");
+  if(!picker){
+    picker=document.createElement("div");
+    picker.id="customerPicker";
+    picker.className="customer-picker";
+    select.parentElement.appendChild(picker);
+  }
+  const current=select.value||"";
+  const options=[...select.options].map(o=>({value:o.value,text:o.textContent}));
+  picker.innerHTML=`
+    <button type="button" class="customer-picker-trigger" onclick="toggleCustomerPicker()">
+      <span>${escapeHtml(options.find(o=>o.value===current)?.text||"انتخاب مشتری")}</span><b>⌄</b>
+    </button>
+    <div class="customer-picker-list hidden">
+      ${options.map(o=>`<button type="button" class="customer-picker-option ${o.value===current?"active":""}" onclick="selectCustomerPicker('${escapeHtml(o.value)}')">${escapeHtml(o.text)}</button>`).join("")}
+    </div>`;
+  select.classList.add("customer-select-hidden");
+}
+function toggleCustomerPicker(){
+  const list=$("customerPicker")?.querySelector(".customer-picker-list");
+  if(list) list.classList.toggle("hidden");
+}
+function selectCustomerPicker(value){
+  const select=$("customerSelect");
+  if(!select) return;
+  select.value=value||"";
+  const list=$("customerPicker")?.querySelector(".customer-picker-list");
+  if(list) list.classList.add("hidden");
+  const trigger=$("customerPicker")?.querySelector(".customer-picker-trigger span");
+  const opt=select.selectedOptions?.[0];
+  if(trigger) trigger.textContent=opt?.textContent||"انتخاب مشتری";
+  select.dispatchEvent(new Event("change",{bubbles:true}));
+}
+function searchCustomerPriceCustomer(){
+  const q=String($("customerPriceSearch")?.value||"").trim().toLocaleLowerCase("fa-IR");
+  const options=$("customerPicker")?.querySelectorAll(".customer-picker-option")||[];
+  options.forEach(btn=>{btn.style.display=!q || (btn.textContent||"").toLocaleLowerCase("fa-IR").includes(q)?"":"none";});
 }
 
 async function loadCustomerPrices(customerId) {
@@ -1845,6 +1907,8 @@ async function loadAdminUsers(){
   try{
     const r=await postJson("/api/admin/admin-users",{});
     const admins=Array.isArray(r?.admins)?r.admins:[];
+    const createBox=$("admin-create-admin-box");
+    if(createBox) createBox.classList.toggle("hidden", r?.can_create_admin === false);
     setAdminCount("adminManagerCount", admins.length);
     if(!admins.length){container.innerHTML='<div class="message">هنوز مدیر دیگری تعریف نشده است.</div>';return;}
     container.innerHTML=admins.map(a=>{
@@ -1948,6 +2012,7 @@ async function submitCustomerRequest() {
     }
 
     closeCustomerRequest();
+    if(type==="order") await loadOrderHistoryCount();
 
     // از tg.showPopup استفاده نمی‌کنیم؛ این متد در بعضی WebViewها
     // باعث خطای WebAppMethod Unsupported می‌شود.
@@ -1999,10 +2064,61 @@ async function loadAdminRequests() {
         </div>
       </div>`;
     }).join("");
+    await markAdminRequestsRead();
+    await loadAdminInboxCount();
   } catch (error) {
     container.innerHTML = `<div class="message error">خطا در دریافت سفارش‌ها و یادداشت‌ها.<br>${escapeHtml(error.message || "")}</div>`;
   }
 }
+
+async function loadAdminInboxCount(){
+  if(!isAdmin) return;
+  try{
+    const r=await postJson("/api/admin/unread-count",{});
+    const n=Number(r?.count||0);
+    setAdminCount("adminInboxCount",n);
+    const badge=$("adminInboxCount");
+    if(badge) badge.classList.toggle("has-unread",n>0);
+  }catch{}
+}
+async function markAdminRequestsRead(){
+  try{await postJson("/api/admin/mark-requests-read",{});}catch{}
+}
+let adminInboxTimer=null;
+function startAdminInboxPolling(){
+  if(adminInboxTimer) clearInterval(adminInboxTimer);
+  if(!isAdmin) return;
+  loadAdminInboxCount();
+  adminInboxTimer=setInterval(loadAdminInboxCount,15000);
+}
+async function loadOrderHistoryCount(){
+  const badge=$("ordersCount");
+  if(!badge) return;
+  if(!currentUser || isAdmin){badge.textContent="۰";badge.classList.add("empty");return;}
+  try{
+    const r=await postJson("/api/customer/orders",{});
+    const orders=Array.isArray(r?.orders)?r.orders:[];
+    badge.textContent=formatNumber(orders.length);
+    badge.classList.toggle("empty",orders.length===0);
+  }catch{badge.textContent="۰";badge.classList.add("empty");}
+}
+async function openOrderHistory(){
+  if(!currentUser){appAlert("⚠️ ابتدا وارد حساب کاربری خود شوید.");return;}
+  const modal=$("orderHistoryModal"),box=$("orderHistoryItems");
+  if(!modal||!box)return;
+  modal.classList.remove("hidden");
+  box.innerHTML='<div class="message">در حال دریافت سفارش‌های قبلی...</div>';
+  try{
+    const r=await postJson("/api/customer/orders",{});
+    const orders=Array.isArray(r?.orders)?r.orders:[];
+    if(!orders.length){box.innerHTML='<div class="message">هنوز سفارشی ثبت نشده است.</div>';return;}
+    box.innerHTML=orders.map(o=>{
+      const date=o.created_at?new Date(o.created_at).toLocaleString("fa-IR"):"";
+      return `<div class="order-history-card"><div class="order-history-head"><strong>🛒 سفارش #${escapeHtml(o.id)}</strong><span>${escapeHtml(date)}</span></div><div class="order-history-text">${escapeHtml(o.text||"")}</div></div>`;
+    }).join("");
+  }catch(e){box.innerHTML=`<div class="message error">دریافت سفارش‌ها انجام نشد.<br>${escapeHtml(e.message||"")}</div>`;}
+}
+function closeOrderHistory(){$("orderHistoryModal")?.classList.add("hidden");}
 
 async function deleteCustomerRequest(id){
   if(!(await appConfirm("آیا این سفارش/یادداشت حذف شود؟"))) return;
@@ -2176,6 +2292,7 @@ function finishBootLoader() {
     await loadCurrentUser();
     await loadWebSession();
     loadCart();
+    startAdminInboxPolling();
   } catch (error) {
     console.error(
       "User init:",
@@ -2202,6 +2319,11 @@ window.openProduct =
   openProduct;
 window.openCart=openCart;
 window.closeCart=closeCart;
+window.openOrderHistory=openOrderHistory;
+window.closeOrderHistory=closeOrderHistory;
+window.toggleCustomerPicker=toggleCustomerPicker;
+window.selectCustomerPicker=selectCustomerPicker;
+window.searchCustomerPriceCustomer=searchCustomerPriceCustomer;
 window.addToCart=addToCart;
 window.changeCartQty=changeCartQty;
 window.removeFromCart=removeFromCart;
@@ -2260,6 +2382,7 @@ async function showAdminSection(sectionName) {
 
     if (sectionName === "requests") {
       await loadAdminRequests();
+      await loadAdminInboxCount();
     }
 
     if (sectionName === "admins") {

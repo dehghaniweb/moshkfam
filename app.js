@@ -658,6 +658,12 @@ function updateAccountUI() {
   const ordersButton = $("ordersButton");
   if (ordersButton) ordersButton.classList.remove("hidden");
 
+  const inboxButton = $("adminInboxButton");
+  if (inboxButton) {
+    const canSeeInbox = !!isAdmin && (adminPermissions.includes("requests") || adminPermissions.includes("admins"));
+    inboxButton.classList.toggle("hidden", !canSeeInbox);
+  }
+
   const mobileAccount = $("mobileAccountInfo");
   if (mobileAccount) {
     mobileAccount.innerHTML = `
@@ -1392,20 +1398,24 @@ function renderAdminAccount() {
 
 function toggleAdminAccordion(id){
   const item=$(id);
-  if(!item) return;
-  item.classList.toggle("open");
-  const button=item.querySelector(":scope > .admin-accordion-title");
-  if(button) {
-    const open = item.classList.contains("open");
-    button.setAttribute("aria-expanded", open ? "true" : "false");
-    const chevron = button.querySelector(".admin-accordion-chevron");
-    if (chevron) chevron.setAttribute("data-open", open ? "1" : "0");
-  }
+  if(!item || item.dataset.toggleBusy === "1") return;
+  item.dataset.toggleBusy = "1";
+  window.setTimeout(() => {
+    item.classList.toggle("open");
+    const button=item.querySelector(":scope > .admin-accordion-title");
+    if(button) {
+      const open = item.classList.contains("open");
+      button.setAttribute("aria-expanded", open ? "true" : "false");
+      const chevron = button.querySelector(".admin-accordion-chevron");
+      if (chevron) chevron.setAttribute("data-open", open ? "1" : "0");
+    }
+    item.dataset.toggleBusy = "0";
+  }, 45);
 }
 function adminAccordion(id,title,body,extraClass=""){
   return `<div id="${escapeHtml(id)}" class="admin-accordion ${escapeHtml(extraClass)}">
     <button type="button" class="admin-accordion-title" aria-expanded="false" onclick="toggleAdminAccordion('${escapeHtml(id)}'); return false;">
-      <span class="admin-accordion-title-text">${title}</span><span class="admin-accordion-chevron" aria-hidden="true">❯</span>
+      <span class="admin-accordion-title-text">${title}</span><span class="admin-accordion-chevron" aria-hidden="true">⌄</span>
     </button>
     <div class="admin-accordion-body">${body}</div>
   </div>`;
@@ -2097,7 +2107,7 @@ async function loadAdminRequests() {
 }
 
 async function loadAdminInboxCount(){
-  if(!isAdmin) return;
+  if(!isAdmin || !(adminPermissions.includes("requests") || adminPermissions.includes("admins"))) return;
   try{
     const r=await postJson("/api/admin/unread-count",{});
     const n=Number(r?.count||0);
@@ -2112,7 +2122,7 @@ async function markAdminRequestsRead(){
 let adminInboxTimer=null;
 function startAdminInboxPolling(){
   if(adminInboxTimer) clearInterval(adminInboxTimer);
-  if(!isAdmin) return;
+  if(!isAdmin || !(adminPermissions.includes("requests") || adminPermissions.includes("admins"))) return;
   loadAdminInboxCount();
   adminInboxTimer=setInterval(loadAdminInboxCount,15000);
 }

@@ -441,7 +441,7 @@ async function loginWithUsernamePassword(){
   const username=$("loginUsername")?.value.trim()||"", password=$("loginPassword")?.value||"", msg=$("loginMessage");
   if(!username||!password){if(msg)msg.textContent="نام کاربری و رمز عبور را وارد کنید.";return;}
   if(msg)msg.textContent="در حال ورود...";
-  try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=String(r.user?.role||"").toLowerCase()==="admin" || String(r.user?.role||"").toLowerCase()==="super_admin";if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();loadCart();await loadProducts();await loadOrderHistoryCount();if(isAdmin){await loadAdminInboxCount();startAdminInboxPolling();}}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
+  try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=String(r.user?.role||"").toLowerCase()==="admin" || String(r.user?.role||"").toLowerCase()==="super_admin";adminPermissions=[];try{const session=await apiRequest("/api/session",{method:"GET"});if(session?.authenticated&&session.user){currentUser=session.user;isAdmin=!!session.isAdmin || String(session.user.role||"").toLowerCase()==="admin" || String(session.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(session.permissions)?session.permissions:[];}}catch(sessionError){console.warn("Login permission session:",sessionError);}if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();loadCart();await loadProducts();await loadOrderHistoryCount();if(isAdmin){await loadAdminInboxCount();startAdminInboxPolling();}}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
 }
 async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=!!r.isAdmin || String(r.user.role||"").toLowerCase()==="admin" || String(r.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(r.permissions)?r.permissions:[];updateAccountUI();loadCart();await loadOrderHistoryCount();if(isAdmin){await loadAdminInboxCount();startAdminInboxPolling();}}else setStoredToken("");}catch{setStoredToken("");}}
 async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;cartItems={};updateCartBadge();updateAccountUI();await loadProducts();}
@@ -656,7 +656,7 @@ function updateAccountUI() {
   }
 
   const ordersButton = $("ordersButton");
-  if (ordersButton) ordersButton.classList.toggle("hidden", isAdmin);
+  if (ordersButton) ordersButton.classList.remove("hidden");
 
   const mobileAccount = $("mobileAccountInfo");
   if (mobileAccount) {
@@ -2119,7 +2119,7 @@ function startAdminInboxPolling(){
 async function loadOrderHistoryCount(){
   const badge=$("ordersCount");
   if(!badge) return;
-  if(!currentUser || isAdmin){badge.textContent="۰";badge.classList.add("empty");return;}
+  if(!currentUser){badge.textContent="۰";badge.classList.add("empty");return;}
   try{
     const r=await postJson("/api/customer/orders",{});
     const orders=Array.isArray(r?.orders)?r.orders:[];

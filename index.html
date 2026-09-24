@@ -404,7 +404,7 @@
         <button class="admin-menu-item admin-inbox-menu-item" onclick="showAdminSection('requests')"><span>📬</span><b>نامه‌ها <span id="adminInboxCount" class="admin-inbox-badge">۰</span></b><small>سفارش‌ها و یادداشت‌های جدید مشتریان</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('admins')"><span>🛡️</span><b>مدیران سیستم</b><small>اضافه، ویرایش و حذف مدیران پنل</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('footer')"><span>🏢</span><b>اطلاعات پایین صفحه</b><small>نام شرکت، تلفن و آدرس</small></button>
-        <button class="admin-menu-item" onclick="showAdminSection('image-archives')"><span>🗂️</span><b>بایگانی عکس‌ها</b><small>مشاهده عکس‌های ذخیره‌شده و بایگانی‌های قبلی</small></button>
+        <button class="admin-menu-item" onclick="showAdminSection('archives')"><span>🗄️</span><b>بایگانی عکس‌ها</b><small>مشاهده و بازگردانی تصاویر قبلی</small></button>
       </div>
     </div>
 
@@ -442,16 +442,12 @@
       <div id="adminEditProducts"></div>
     </section>
 
-
     <!-- IMAGE ARCHIVES -->
-    <section id="adminSection-image-archives" class="admin-view admin-inner-view hidden">
+    <section id="adminSection-archives" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3 class="admin-section-title">🗂️ بایگانی عکس‌ها</h3>
-      <p class="admin-section-help">عکس‌هایی که هنگام جایگزینی یا حذف، به بایگانی منتقل شده‌اند اینجا نمایش داده می‌شوند.</p>
-      <button type="button" class="admin-primary" onclick="loadImageArchives()">🔄 بروزرسانی بایگانی</button>
-      <div id="imageArchives" class="image-archive-grid">
-        <div class="message">برای دریافت بایگانی، روی بروزرسانی بزنید.</div>
-      </div>
+      <h3 class="admin-section-title">🗄️ بایگانی عکس‌ها</h3>
+      <p class="admin-section-help">تصاویر قبلی که از محصول حذف یا جایگزین شده‌اند در اینجا نمایش داده می‌شوند.</p>
+      <div id="imageArchivesList" class="image-archives-list"></div>
     </section>
 
     <!-- CUSTOMERS: ADD / DELETE -->

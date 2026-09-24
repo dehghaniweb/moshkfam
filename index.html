@@ -111,7 +111,7 @@
 
 
   <button id="adminInboxButton" class="admin-inbox-floating-button hidden" type="button" onclick="showAdminSection('requests')" aria-label="نامه‌ها" title="نامه‌ها">
-    📬
+    ✉️
     <span id="adminInboxCount" class="admin-inbox-badge">۰</span>
   </button>
 
@@ -157,10 +157,7 @@
   <div class="login-box" id="loginBox">
     <div class="login-fields">
       <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username" dir="ltr" inputmode="email">
-      <div class="login-password-wrap">
-        <input id="loginPassword" type="password" placeholder="رمز عبور" autocomplete="current-password" dir="ltr">
-        <button type="button" class="login-password-eye" id="eye-loginPassword" onclick="togglePasswordVisibility('loginPassword','eye-loginPassword'); return false;" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">👁️</button>
-      </div>
+      <input id="loginPassword" type="text" placeholder="رمز عبور" autocomplete="current-password" dir="ltr">
       <button id="loginButton" type="button">🔐 ورود</button>
     </div>
     <div id="loginMessage" class="login-message"></div>

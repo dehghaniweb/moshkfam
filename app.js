@@ -1181,6 +1181,24 @@ function openProduct(id) {
       }
 
       ${
+        Array.isArray(product.detail_images) &&
+        product.detail_images.length
+          ? `
+            <section class="detail-images-section">
+              <h3>🖼️ تصاویر محصول</h3>
+              <div class="detail-images-gallery">
+                ${product.detail_images.map(img => `
+                  <a href="${escapeHtml(img.file_url || "")}" target="_blank" rel="noopener" class="detail-gallery-item">
+                    <img src="${escapeHtml(img.file_url || "")}" alt="${escapeHtml(name)}">
+                  </a>
+                `).join("")}
+              </div>
+            </section>
+          `
+          : ""
+      }
+
+      ${
         product.video_url
           ? `
             <div class="video-box">
@@ -1445,9 +1463,49 @@ function renderAdminProductList(list, container){
           <label class="admin-active"><input type="checkbox" id="active-${id}" ${product.active !== false ? "checked" : ""}> محصول فعال و قابل نمایش برای مشتریان</label>
           <div class="admin-product-buttons"><button type="button" onclick="saveProduct(${id}); return false;">💾 ذخیره اطلاعات محصول</button></div>
           <div class="admin-media-grid">
-            <div class="admin-media-box"><label>🖼️ تصویر جدید<input type="file" id="image-${id}" accept="image/*"></label><button type="button" onclick="uploadProductImage(${id}); return false;">آپلود / جایگزینی تصویر</button>${product.image_url ? `<button type="button" class="danger" onclick="removeProductImage(${id}); return false;">بایگانی تصویر فعلی</button>` : ""}</div>
-            <div class="admin-media-box"><label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label><button type="button" onclick="uploadProductVideo(${id}); return false;">آپلود / جایگزینی ویدئو</button>${product.video_url ? `<button type="button" class="danger" onclick="removeProductVideo(${id}); return false;">بایگانی ویدئو</button>` : ""}</div>
-            <div class="admin-media-box"><label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label><button type="button" onclick="uploadProductCatalog(${id}); return false;">آپلود / جایگزینی کاتالوگ</button>${product.catalog_pdf_url ? `<button type="button" class="danger" onclick="removeProductCatalog(${id}); return false;">بایگانی کاتالوگ</button>` : ""}</div>
+            <div class="admin-media-box">
+              <label>🖼️ تصویر اصلی محصول<input type="file" id="image-${id}" accept="image/*"></label>
+              <button type="button" onclick="uploadProductImage(${id}); return false;">آپلود / جایگزینی تصویر اصلی</button>
+              ${product.image_url ? `<button type="button" class="danger" onclick="removeProductImage(${id}); return false;">بایگانی تصویر اصلی</button>` : ""}
+            </div>
+            <div class="admin-media-box">
+              <label>🎬 ویدئوی جدید<input type="file" id="video-${id}" accept="video/*"></label>
+              <button type="button" onclick="uploadProductVideo(${id}); return false;">آپلود / جایگزینی ویدئو</button>
+              ${product.video_url ? `<button type="button" class="danger" onclick="removeProductVideo(${id}); return false;">بایگانی ویدئو</button>` : ""}
+            </div>
+            <div class="admin-media-box">
+              <label>📄 کاتالوگ جدید<input type="file" id="catalog-${id}" accept="application/pdf,.pdf,image/*"></label>
+              <button type="button" onclick="uploadProductCatalog(${id}); return false;">آپلود / جایگزینی کاتالوگ</button>
+              ${product.catalog_pdf_url ? `<button type="button" class="danger" onclick="removeProductCatalog(${id}); return false;">بایگانی کاتالوگ</button>` : ""}
+            </div>
+          </div>
+
+          <div class="admin-detail-images-box">
+            <h4>🖼️ عکس‌های جزئیات محصول</h4>
+            <p class="admin-section-help">این عکس‌ها در صفحه جزئیات محصول، بالای ویدئو نمایش داده می‌شوند.</p>
+            <label class="detail-images-upload-label">
+              افزودن چند عکس جدید
+              <input type="file" id="detail-images-${id}" accept="image/*" multiple>
+            </label>
+            <button type="button" onclick="uploadProductDetailImages(${id}); return false;">➕ آپلود عکس‌های جزئیات</button>
+            <div class="admin-detail-images-list" id="detail-images-list-${id}">
+              ${
+                Array.isArray(product.detail_images) && product.detail_images.length
+                  ? product.detail_images.map(img => `
+                    <div class="admin-detail-image-item">
+                      <img src="${escapeHtml(img.file_url || "")}" alt="عکس جزئیات">
+                      <div class="admin-detail-image-actions">
+                        <label class="small-file-label">جایگزینی
+                          <input type="file" id="replace-detail-${Number(img.id)}" accept="image/*">
+                        </label>
+                        <button type="button" onclick="replaceProductDetailImage(${Number(img.id)}, ${id}); return false;">جایگزینی عکس</button>
+                        <button type="button" class="danger" onclick="removeProductDetailImage(${Number(img.id)}, ${id}); return false;">بایگانی / حذف</button>
+                      </div>
+                    </div>
+                  `).join("")
+                  : `<div class="message">هنوز عکس جزئیاتی برای این محصول ثبت نشده است.</div>`
+              }
+            </div>
           </div>`;
       return adminAccordion(`admin-product-edit-${id}`, `<strong>📦 ${escapeHtml(nameFa || nameEn || "محصول")}</strong>${nameEn ? `<small>${escapeHtml(nameEn)}</small>` : ""}`, body, "admin-product-accordion");
   }).join("");
@@ -2354,7 +2412,7 @@ function showAdminHome() {
   if (home) home.classList.remove("hidden");
 }
 
-async function showAdminSection(sectionName) {
+async async function showAdminSection(sectionName) {
   const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",admins:"admins"};
   const needed=permissionMap[sectionName];
   if(needed && !(adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins")){
@@ -2396,6 +2454,86 @@ async function showAdminSection(sectionName) {
     console.error("Admin section:", error);
   }
 }
+
+
+async function loadImageArchives() {
+  const box = $("imageArchives");
+  if (!box) return;
+  box.innerHTML = '<div class="message">⏳ در حال دریافت بایگانی عکس‌ها...</div>';
+  try {
+    const result = await apiRequest("/api/admin/image-archives", {method:"GET"});
+    const items = Array.isArray(result?.archives) ? result.archives : [];
+    if (!items.length) {
+      box.innerHTML = '<div class="message">هنوز عکس بایگانی‌شده‌ای پیدا نشد.</div>';
+      return;
+    }
+    box.innerHTML = items.map(item => `
+      <div class="image-archive-card">
+        <a href="${escapeHtml(item.url || "")}" target="_blank" rel="noopener">
+          <img src="${escapeHtml(item.url || "")}" alt="${escapeHtml(item.name || "عکس بایگانی")}" loading="lazy">
+        </a>
+        <div class="image-archive-meta">
+          <strong>${escapeHtml(item.name || "عکس")}</strong>
+          <small>${escapeHtml(item.path || "")}</small>
+        </div>
+      </div>
+    `).join("");
+  } catch (error) {
+    box.innerHTML = `<div class="message error">❌ دریافت بایگانی انجام نشد.<br>${escapeHtml(error.message || "خطای نامشخص")}</div>`;
+  }
+}
+
+async function uploadProductDetailImages(productId) {
+  const id = Number(productId);
+  const input = adminVisibleElement(`detail-images-${id}`);
+  if (!input?.files?.length) {
+    alert("لطفاً حداقل یک عکس انتخاب کنید.");
+    return;
+  }
+  const fd = new FormData();
+  fd.append("product_id", String(id));
+  Array.from(input.files).forEach(file => fd.append("files", file, file.name));
+  try {
+    await apiRequest("/api/admin/upload-detail-images", {method:"POST", body:fd});
+    alert("✅ عکس‌های جزئیات محصول ثبت شدند.");
+    await loadProducts();
+    await loadAdminProducts();
+  } catch (error) {
+    alert("❌ خطا در آپلود عکس‌های جزئیات:\n" + error.message);
+  }
+}
+
+async function replaceProductDetailImage(imageId, productId) {
+  const input = $(`replace-detail-${Number(imageId)}`);
+  if (!input?.files?.length) {
+    alert("لطفاً عکس جایگزین را انتخاب کنید.");
+    return;
+  }
+  const fd = new FormData();
+  fd.append("image_id", String(imageId));
+  fd.append("file", input.files[0], input.files[0].name);
+  try {
+    await apiRequest("/api/admin/replace-detail-image", {method:"POST", body:fd});
+    alert("✅ عکس جزئیات جایگزین شد.");
+    await loadProducts();
+    await loadAdminProducts();
+  } catch (error) {
+    alert("❌ خطا در جایگزینی عکس:\n" + error.message);
+  }
+}
+
+async function removeProductDetailImage(imageId, productId) {
+  if (!(await appConfirm("این عکس به بایگانی منتقل و از جزئیات محصول حذف شود؟"))) return;
+  try {
+    await postJson("/api/admin/remove-detail-image", {image_id:Number(imageId)});
+    alert("✅ عکس به بایگانی منتقل شد.");
+    await loadProducts();
+    await loadAdminProducts();
+  } catch (error) {
+    alert("❌ خطا در حذف عکس:\n" + error.message);
+  }
+}
+
 
 function searchAdminItems(inputId, containerId) {
   const input = $(inputId);

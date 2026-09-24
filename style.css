@@ -1869,30 +1869,33 @@ footer span{font-size:12px}
 }
 .password-input-wrap input{
   width:100%;
-  padding-left:48px !important;
+  padding-left:34px !important;
 }
 .password-eye{
   position:absolute;
-  left:6px;
+  left:7px;
   top:50%;
   transform:translateY(-50%);
-  width:38px;
-  height:38px;
-  min-width:38px;
-  border:1px solid #d1d5db;
-  border-radius:9px;
-  background:#fff;
-  color:#374151;
+  width:22px;
+  height:22px;
+  min-width:22px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:#6b7280;
   display:flex;
   align-items:center;
   justify-content:center;
   padding:0;
-  font-size:18px;
+  font-size:13px;
+  line-height:1;
   cursor:pointer;
   z-index:2;
+  box-shadow:none;
 }
 .password-eye:hover{
-  background:#f3f4f6;
+  background:transparent;
+  color:#374151;
 }
 
 /* ===== ACCORDION ADMIN LISTS ===== */
@@ -2032,27 +2035,35 @@ footer span{font-size:12px}
 }
 .login-password-wrap input{
   width:100%!important;
-  padding-right:44px!important;
+  padding-right:34px!important;
 }
 .login-password-eye{
   position:absolute;
   right:7px;
   top:50%;
   transform:translateY(-50%);
-  width:34px;
-  height:34px;
+  width:22px;
+  height:22px;
+  min-width:22px;
+  padding:0;
+  margin:0;
   border:0;
-  border-radius:8px;
-  background:#f0fdf4;
-  color:#166534;
+  border-radius:0;
+  background:transparent;
+  color:#6b7280;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:17px;
+  font-size:13px;
+  line-height:22px;
   cursor:pointer;
   z-index:2;
+  box-shadow:none;
 }
-.login-password-eye:hover{background:#dcfce7}
+.login-password-eye:hover{
+  background:transparent;
+  color:#374151;
+}
 
 /* 3) Always give mobile users a clear signed-in identity */
 .mobile-account-info{
@@ -2251,4 +2262,114 @@ footer span{font-size:12px}
   .header-shopping-actions{left:10px;bottom:8px}
   .cart-floating-button,.orders-floating-button{width:44px;height:44px;font-size:20px}
   .customer-picker-list{max-height:250px}
+}
+
+
+/* ===== PRODUCT DETAIL IMAGES ===== */
+.detail-images-section{
+  margin:22px 0 18px;
+}
+.detail-images-gallery{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+}
+.detail-gallery-item{
+  display:block;
+  border-radius:14px;
+  overflow:hidden;
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+}
+.detail-gallery-item img{
+  display:block;
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+}
+
+/* ===== ADMIN DETAIL IMAGE MANAGER ===== */
+.admin-detail-images-box{
+  margin-top:16px;
+  padding:16px;
+  border:1px solid #d8dee8;
+  border-radius:15px;
+  background:#f8fafc;
+}
+.admin-detail-images-box h4{
+  margin:0 0 8px;
+}
+.detail-images-upload-label,
+.small-file-label{
+  display:block;
+  margin:10px 0;
+  font-weight:600;
+}
+.admin-detail-images-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+  margin-top:14px;
+}
+.admin-detail-image-item{
+  background:#fff;
+  border:1px solid #d8dee8;
+  border-radius:12px;
+  padding:8px;
+}
+.admin-detail-image-item img{
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  border-radius:9px;
+  display:block;
+  margin-bottom:8px;
+}
+.admin-detail-image-actions{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.admin-detail-image-actions input{
+  width:100%;
+}
+.admin-detail-image-actions button{
+  width:100%;
+}
+
+/* ===== IMAGE ARCHIVE ===== */
+.image-archive-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:14px;
+  margin-top:16px;
+}
+.image-archive-card{
+  border:1px solid #d8dee8;
+  border-radius:14px;
+  overflow:hidden;
+  background:#fff;
+}
+.image-archive-card img{
+  display:block;
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  background:#f3f4f6;
+}
+.image-archive-meta{
+  padding:9px 10px 11px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  direction:rtl;
+}
+.image-archive-meta strong{
+  overflow-wrap:anywhere;
+}
+.image-archive-meta small{
+  color:#6b7280;
+  direction:ltr;
+  text-align:left;
+  overflow-wrap:anywhere;
 }

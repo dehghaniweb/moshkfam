@@ -660,7 +660,7 @@ function updateAccountUI() {
 
   const inboxButton = $("adminInboxButton");
   if (inboxButton) {
-    const canSeeInbox = !!isAdmin && (adminPermissions.includes("requests") || adminPermissions.includes("admins"));
+    const canSeeInbox = !!isAdmin;
     inboxButton.classList.toggle("hidden", !canSeeInbox);
   }
 
@@ -2107,7 +2107,7 @@ async function loadAdminRequests() {
 }
 
 async function loadAdminInboxCount(){
-  if(!isAdmin || !(adminPermissions.includes("requests") || adminPermissions.includes("admins"))) return;
+  if(!isAdmin) return;
   try{
     const r=await postJson("/api/admin/unread-count",{});
     const n=Number(r?.count||0);
@@ -2122,7 +2122,7 @@ async function markAdminRequestsRead(){
 let adminInboxTimer=null;
 function startAdminInboxPolling(){
   if(adminInboxTimer) clearInterval(adminInboxTimer);
-  if(!isAdmin || !(adminPermissions.includes("requests") || adminPermissions.includes("admins"))) return;
+  if(!isAdmin) return;
   loadAdminInboxCount();
   adminInboxTimer=setInterval(loadAdminInboxCount,15000);
 }
@@ -2392,7 +2392,7 @@ function showAdminHome() {
 async function showAdminSection(sectionName) {
   const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",admins:"admins",archives:"products"};
   const needed=permissionMap[sectionName];
-  if(needed && !(adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins")){
+  if(needed && sectionName !== "requests" && !(adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins")){
     appAlert("❌ سطح دسترسی این بخش برای شما فعال نیست.");
     return;
   }

@@ -2257,3 +2257,27 @@ footer span{font-size:12px}
 .archive-restore{display:flex;gap:8px;align-items:center;}
 .archive-restore input{width:130px;}
 @media(max-width:600px){.product-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.product-gallery-item img{height:135px;}.admin-detail-upload{grid-template-columns:1fr;}.admin-gallery-row{flex-direction:column;}.archive-image-row{align-items:flex-start;}.archive-restore{flex-direction:column;align-items:stretch;}.archive-restore input{width:100%;}}
+
+
+/* ===== Manager inbox moved to main header ===== */
+.admin-inbox-floating-button{
+  position:absolute;right:16px;top:10px;z-index:60;
+  width:48px;height:48px;border:1px solid #fecaca;border-radius:50%;
+  background:#fff1f2;color:#b91c1c;font-size:22px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 5px 16px rgba(185,28,28,.12);transition:.18s;
+}
+.admin-inbox-floating-button:hover{transform:translateY(-1px);background:#ffe4e6}
+.admin-inbox-floating-button.hidden{display:none!important}
+.admin-inbox-floating-button .admin-inbox-badge{
+  position:absolute;right:-5px;top:-5px;margin:0;min-width:21px;height:21px;padding:0 5px;
+  border:2px solid #fff;background:#d1d5db;color:#374151;font-size:10px;
+}
+.admin-inbox-floating-button .admin-inbox-badge.has-unread{background:#dc2626;color:#fff}
+
+/* Accordion arrows: default down, open up, with a tiny click delay handled in JS. */
+.admin-accordion-chevron{transform:rotate(0deg)!important;transition:transform .18s ease!important}
+.admin-accordion.open .admin-accordion-chevron{transform:rotate(180deg)!important}
+@media(max-width:700px){
+  .admin-inbox-floating-button{right:10px;top:8px;width:44px;height:44px;font-size:20px}
+}

@@ -110,6 +110,11 @@
   </div>
 
 
+  <button id="adminInboxButton" class="admin-inbox-floating-button hidden" type="button" onclick="showAdminSection('requests')" aria-label="نامه‌ها" title="نامه‌ها">
+    📬
+    <span id="adminInboxCount" class="admin-inbox-badge">۰</span>
+  </button>
+
   <div class="header-shopping-actions">
     <button id="cartButton" class="cart-floating-button" type="button" onclick="openCart()" aria-label="سبد خرید" title="سبد خرید">
       🛒
@@ -152,7 +157,10 @@
   <div class="login-box" id="loginBox">
     <div class="login-fields">
       <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username" dir="ltr" inputmode="email">
-      <input id="loginPassword" type="text" placeholder="رمز عبور" autocomplete="current-password" dir="ltr">
+      <div class="login-password-wrap">
+        <input id="loginPassword" type="password" placeholder="رمز عبور" autocomplete="current-password" dir="ltr">
+        <button type="button" class="login-password-eye" id="eye-loginPassword" onclick="togglePasswordVisibility('loginPassword','eye-loginPassword'); return false;" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">👁️</button>
+      </div>
       <button id="loginButton" type="button">🔐 ورود</button>
     </div>
     <div id="loginMessage" class="login-message"></div>
@@ -398,7 +406,6 @@
         <button class="admin-menu-item" onclick="showAdminSection('customers')"><span>👥</span><b>اضافه و حذف نماینده‌ها</b><small>ساخت حساب نماینده یا حذف آن</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('edit-customers')"><span>✏️</span><b>ویرایش نماینده‌ها</b><small>ویرایش مشخصات، نام کاربری و رمز</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('prices')"><span>💰</span><b>قیمت اختصاصی مشتری</b><small>تعیین قیمت مخصوص هر نماینده</small></button>
-        <button class="admin-menu-item admin-inbox-menu-item" onclick="showAdminSection('requests')"><span>📬</span><b>نامه‌ها <span id="adminInboxCount" class="admin-inbox-badge">۰</span></b><small>سفارش‌ها و یادداشت‌های جدید مشتریان</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('admins')"><span>🛡️</span><b>مدیران سیستم</b><small>اضافه، ویرایش و حذف مدیران پنل</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('footer')"><span>🏢</span><b>اطلاعات پایین صفحه</b><small>نام شرکت، تلفن و آدرس</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('archives')"><span>🗄️</span><b>بایگانی عکس‌ها</b><small>مشاهده و بازگردانی تصاویر قبلی</small></button>

@@ -2251,12 +2251,12 @@ async function sendNewLetter(){
   const recipientId=String(recipientEl?.value||"").trim();
   if(!subject){subjectEl?.focus();return appAlert("⚠️ عنوان نامه را وارد کنید.");}
   if(!body){bodyEl?.focus();return appAlert("⚠️ متن نامه را وارد کنید.");}
-  if(canUseAdminLetters() && (!recipientId || !Number.isFinite(Number(recipientId)))){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
+  if(canUseAdminLetters() && !recipientId){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
   const button=document.querySelector('#letterComposeModal .admin-primary');
   if(button){button.disabled=true;button.textContent="⏳ در حال ارسال...";}
   try{
     const payload=canUseAdminLetters()
-      ? {recipient_customer_id:Number(recipientId),subject:subject,body:body}
+      ? {recipient_customer_id:recipientId,subject:subject,body:body}
       : {subject:subject,body:body};
     const result=await postJson(canUseAdminLetters()?'/api/admin/letter':'/api/customer/letter',payload);
     if(result?.ok===false) throw new Error(result.error||'سرور نامه را ثبت نکرد.');

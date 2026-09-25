@@ -2140,6 +2140,9 @@ function renderLetterRecipientPicker(customers){
     return {id,name,user,index};
   });
   const selected=list.find(x=>x.id===current);
+  picker.classList.remove('hidden');
+  sel.classList.add('hidden');
+  picker.dataset.selectedId=current;
   picker.innerHTML=`
     <button type="button" class="letter-recipient-trigger" onclick="toggleLetterRecipientPicker()">
       <span class="recipient-trigger-main">
@@ -2183,11 +2186,13 @@ function selectLetterRecipient(value){
   const sel=$('letterRecipientSelect');
   if(!sel)return;
   sel.value=String(value||'');
-  const list=$('letterRecipientPicker')?.querySelector('.letter-recipient-list');
+  const picker=$('letterRecipientPicker');
+  if(picker)picker.dataset.selectedId=String(value||'');
+  sel.dispatchEvent(new Event('change',{bubbles:true}));
+  const list=picker?.querySelector('.letter-recipient-list');
   if(list)list.classList.add('hidden');
   const options=[...sel.options];
   const opt=options.find(o=>o.value===sel.value);
-  const picker=$('letterRecipientPicker');
   const nameEl=picker?.querySelector('.recipient-trigger-name');
   const userEl=picker?.querySelector('.recipient-trigger-user');
   if(nameEl)nameEl.textContent=opt?.dataset?.name||'انتخاب نماینده';

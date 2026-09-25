@@ -73,7 +73,7 @@
 </head>
 
 
-<body>
+<body class="booting">
 
 <div id="bootLoader" aria-live="polite">
   <div class="boot-card">
@@ -462,6 +462,7 @@
         <button class="admin-menu-item" onclick="showAdminSection('edit-customers')"><span>✏️</span><b>ویرایش نماینده‌ها</b><small>ویرایش مشخصات، نام کاربری و رمز</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('prices')"><span>💰</span><b>قیمت اختصاصی مشتری</b><small>تعیین قیمت مخصوص هر نماینده</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('admins')"><span>🛡️</span><b>مدیران سیستم</b><small>اضافه، ویرایش و حذف مدیران پنل</small></button>
+        <button class="admin-menu-item" onclick="showAdminSection('limits')"><span>📊</span><b>محدودیت‌ها و مصرف سرویس‌ها</b><small>گزارش مصرف امروز، سقف روزانه و وضعیت سرویس‌ها</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('footer')"><span>🏢</span><b>اطلاعات پایین صفحه</b><small>نام شرکت، تلفن و آدرس</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('archives')"><span>🗄️</span><b>بایگانی عکس‌ها</b><small>مشاهده و بازگردانی تصاویر قبلی</small></button>
       </div>
@@ -588,6 +589,18 @@
       </div>
       <div class="admin-search-wrap admin-admin-search-wrap"><input id="adminUsersSearch" class="admin-search" type="search" placeholder="🔎 جستجوی مدیر..." oninput="searchAdminItems('adminUsersSearch', 'adminUsersList')"></div>
       <div id="adminUsersList"></div>
+    </section>
+
+    <!-- LIMITS -->
+    <section id="adminSection-limits" class="admin-view admin-inner-view hidden">
+      <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
+      <div class="limits-panel-head">
+        <div><h3>📊 محدودیت‌ها و مصرف سرویس‌ها</h3><p>گزارش مصرف ثبت‌شده سامانه؛ عددی بدون داده واقعی نمایش داده نمی‌شود.</p></div>
+        <button type="button" class="limits-refresh" onclick="loadServiceLimits()">↻ به‌روزرسانی</button>
+      </div>
+      <div id="serviceLimitsPanel" class="service-limits-panel">
+        <div class="limits-loading">در حال دریافت گزارش مصرف...</div>
+      </div>
     </section>
 
     <!-- FOOTER -->

@@ -2095,10 +2095,11 @@ async function loadLetterRecipients(){
     const r=await postJson('/api/admin/customers',{});
     const customers=Array.isArray(r?.customers)?r.customers:[];
     if(!customers.length){sel.innerHTML='<option value="">نماینده‌ای برای انتخاب وجود ندارد</option>';return;}
-    sel.innerHTML='<option value="">انتخاب نماینده...</option>'+customers.map(c=>{
+    sel.innerHTML='<option value="">انتخاب نماینده...</option>'+customers.map((c,index)=>{
       const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||c.username||'نماینده';
       const user=c.username?`@${c.username}`:'';
-      return `<option value="${escapeHtml(String(c.id))}">${escapeHtml(name)}${user?` — ${escapeHtml(user)}`:''}</option>`;
+      const number=faDigits(index+1);
+      return `<option value="${escapeHtml(String(c.id))}">${escapeHtml(number)}. ${escapeHtml(name)}${user?` — ${escapeHtml(user)}`:''}</option>`;
     }).join('');
   }catch(e){
     sel.innerHTML='<option value="">خطا در دریافت نماینده‌ها</option>';
@@ -2175,20 +2176,30 @@ async function openLetterThread(index){
 function renderLetterListAfterRead(){document.querySelectorAll('.letter-item').forEach(el=>el.classList.remove('unread'));}
 async function sendLetterReply(threadId){const body=$("letterReplyBody")?.value.trim();if(!body)return appAlert("لطفاً متن پاسخ را بنویسید.");try{await postJson(isAdmin?"/api/admin/letter-reply":"/api/customer/letter-reply",{thread_id:Number(threadId),body});appAlert("✅ پاسخ با موفقیت ارسال شد.");await loadLetterInbox();}catch(e){appAlert("❌ ارسال پاسخ انجام نشد:\n"+(e.message||''));}}
 async function sendNewLetter(){
-  const subject=$("letterComposeSubject")?.value.trim();
-  const body=$("letterComposeBody")?.value.trim();
-  const recipientId=$("letterRecipientSelect")?.value||"";
-  if(!subject||!body)return appAlert("لطفاً عنوان و متن نامه را کامل کنید.");
+  const subjectEl=$("letterComposeSubject"), bodyEl=$("letterComposeBody"), recipientEl=$("letterRecipientSelect");
+  const subject=String(subjectEl?.value||"").trim();
+  const body=String(bodyEl?.value||"").trim();
+  const recipientId=String(recipientEl?.value||"").trim();
+  if(!subject){subjectEl?.focus();return appAlert("⚠️ عنوان نامه را وارد کنید.");}
+  if(!body){bodyEl?.focus();return appAlert("⚠️ متن نامه را وارد کنید.");}
+  if(isAdmin && (!recipientId || !Number.isFinite(Number(recipientId)))){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
+  const button=document.querySelector('#letterComposeModal .admin-primary');
+  if(button){button.disabled=true;button.textContent="⏳ در حال ارسال...";}
   try{
-    if(isAdmin){
-      if(!recipientId)return appAlert("لطفاً نماینده گیرنده نامه را انتخاب کنید.");
-      await postJson('/api/admin/letter',{recipient_customer_id:Number(recipientId),subject,body});
-    }else{
-      await postJson('/api/customer/letter',{subject,body});
-    }
-    closeLetterCompose();appAlert("✅ نامه با موفقیت ارسال شد.");
+    const payload=isAdmin
+      ? {recipient_customer_id:Number(recipientId),subject:subject,body:body}
+      : {subject:subject,body:body};
+    const result=await postJson(isAdmin?'/api/admin/letter':'/api/customer/letter',payload);
+    if(result?.ok===false) throw new Error(result.error||'سرور نامه را ثبت نکرد.');
+    closeLetterCompose();
+    appAlert("✅ نامه با موفقیت ارسال شد.");
     await loadLetterInbox();await loadLetterUnreadCount();
-  }catch(e){appAlert("❌ ارسال نامه انجام نشد:\n"+(e.message||''));}
+  }catch(e){
+    console.error('Send letter:',e);
+    appAlert("❌ ارسال نامه انجام نشد:\n"+(e.message||'خطای نامشخص'));
+  }finally{
+    if(button){button.disabled=false;button.textContent="📨 ارسال نامه";}
+  }
 }
 
 /* =========================================================
@@ -2483,6 +2494,7 @@ function finishBootLoader() {
   const loader = document.getElementById("bootLoader");
 
   if (app) app.style.visibility = "visible";
+  document.body.classList.remove("booting");
 
   if (loader) {
     loader.classList.add("hide");
@@ -2564,6 +2576,23 @@ window.appDialogCancel = appDialogCancel;
    فقط برای هماهنگی با منوی بخش‌بندی‌شده پنل مدیریت
 ========================================================= */
 
+async function loadServiceLimits(){
+  const panel=$("serviceLimitsPanel"); if(!panel)return;
+  panel.innerHTML='<div class="limits-loading">در حال دریافت گزارش مصرف...</div>';
+  try{
+    const r=await postJson('/api/admin/service-limits',{});
+    const services=Array.isArray(r?.services)?r.services:[];
+    const routes=Array.isArray(r?.routes)?r.routes:[];
+    const cards=services.map(x=>{
+      const pct=Number.isFinite(Number(x.percentage))?Math.max(0,Math.min(100,Number(x.percentage))):0;
+      const recorded=x.recorded===true;
+      return `<div class="limit-service-card"><h4>${escapeHtml(x.icon||'◉')} ${escapeHtml(x.name||'سرویس')}</h4><div class="limit-metric"><span>امروز</span><b>${escapeHtml(x.today_display||'ثبت نشده')}</b></div><div class="limit-metric"><span>سقف روزانه</span><b>${escapeHtml(x.cap_display||'تعریف نشده')}</b></div>${recorded?`<div class="limit-progress"><span style="width:${pct}%"></span></div><div class="limit-metric"><span>درصد مصرف</span><b>${escapeHtml(String(pct))}%</b></div>`:''}<span class="limit-status ${recorded?'recorded':''}">${recorded?'✓ مصرف واقعی ثبت شده':'ℹ️ داده مصرف واقعی ثبت نشده'}</span>${x.note?`<p>${escapeHtml(x.note)}</p>`:''}</div>`;
+    }).join('');
+    const routeHtml=routes.length?`<div class="limit-service-card limit-routes"><h4>🔝 ۱۰ مسیر API پرترافیک</h4>${routes.slice(0,10).map((x,i)=>`<div class="limit-route-row"><span>${escapeHtml(faDigits(i+1))}. ${escapeHtml(x.route||'—')}</span><b>${escapeHtml(x.count_display||'ثبت نشده')}</b></div>`).join('')}</div>`:'';
+    panel.innerHTML=cards+routeHtml||'<div class="limits-loading">گزارش مصرفی موجود نیست.</div>';
+  }catch(e){panel.innerHTML=`<div class="message error">دریافت گزارش محدودیت‌ها انجام نشد.<br>${escapeHtml(e.message||'خطای نامشخص')}</div>`;}
+}
+
 function showAdminHome() {
   const home = $("adminHome");
   const sections = document.querySelectorAll("[id^='adminSection-']");
@@ -2612,6 +2641,9 @@ async function showAdminSection(sectionName) {
     }
     if (sectionName === "archives") {
       await loadImageArchives();
+    }
+    if (sectionName === "limits") {
+      await loadServiceLimits();
     }
   } catch (error) {
     console.error("Admin section:", error);

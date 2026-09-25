@@ -2435,9 +2435,32 @@ footer span{font-size:12px}
 .letter-compose-card .letter-textarea{min-height:190px}
 
 /* Envelope must stay attached to the viewport, not to page scroll */
-.admin-inbox-floating-button{position:fixed!important;top:calc(env(safe-area-inset-top, 0px) + 16px)!important;right:18px!important;left:auto!important;bottom:auto!important;z-index:9999!important}
-@media(max-width:850px){.admin-inbox-floating-button{top:calc(env(safe-area-inset-top, 0px) + 12px)!important;right:12px!important;width:42px!important;height:42px!important}}
+.admin-inbox-floating-button{position:absolute!important;top:50%!important;right:18px!important;left:auto!important;bottom:auto!important;transform:translateY(-50%)!important;z-index:8!important;width:48px;height:48px;border:1px solid #bbf7d0;border-radius:16px;background:#fff;box-shadow:0 7px 20px rgba(22,101,52,.12);font-size:23px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.header{padding-right:82px!important}
+.admin-inbox-badge{top:-5px;right:-5px}
+@media(max-width:850px){.admin-inbox-floating-button{top:50%!important;right:10px!important;width:42px!important;height:42px!important;font-size:19px!important}.header{padding-right:62px!important}}
 
 /* Full workspace for the letter inbox on desktop */
 .letter-inbox-modal-card{width:calc(100vw - 28px)!important;max-width:none!important;height:calc(100vh - 28px)!important;max-height:none!important}
 @media(max-width:850px){.letter-inbox-modal-card{width:calc(100vw - 12px)!important;height:calc(100vh - 12px)!important}}
+
+/* ===== LETTER UI FINAL FIX ===== */
+.letter-compose-card .admin-primary{min-height:58px!important;font-size:15px!important;font-weight:900!important;border-radius:14px!important}
+.letter-recipient-box{padding:7px 10px!important}
+.letter-recipient-select{min-height:48px!important;font-size:13px!important}
+.letter-recipient-wrap{background:linear-gradient(135deg,#f0fdf4,#ffffff);border:1px solid #bbf7d0;border-radius:16px;padding:12px!important}
+.letter-field-hint{margin-right:3px}
+/* Keep boot screen perfectly stable until initialization finishes. */
+html,body{min-height:100%;margin:0}
+body.booting{overflow:hidden!important}
+#bootLoader{position:fixed!important;inset:0!important;opacity:1!important;visibility:visible!important;background:#f0fdf4!important;transition:none!important}
+#bootLoader.hide{opacity:0!important;visibility:hidden!important;transition:none!important}
+#bootLoader .boot-card{transform:none!important}
+/* Service limits */
+.limits-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 16px}
+.limits-panel-head h3{margin:0!important}.limits-panel-head p{margin:5px 0 0;color:#64748b;font-size:11px}
+.limits-refresh{border:1px solid #86efac;background:#ecfdf5;color:#166534;border-radius:11px;padding:10px 14px;font:inherit;font-weight:800;cursor:pointer}
+.service-limits-panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.limit-service-card{border:1px solid #e2e8f0;border-radius:17px;background:#fff;padding:15px;box-shadow:0 4px 14px rgba(15,23,42,.04)}
+.limit-service-card h4{margin:0 0 8px;color:#166534;font-size:15px}.limit-service-card p{margin:4px 0;color:#64748b;font-size:11px}.limit-status{display:inline-flex;margin-top:8px;padding:5px 9px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:800}.limit-status.recorded{background:#dcfce7;color:#166534}.limit-progress{height:9px;border-radius:999px;background:#e5e7eb;overflow:hidden;margin:10px 0 6px}.limit-progress>span{display:block;height:100%;background:#22c55e;border-radius:999px;width:0}.limit-metric{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#334155}.limit-routes{grid-column:1/-1}.limit-route-row{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:11px}.limits-loading{grid-column:1/-1;text-align:center;padding:30px;color:#64748b}
+@media(max-width:700px){.service-limits-panel{grid-template-columns:1fr}.limits-panel-head{align-items:flex-start}.limits-refresh{padding:8px 10px;font-size:11px}.limit-routes{grid-column:auto}}

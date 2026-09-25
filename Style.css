@@ -2489,3 +2489,53 @@ body.booting{overflow:hidden!important}
 .letter-recipient-option .recipient-option-number{margin-right:auto;color:#16a34a;font-size:10px;font-weight:900}
 .letter-recipient-empty{padding:18px 10px;text-align:center;color:#94a3b8;font-size:12px}
 .customer-select-hidden{display:none!important}
+
+/* ===== TARGETED FIXES — 2026-09-25 ===== */
+html,body{width:100%;max-width:100%;overflow-x:hidden!important;box-sizing:border-box}
+*,*::before,*::after{box-sizing:border-box}
+.app{width:100%;max-width:100%;overflow-x:hidden}
+.header{position:sticky!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
+.login-box{min-width:0!important;width:min(430px,100%)!important;max-width:430px!important;box-sizing:border-box!important}
+.login-fields{min-width:0!important;width:100%!important;box-sizing:border-box!important}
+.login-fields input,.login-fields button{box-sizing:border-box!important;min-width:0!important}
+@media(max-width:900px){.login-box{width:100%!important;max-width:100%!important}.header{overflow-x:hidden!important}}
+
+/* Logo on the right; envelope directly below it. */
+.header{padding-right:18px!important;padding-bottom:72px!important;min-height:154px!important}
+.brand{margin-left:auto!important;margin-right:0!important;flex-direction:row-reverse!important;max-width:100%!important}
+.brand img{order:1!important}
+.brand>div{order:2!important}
+.admin-inbox-floating-button{position:absolute!important;right:68px!important;left:auto!important;top:88px!important;bottom:auto!important;transform:none!important;z-index:61!important}
+@media(max-width:850px){
+  .header{min-height:150px!important;padding-right:12px!important;padding-bottom:68px!important}
+  .admin-inbox-floating-button{right:44px!important;top:86px!important;width:42px!important;height:42px!important;font-size:19px!important}
+}
+
+/* Cart: package count updates immediately while typing the amount. */
+.cart-qty b{min-width:74px;text-align:center;display:inline-block}
+
+/* Letter inbox: distinct colors for cart / note / normal letters. */
+.letter-item.type-cart{background:linear-gradient(135deg,#fff7ed,#ffffff)!important;border-color:#fed7aa!important}
+.letter-item.type-cart .letter-item-subject{color:#c2410c!important}
+.letter-item.type-note{background:linear-gradient(135deg,#eff6ff,#ffffff)!important;border-color:#bfdbfe!important}
+.letter-item.type-note .letter-item-subject{color:#1d4ed8!important}
+.letter-item.type-reply{background:linear-gradient(135deg,#f5f3ff,#ffffff)!important;border-color:#ddd6fe!important}
+.letter-item.type-reply .letter-item-subject{color:#6d28d9!important}
+.letter-item.type-letter{background:linear-gradient(135deg,#f0fdf4,#ffffff)!important;border-color:#bbf7d0!important}
+
+/* Keep the reply editor and its send button visible without hunting for a scrollbar. */
+.letter-thread{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important}
+.thread-messages{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2px 4px 10px}
+.thread-reply{flex:0 0 auto!important;position:sticky!important;bottom:0!important;z-index:5!important;background:rgba(255,255,255,.98)!important;border-top:1px solid #dbe4de!important;margin-top:8px!important;padding:12px 2px 2px!important;box-shadow:0 -8px 20px rgba(15,23,42,.05)}
+.thread-reply .letter-textarea{display:block;width:100%!important;min-height:92px!important;max-height:150px!important;resize:vertical!important;margin:0!important}
+.thread-reply .admin-primary{display:block!important;width:100%!important;min-height:50px!important;margin-top:8px!important}
+.thread-message.type-cart{background:linear-gradient(135deg,#fff7ed,#fffaf5)!important;border-color:#fdba74!important}
+.thread-message.type-note{background:linear-gradient(135deg,#eff6ff,#f8fbff)!important;border-color:#93c5fd!important}
+.thread-message.type-letter{background:linear-gradient(135deg,#f0fdf4,#fbfffc)!important;border-color:#86efac!important}
+.thread-message.type-reply{background:linear-gradient(135deg,#f5f3ff,#fbfaff)!important;border-color:#c4b5fd!important}
+.thread-message.mine{background:linear-gradient(135deg,#ecfdf5,#f7fff9)!important;border-color:#86efac!important}
+@media(max-width:850px){
+  .letter-thread{min-height:0!important;padding:12px!important}
+  .thread-messages{padding-bottom:6px}
+  .thread-reply .letter-textarea{min-height:82px!important}
+}

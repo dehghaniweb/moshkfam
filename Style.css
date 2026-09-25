@@ -2465,50 +2465,110 @@ body.booting{overflow:hidden!important}
 .limit-service-card h4{margin:0 0 8px;color:#166534;font-size:15px}.limit-service-card p{margin:4px 0;color:#64748b;font-size:11px}.limit-status{display:inline-flex;margin-top:8px;padding:5px 9px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:800}.limit-status.recorded{background:#dcfce7;color:#166534}.limit-progress{height:9px;border-radius:999px;background:#e5e7eb;overflow:hidden;margin:10px 0 6px}.limit-progress>span{display:block;height:100%;background:#22c55e;border-radius:999px;width:0}.limit-metric{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#334155}.limit-routes{grid-column:1/-1}.limit-route-row{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:11px}.limits-loading{grid-column:1/-1;text-align:center;padding:30px;color:#64748b}
 @media(max-width:700px){.service-limits-panel{grid-template-columns:1fr}.limits-panel-head{align-items:flex-start}.limits-refresh{padding:8px 10px;font-size:11px}.limit-routes{grid-column:auto}}
 
-/* ===== LETTER FIXES: recipient IDs + header row + mobile mailbox ===== */
+
+/* =========================================================
+   LETTER FIX V1.0.1 — FINAL OVERRIDES
+   Scope: letter header icon, mailbox mobile layout, version badge
+========================================================= */
+.project-version{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  align-self:flex-start;
+  background:#166534;
+  color:#fff;
+  border:2px solid #dcfce7;
+  box-shadow:0 4px 12px rgba(22,101,52,.16);
+  font:900 9px/1 Tahoma,Arial,sans-serif;
+  direction:ltr;
+  flex:0 0 38px;
+}
+
+/* Keep letter/cart/orders in one dedicated header row; logo remains in the brand area. */
 .header-shopping-actions{
   position:absolute!important;
   left:16px!important;
-  right:16px!important;
+  right:auto!important;
+  top:auto!important;
   bottom:10px!important;
   display:flex!important;
   align-items:center!important;
-  justify-content:flex-start!important;
   gap:8px!important;
   z-index:60!important;
-  pointer-events:none;
 }
-.header-shopping-actions > button{pointer-events:auto}
 .header-shopping-actions .admin-inbox-floating-button,
 .header-shopping-actions .cart-floating-button,
 .header-shopping-actions .orders-floating-button{
   position:relative!important;
-  top:auto!important;
-  right:auto!important;
-  left:auto!important;
-  bottom:auto!important;
+  inset:auto!important;
   transform:none!important;
-  flex:0 0 48px!important;
   width:48px!important;
   height:48px!important;
+  margin:0!important;
+  flex:0 0 48px!important;
 }
-.header-shopping-actions .admin-inbox-floating-button{display:flex!important;border:1px solid #bbf7d0;border-radius:50%;background:#fff;box-shadow:0 7px 20px rgba(22,101,52,.12);font-size:23px}
-.header-shopping-actions .admin-inbox-floating-button.hidden{display:none!important}
-.header{padding-right:0!important}
-.letter-date-group{position:sticky;top:0;z-index:3;padding:7px 9px;margin:4px 2px 7px;border-radius:10px;background:#f0fdf4;border:1px solid #dcfce7;color:#166534;font-size:11px;font-weight:900;text-align:right}
-.letter-inbox-modal-card{display:flex!important;flex-direction:column!important;min-height:0!important}
-.letter-inbox-header,.letter-filters{flex:0 0 auto}
-.letter-inbox-layout{flex:1 1 auto!important;min-height:0!important;height:auto!important}
-.letter-list,.letter-thread{min-height:0!important}
+.header-shopping-actions .admin-inbox-floating-button{
+  border:1px solid #bbf7d0!important;
+  border-radius:50%!important;
+  background:#ecfdf5!important;
+  color:#166534!important;
+  font-size:23px!important;
+  box-shadow:0 5px 16px rgba(22,101,52,.12)!important;
+}
+.header-shopping-actions .cart-floating-button,
+.header-shopping-actions .orders-floating-button{
+  z-index:auto!important;
+}
+.header{padding-bottom:72px!important;padding-right:18px!important}
+
+/* The mailbox itself must own the available vertical space; no fixed subtraction based on header/filter pixel counts. */
+.letter-inbox-modal-card{
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:0!important;
+}
+.letter-inbox-header,.letter-filters{flex:0 0 auto!important}
+.letter-inbox-layout{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  height:auto!important;
+  overflow:hidden!important;
+}
+.letter-list,.letter-thread{
+  min-height:0!important;
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+
 @media(max-width:850px){
-  .header-shopping-actions{left:10px!important;right:10px!important;bottom:8px!important}
+  .header{padding-bottom:66px!important;padding-right:18px!important}
+  .header-shopping-actions{left:10px!important;bottom:8px!important;gap:6px!important}
   .header-shopping-actions .admin-inbox-floating-button,
   .header-shopping-actions .cart-floating-button,
-  .header-shopping-actions .orders-floating-button{flex-basis:42px!important;width:42px!important;height:42px!important}
-  .letter-inbox-layout{grid-template-columns:1fr!important;grid-template-rows:minmax(190px,44%) minmax(220px,1fr)!important;overflow:hidden!important}
-  .letter-list{overflow-y:auto!important;overflow-x:hidden!important}
-  .letter-thread{overflow-y:auto!important}
+  .header-shopping-actions .orders-floating-button{
+    width:44px!important;height:44px!important;flex-basis:44px!important;font-size:20px!important;
+  }
+  .letter-inbox-modal-card{
+    height:calc(100vh - 12px)!important;
+    max-height:calc(100vh - 12px)!important;
+    min-height:0!important;
+  }
+  .letter-inbox-layout{
+    grid-template-columns:1fr!important;
+    height:auto!important;
+    flex:1 1 auto!important;
+    min-height:0!important;
+  }
+  .letter-list{min-height:180px!important}
+  .letter-thread{min-height:220px!important}
 }
 @media(max-width:520px){
-  .letter-inbox-layout{grid-template-rows:minmax(180px,46%) minmax(210px,1fr)!important}
+  .project-version{width:34px;height:34px;flex-basis:34px;font-size:8px}
+  .letter-inbox-modal-card{height:calc(100vh - 10px)!important;max-height:calc(100vh - 10px)!important;padding:10px!important}
+  .letter-inbox-layout{height:auto!important;min-height:0!important}
+  .letter-list{min-height:180px!important;max-height:none!important}
+  .letter-thread{min-height:200px!important;max-height:none!important}
 }

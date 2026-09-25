@@ -154,6 +154,7 @@
 
 
   <div class="login-box" id="loginBox">
+    <div class="project-version" aria-label="نسخه پروژه">V1.0.1</div>
     <div class="login-fields">
       <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username" dir="ltr" inputmode="email">
       <input id="loginPassword" type="text" placeholder="رمز عبور" autocomplete="current-password" dir="ltr">
@@ -359,21 +360,8 @@
       <label>تا تاریخ شمسی<input id="letterDateTo" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off"></label>
       <label>وضعیت<select id="letterReadFilter"><option value="all">همه نامه‌ها</option><option value="unread">خوانده‌نشده</option></select></label>
       <label id="letterSenderFilterWrap">فرستنده<select id="letterSenderFilter"><option value="">همه فرستنده‌ها</option></select></label>
-      <label>صندوق<select id="letterBoxFilter">
-        <option value="all">همه نامه‌ها</option>
-        <option value="received">دریافتی</option>
-        <option value="sent">ارسالی</option>
-        <option value="today">امروز</option>
-        <option value="previous">نامه‌های قبلی</option>
-      </select></label>
       <button type="button" class="letter-filter-button" onclick="loadLetterInbox()">🔎 نمایش</button>
       <button type="button" class="letter-filter-reset" onclick="resetLetterFilters()">↺ امروز</button><button type="button" class="letter-filter-reset" onclick="showAllLetters()">📚 همه تاریخ‌ها</button>
-    </div>
-    <div class="letter-overview" id="letterOverview">
-      <div class="letter-stat"><strong id="letterStatUnread">۰</strong><span>خوانده‌نشده</span></div>
-      <div class="letter-stat"><strong id="letterStatToday">۰</strong><span>امروز</span></div>
-      <div class="letter-stat"><strong id="letterStatPrevious">۰</strong><span>قبلی</span></div>
-      <div class="letter-stat"><strong id="letterStatSent">۰</strong><span>ارسالی</span></div>
     </div>
     <div class="letter-inbox-layout">
       <div id="letterList" class="letter-list"><div class="message">در حال دریافت نامه‌ها...</div></div>
@@ -397,7 +385,7 @@
       <select id="letterRecipientSelect" class="letter-recipient-select" aria-label="گیرنده نامه">
         <option value="">در حال دریافت فهرست نماینده‌ها...</option>
       </select>
-      <small class="letter-field-hint">نماینده را انتخاب کنید؛ شناسه واقعی حساب مستقیماً برای ارسال به Worker فرستاده می‌شود.</small>
+      <small class="letter-field-hint">نام یا نام کاربری نماینده را جستجو و انتخاب کنید.</small>
     </div>
     <input id="letterComposeSubject" class="letter-input" placeholder="عنوان نامه">
     <textarea id="letterComposeBody" class="letter-textarea" rows="8" placeholder="متن نامه..."></textarea>

@@ -2078,6 +2078,9 @@ function openLetterInbox(){
   const modal=$('letterInboxModal'); if(!modal)return;
   modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
   bindJalaliDateInputs(); updateLetterTodayHeader();
+  const today=localDateInputValue();
+  if(!$('letterDateFrom').value)setJalaliInput('letterDateFrom',today);
+  if(!$('letterDateTo').value)setJalaliInput('letterDateTo',today);
   updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();
 }
 function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
@@ -2143,14 +2146,10 @@ async function loadLetterInbox(){
     const r=await postJson(endpoint,payload); letterThreads=Array.isArray(r?.messages)?r.messages:[];
     renderLetterSenderFilter(letterThreads);
     if(!letterThreads.length){list.innerHTML='<div class="message">نامه‌ای با این فیلتر پیدا نشد.</div>';return;}
-    let lastGroup='';
     list.innerHTML=letterThreads.map((m,i)=>{
-      const unread=!!m.read===false;
+      const unread=!m.read;
       const sender=m.sender_name||m.sender_username||"کاربر";
-      const group=letterDateGroupLabel(m.created_at);
-      const heading=group!==lastGroup?`<div class="letter-date-group">${escapeHtml(group)}</div>`:'';
-      lastGroup=group;
-      return `${heading}<div class="letter-item ${unread?'unread':''}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${escapeHtml(m.subject||'بدون عنوان')}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
+      return `<div class="letter-item ${unread?'unread':''}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${escapeHtml(m.subject||'بدون عنوان')}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
     }).join("");
     if(letterCurrentThread!=null){const idx=letterThreads.findIndex(x=>String(x.thread_id||x.id)===String(letterCurrentThread));if(idx>=0)openLetterThread(idx);}
     await loadLetterUnreadCount();
@@ -2162,7 +2161,6 @@ function renderLetterSenderFilter(messages){
   sel.innerHTML='<option value="">همه فرستنده‌ها</option>'+Array.from(seen.entries()).map(([id,name])=>`<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`).join("");if(current)sel.value=current;
 }
 function formatLetterDate(v){try{return new Date(v).toLocaleString('fa-IR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return v||'';}}
-function letterDateGroupLabel(v){try{const d=new Date(v),now=new Date();const a=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),b=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();const diff=Math.round((b-a)/86400000);if(diff===0)return 'امروز';if(diff===1)return 'دیروز';return d.toLocaleDateString('fa-IR',{year:'numeric',month:'2-digit',day:'2-digit'});}catch{return 'تاریخ نامه';}}
 async function openLetterThread(index){
   const m=letterThreads[index];if(!m)return;letterCurrentThread=String(m.thread_id||m.id);
   const thread=$("letterThread");if(!thread)return;thread.innerHTML='<div class="message">در حال دریافت گفتگو...</div>';
@@ -2191,10 +2189,7 @@ async function sendNewLetter(){
     const payload=isAdmin
       ? {recipient_customer_id:recipientId,subject:subject,body:body}
       : {subject:subject,body:body};
-    console.log('[LETTER] selected recipient ID:', recipientId);
-    console.log('[LETTER] sending payload:', { ...payload, body:'[hidden]' });
     const result=await postJson(isAdmin?'/api/admin/letter':'/api/customer/letter',payload);
-    console.log('[LETTER] worker response:', result);
     if(result?.ok===false) throw new Error(result.error||'سرور نامه را ثبت نکرد.');
     closeLetterCompose();
     appAlert("✅ نامه با موفقیت ارسال شد.");

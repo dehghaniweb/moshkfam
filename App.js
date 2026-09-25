@@ -2094,77 +2094,35 @@ async function loadLetterRecipients(){
   const wrap=$('letterRecipientWrap');
   const sel=$('letterRecipientSelect');
   if(!wrap||!sel)return;
-  if(!isAdmin){wrap.classList.add('hidden');return;}
+  const role=String(currentUser?.role||'').toLowerCase();
+  const adminMode=isAdmin || role==='admin' || role==='super_admin';
+  if(!adminMode){wrap.classList.add('hidden');return;}
   wrap.classList.remove('hidden');
+  sel.disabled=true;
   sel.innerHTML='<option value="">در حال دریافت فهرست نماینده‌ها...</option>';
   try{
     const r=await postJson('/api/admin/customers',{});
     const customers=Array.isArray(r)?r:(Array.isArray(r?.customers)?r.customers:(Array.isArray(r?.data?.customers)?r.data.customers:(Array.isArray(r?.data)?r.data:[])));
-    let picker=$('letterRecipientPicker');
-    if(!picker){
-      picker=document.createElement('div');
-      picker.id='letterRecipientPicker';
-      picker.className='letter-recipient-picker';
-      sel.parentElement?.appendChild(picker);
-    }
     if(!customers.length){
       sel.innerHTML='<option value="">نماینده‌ای برای انتخاب وجود ندارد</option>';
-      picker.innerHTML='<div class="letter-recipient-empty">نماینده فعالی برای انتخاب وجود ندارد.</div>';
+      sel.disabled=true;
       return;
     }
     sel.innerHTML='<option value="">انتخاب نماینده...</option>'+customers.map(c=>{
-      const id=String(c.id);
-      const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||c.username||'نماینده';
-      const user=c.username?`@${c.username}`:'بدون نام کاربری';
-      return `<option value="${escapeHtml(id)}" data-name="${escapeHtml(name)}" data-user="${escapeHtml(user)}">${escapeHtml(name)} — ${escapeHtml(user)}</option>`;
+      const id=String(c.id||c.customer_id||'');
+      const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||c.name||c.username||'نماینده';
+      const user=c.username?`@${String(c.username).replace(/^@/,'')}`:'بدون نام کاربری';
+      return `<option value="${escapeHtml(id)}">${escapeHtml(name)} — ${escapeHtml(user)}</option>`;
     }).join('');
-    renderLetterRecipientPicker(customers);
+    sel.disabled=false;
   }catch(e){
-    sel.innerHTML='<option value="">خطا در دریافت نماینده‌ها</option>';
-    const picker=$('letterRecipientPicker');
-    if(picker)picker.innerHTML='<div class="letter-recipient-empty">دریافت فهرست نماینده‌ها انجام نشد.</div>';
-    appAlert('❌ فهرست نماینده‌ها دریافت نشد:\n'+(e.message||''));
+    console.error('Letter recipients:',e);
+    sel.innerHTML='<option value="">خطا در دریافت فهرست نماینده‌ها</option>';
+    sel.disabled=true;
   }
 }
 
-function renderLetterRecipientPicker(customers){
-  const picker=$('letterRecipientPicker');
-  const sel=$('letterRecipientSelect');
-  if(!picker||!sel)return;
-  const current=String(sel.value||'');
-  const list=customers.map((c,index)=>{
-    const id=String(c.id);
-    const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||c.username||'نماینده';
-    const user=c.username?`@${c.username}`:'بدون نام کاربری';
-    return {id,name,user,index};
-  });
-  const selected=list.find(x=>x.id===current);
-  picker.innerHTML=`
-    <button type="button" class="letter-recipient-trigger" onclick="event.preventDefault();event.stopPropagation();toggleLetterRecipientPicker(event)">
-      <span class="recipient-trigger-main">
-        <span class="recipient-trigger-icon">👤</span>
-        <span class="recipient-trigger-text">
-          <span class="recipient-trigger-name">${escapeHtml(selected?.name||'انتخاب نماینده')}</span>
-          <span class="recipient-trigger-user">${escapeHtml(selected?.user||'فهرست نمایندگان')}</span>
-        </span>
-      </span>
-      <span class="recipient-chevron">⌄</span>
-    </button>
-    <div class="letter-recipient-list hidden">
-      <input class="letter-recipient-search" id="letterRecipientSearch" type="search" placeholder="🔎 جستجوی نام یا نام کاربری..." autocomplete="off" oninput="filterLetterRecipients()">
-      <div id="letterRecipientOptions">
-        ${list.map(x=>`
-          <button type="button" class="letter-recipient-option ${x.id===current?'active':''}" data-id="${escapeHtml(x.id)}" data-search="${escapeHtml((x.name+' '+x.user).toLocaleLowerCase('fa-IR'))}" onclick="selectLetterRecipient('${escapeHtml(x.id)}')">
-            <span class="recipient-option-avatar">👤</span>
-            <span class="recipient-option-text">
-              <span class="recipient-option-name">${escapeHtml(x.name)}</span>
-              <span class="recipient-option-user">${escapeHtml(x.user)}</span>
-            </span>
-            <span class="recipient-option-number">${escapeHtml(faDigits(x.index+1))}</span>
-          </button>`).join('')}
-      </div>
-    </div>`;
-}
+function renderLetterRecipientPicker(){}
 function toggleLetterRecipientPicker(event){
   if(event){event.preventDefault();event.stopPropagation();}
   const picker=$('letterRecipientPicker');
@@ -2208,7 +2166,9 @@ function openLetterCompose(){
   modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
   const subject=$('letterComposeSubject'), body=$('letterComposeBody');
   if(subject)subject.value=''; if(body)body.value='';
-  if(isAdmin){
+  const role=String(currentUser?.role||'').toLowerCase();
+  const adminMode=isAdmin || role==='admin' || role==='super_admin';
+  if(adminMode){
     $('letterComposeHelp')?.replaceChildren(document.createTextNode('نامه را برای نماینده موردنظر ارسال کنید.'));
     loadLetterRecipients();
   }else{

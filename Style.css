@@ -2742,3 +2742,50 @@ body.booting{overflow:hidden!important;height:100vh!important;min-height:100vh!i
 .letter-recipient-picker{flex:1 1 auto!important;min-width:0!important;position:relative!important;z-index:100!important;}
 .letter-recipient-trigger{min-height:54px!important;}
 .letter-recipient-list{z-index:200!important;}
+
+
+/* FINAL TARGETED FIX — 2026-09-25
+   Keep only the requested header/mailbox/compose behavior. */
+.header-shopping-actions{
+  position:absolute!important;
+  left:16px!important;
+  right:16px!important;
+  bottom:10px!important;
+  top:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  z-index:100!important;
+  pointer-events:none!important;
+}
+.header-shopping-actions > button{pointer-events:auto!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;}
+.header-shopping-actions .cart-floating-button{order:1!important;}
+.header-shopping-actions .orders-floating-button{order:2!important;}
+.header-shopping-actions .admin-inbox-floating-button{order:3!important;margin-left:auto!important;width:48px!important;height:48px!important;}
+
+/* Use the real native recipient list so it cannot disappear behind the custom picker. */
+.letter-recipient-box{display:flex!important;align-items:center!important;overflow:visible!important;}
+.letter-recipient-select{display:block!important;position:relative!important;flex:1 1 auto!important;width:100%!important;height:50px!important;min-height:50px!important;opacity:1!important;pointer-events:auto!important;visibility:visible!important;border:0!important;outline:0!important;background:#fff!important;color:#1f2937!important;font:inherit!important;font-size:13px!important;font-weight:700!important;direction:rtl!important;cursor:pointer!important;}
+.customer-select-hidden{display:none!important;}
+#letterRecipientPicker{display:none!important;}
+.letter-recipient-select:disabled{color:#64748b!important;opacity:1!important;}
+
+/* Mailbox: header stays compact; only the message areas scroll. */
+.letter-inbox-modal-card{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important;}
+.letter-inbox-header{flex:0 0 auto!important;padding-bottom:10px!important;}
+.letter-filters{flex:0 0 auto!important;padding:9px 0!important;}
+.letter-inbox-layout{flex:1 1 auto!important;height:auto!important;min-height:0!important;overflow:hidden!important;}
+.letter-list{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;}
+.letter-thread{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important;}
+.thread-messages{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;}
+.thread-reply{flex:0 0 auto!important;position:sticky!important;bottom:0!important;z-index:10!important;background:#fff!important;}
+
+/* Startup screen: no temporary desktop scrollbar. */
+html:has(body.booting),body.booting{overflow:hidden!important;width:100%!important;height:100%!important;min-height:100vh!important;}
+#bootLoader{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;overflow:hidden!important;}
+@media(max-width:850px){
+  .header-shopping-actions{left:10px!important;right:10px!important;bottom:10px!important;}
+  .header-shopping-actions .admin-inbox-floating-button{width:44px!important;height:44px!important;}
+  .letter-recipient-select{height:48px!important;min-height:48px!important;}
+}

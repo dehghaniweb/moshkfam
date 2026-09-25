@@ -2099,11 +2099,13 @@ async function loadLetterRecipients(){
   sel.innerHTML='<option value="">در حال دریافت فهرست نماینده‌ها...</option>';
   try{
     const r=await postJson('/api/admin/customers',{});
-    const customers=Array.isArray(r)?r:(Array.isArray(r?.customers)?r?.customers:[]);
-    const picker=$('letterRecipientPicker');
+    const customers=Array.isArray(r)?r:(Array.isArray(r?.customers)?r.customers:(Array.isArray(r?.data?.customers)?r.data.customers:(Array.isArray(r?.data)?r.data:[])));
+    let picker=$('letterRecipientPicker');
     if(!picker){
-      sel.innerHTML='<option value="">نماینده‌ای برای انتخاب وجود ندارد</option>';
-      return;
+      picker=document.createElement('div');
+      picker.id='letterRecipientPicker';
+      picker.className='letter-recipient-picker';
+      sel.parentElement?.appendChild(picker);
     }
     if(!customers.length){
       sel.innerHTML='<option value="">نماینده‌ای برای انتخاب وجود ندارد</option>';

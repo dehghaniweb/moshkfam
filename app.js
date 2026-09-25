@@ -2084,6 +2084,44 @@ function openLetterInbox(){
   updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();
 }
 function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
+
+async function loadLetterRecipients(){
+  const wrap=$('letterRecipientWrap'), sel=$('letterRecipientSelect');
+  if(!wrap||!sel)return;
+  if(!isAdmin){wrap.classList.add('hidden');return;}
+  wrap.classList.remove('hidden');
+  sel.innerHTML='<option value="">در حال دریافت فهرست نماینده‌ها...</option>';
+  try{
+    const r=await postJson('/api/admin/customers',{});
+    const customers=Array.isArray(r?.customers)?r.customers:[];
+    if(!customers.length){sel.innerHTML='<option value="">نماینده‌ای برای انتخاب وجود ندارد</option>';return;}
+    sel.innerHTML='<option value="">انتخاب نماینده...</option>'+customers.map(c=>{
+      const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||c.username||'نماینده';
+      const user=c.username?`@${c.username}`:'';
+      return `<option value="${escapeHtml(String(c.id))}">${escapeHtml(name)}${user?` — ${escapeHtml(user)}`:''}</option>`;
+    }).join('');
+  }catch(e){
+    sel.innerHTML='<option value="">خطا در دریافت نماینده‌ها</option>';
+    appAlert('❌ فهرست نماینده‌ها دریافت نشد:\n'+(e.message||''));
+  }
+}
+
+function openLetterCompose(){
+  if(!currentUser)return appAlert('⚠️ ابتدا وارد حساب کاربری خود شوید.');
+  const modal=$('letterComposeModal'); if(!modal)return;
+  modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
+  const subject=$('letterComposeSubject'), body=$('letterComposeBody');
+  if(subject)subject.value=''; if(body)body.value='';
+  if(isAdmin){
+    $('letterComposeHelp')?.replaceChildren(document.createTextNode('نامه را برای نماینده موردنظر ارسال کنید.'));
+    loadLetterRecipients();
+  }else{
+    $('letterComposeHelp')?.replaceChildren(document.createTextNode('پیام خود را برای مشکفام فارس بنویسید.'));
+    $('letterRecipientWrap')?.classList.add('hidden');
+  }
+  setTimeout(()=>subject?.focus(),80);
+}
+function closeLetterCompose(){const m=$('letterComposeModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
 function resetLetterFilters(){const t=localDateInputValue();setJalaliInput('letterDateFrom',t);setJalaliInput('letterDateTo',t);$('letterReadFilter').value='all';if($('letterSenderFilter'))$('letterSenderFilter').value='';updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();}
 function showAllLetters(){$('letterDateFrom').value='';$('letterDateTo').value='';$('letterReadFilter').value='all';if($('letterSenderFilter'))$('letterSenderFilter').value='';updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();}
 
@@ -2135,59 +2173,21 @@ async function openLetterThread(index){
   }catch(e){thread.innerHTML=`<div class="message error">دریافت گفتگو انجام نشد.<br>${escapeHtml(e.message||'')}</div>`;}
 }
 function renderLetterListAfterRead(){document.querySelectorAll('.letter-item').forEach(el=>el.classList.remove('unread'));}
-function openLetterCompose(){
-  const modal=$("letterComposeModal");
-  if(!modal)return;
-  const title=modal.querySelector("h2");
-  const help=modal.querySelector(".request-help");
-  const recipient=$("letterComposeRecipient");
-  const subject=$("letterComposeSubject");
-  const body=$("letterComposeBody");
-  if(title)title.textContent=isAdmin?"✍️ نامه جدید برای نماینده":"✍️ نامه جدید";
-  if(help)help.textContent=isAdmin?"نماینده گیرنده را انتخاب و نامه را ارسال کنید.":"پیام خود را برای مدیریت مشکفام فارس بنویسید.";
-  if(recipient){
-    recipient.classList.toggle("hidden",!isAdmin);
-    if(isAdmin && !recipient.dataset.loaded)loadLetterComposeRecipients();
-  }
-  if(subject)subject.value="";
-  if(body)body.value="";
-  modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");
-}
-function closeLetterCompose(){
-  const modal=$("letterComposeModal");
-  if(modal){modal.classList.add("hidden");modal.setAttribute("aria-hidden","true");}
-}
-async function loadLetterComposeRecipients(){
-  const sel=$("letterComposeRecipient");if(!sel||!isAdmin)return;
-  sel.innerHTML='<option value="">در حال دریافت نماینده‌ها...</option>';
-  try{
-    const r=await postJson("/api/admin/customers",{});
-    const rows=Array.isArray(r?.customers)?r.customers:[];
-    sel.innerHTML='<option value="">انتخاب نماینده</option>'+rows.map(c=>{
-      const name=[c.first_name,c.last_name].filter(Boolean).join(" ")||c.username||"نماینده";
-      return `<option value="${escapeHtml(c.id)}">${escapeHtml(name)}${c.username?` — @${escapeHtml(c.username)}`:""}</option>`;
-    }).join("");
-    sel.dataset.loaded="1";
-  }catch(e){
-    sel.innerHTML='<option value="">دریافت نماینده‌ها ناموفق بود</option>';
-    appAlert("❌ دریافت فهرست نماینده‌ها انجام نشد:\n"+(e.message||""));
-  }
-}
 async function sendLetterReply(threadId){const body=$("letterReplyBody")?.value.trim();if(!body)return appAlert("لطفاً متن پاسخ را بنویسید.");try{await postJson(isAdmin?"/api/admin/letter-reply":"/api/customer/letter-reply",{thread_id:Number(threadId),body});appAlert("✅ پاسخ با موفقیت ارسال شد.");await loadLetterInbox();}catch(e){appAlert("❌ ارسال پاسخ انجام نشد:\n"+(e.message||''));}}
 async function sendNewLetter(){
   const subject=$("letterComposeSubject")?.value.trim();
   const body=$("letterComposeBody")?.value.trim();
-  const recipientId=$("letterComposeRecipient")?.value||"";
+  const recipientId=$("letterRecipientSelect")?.value||"";
   if(!subject||!body)return appAlert("لطفاً عنوان و متن نامه را کامل کنید.");
-  if(isAdmin && !recipientId)return appAlert("لطفاً نماینده گیرنده را انتخاب کنید.");
   try{
-    const endpoint=isAdmin?"/api/admin/letter":"/api/customer/letter";
-    const payload=isAdmin?{customer_id:Number(recipientId),subject,body}:{subject,body};
-    await postJson(endpoint,payload);
-    closeLetterCompose();
-    appAlert("✅ نامه با موفقیت ارسال شد.");
-    await loadLetterInbox();
-    await loadLetterUnreadCount();
+    if(isAdmin){
+      if(!recipientId)return appAlert("لطفاً نماینده گیرنده نامه را انتخاب کنید.");
+      await postJson('/api/admin/letter',{recipient_customer_id:Number(recipientId),subject,body});
+    }else{
+      await postJson('/api/customer/letter',{subject,body});
+    }
+    closeLetterCompose();appAlert("✅ نامه با موفقیت ارسال شد.");
+    await loadLetterInbox();await loadLetterUnreadCount();
   }catch(e){appAlert("❌ ارسال نامه انجام نشد:\n"+(e.message||''));}
 }
 
@@ -2527,45 +2527,6 @@ function finishBootLoader() {
 })();
 
 
-
-/* =========================================================
-   LIMITS / USAGE PANEL
-========================================================= */
-async function openLimitsPanel(){
-  const modal=$("limitsModal");if(!modal)return;
-  modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");
-  await loadLimitsPanel();
-}
-function closeLimitsPanel(){const m=$("limitsModal");if(m){m.classList.add("hidden");m.setAttribute("aria-hidden","true");}}
-async function loadLimitsPanel(){
-  const box=$("limitsContent");if(!box)return;
-  box.innerHTML='<div class="message">در حال دریافت مصرف واقعی Worker...</div>';
-  try{
-    const r=await postJson("/api/admin/limits",{});
-    const d=r?.data||r||{};
-    const worker=d.worker||{};
-    const used=Number(worker.used||0), cap=Number(worker.limit||0);
-    const pct=cap>0?Math.min(100,(used/cap)*100):0;
-    box.innerHTML=`
-      <div class="limits-summary">
-        <div class="limit-card"><strong>امروز</strong><b>${formatNumber(used)}</b><span>مصرف تا همین لحظه</span></div>
-        <div class="limit-card"><strong>سقف امروز</strong><b>${cap?formatNumber(cap):"تعریف نشده"}</b><span>سقف ثبت‌شده Worker</span></div>
-        <div class="limit-card"><strong>درصد مصرف</strong><b>${cap?formatNumber(Math.round(pct))+"٪":"—"}</b><span>${worker.status||"وضعیت نامشخص"}</span></div>
-      </div>
-      <div class="limit-progress"><div style="width:${pct.toFixed(1)}%"></div></div>
-      <div class="limits-services">
-        <div><b>Cloudflare Worker</b><span>${formatNumber(used)} / ${cap?formatNumber(cap):"—"}</span></div>
-        <div><b>Supabase</b><span>${escapeHtml(d.supabase?.status||"مصرف مستقیم در این نسخه ثبت نشده")}</span></div>
-        <div><b>Telegram</b><span>${escapeHtml(d.telegram?.status||"مصرف مستقیم در این نسخه ثبت نشده")}</span></div>
-        <div><b>GitHub</b><span>${escapeHtml(d.github?.status||"مصرف مستقیم در این نسخه ثبت نشده")}</span></div>
-      </div>
-      <h4 class="admin-subtitle">۱۰ مسیر پرمصرف</h4>
-      <div class="limits-routes">${(Array.isArray(d.top_routes)?d.top_routes:[]).map(x=>`<div><code>${escapeHtml(x.route||"—")}</code><strong>${formatNumber(x.count||0)}</strong></div>`).join("")||'<div class="message">هنوز داده‌ای برای مسیرها ثبت نشده است.</div>'}</div>
-      <div class="limits-note">مصرف Worker بر اساس درخواست‌های واقعی ثبت‌شده در پایگاه داده نمایش داده می‌شود. برای سرویس‌هایی که API مصرف مستقیم آن‌ها در نسخه فعلی در دسترس نیست، عدد ساختگی نمایش داده نمی‌شود.</div>
-    `;
-  }catch(e){box.innerHTML=`<div class="message error">دریافت محدودیت‌ها انجام نشد.<br>${escapeHtml(e.message||"")}</div>`;}
-}
-
 /* =========================================================
    GLOBAL FUNCTIONS
    برای onclick های داخل HTML
@@ -2577,7 +2538,7 @@ window.openCart=openCart;
 window.closeCart=closeCart;
 window.openOrderHistory=openOrderHistory;
 window.closeOrderHistory=closeOrderHistory;
-window.openLetterInbox=openLetterInbox;window.closeLetterInbox=closeLetterInbox;window.openLetterCompose=openLetterCompose;window.closeLetterCompose=closeLetterCompose;window.loadLetterInbox=loadLetterInbox;window.openLetterThread=openLetterThread;window.sendLetterReply=sendLetterReply;window.sendNewLetter=sendNewLetter;window.resetLetterFilters=resetLetterFilters;window.showAllLetters=showAllLetters;window.openLimitsPanel=openLimitsPanel;window.closeLimitsPanel=closeLimitsPanel;window.loadLimitsPanel=loadLimitsPanel;
+window.openLetterInbox=openLetterInbox;window.closeLetterInbox=closeLetterInbox;window.openLetterCompose=openLetterCompose;window.closeLetterCompose=closeLetterCompose;window.loadLetterInbox=loadLetterInbox;window.openLetterThread=openLetterThread;window.sendLetterReply=sendLetterReply;window.sendNewLetter=sendNewLetter;window.resetLetterFilters=resetLetterFilters;window.showAllLetters=showAllLetters;
 window.toggleCustomerPicker=toggleCustomerPicker;
 window.selectCustomerPicker=selectCustomerPicker;
 window.searchCustomerPriceCustomer=searchCustomerPriceCustomer;

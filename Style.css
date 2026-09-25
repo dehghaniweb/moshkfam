@@ -2490,388 +2490,47 @@ body.booting{overflow:hidden!important}
 .letter-recipient-empty{padding:18px 10px;text-align:center;color:#94a3b8;font-size:12px}
 .customer-select-hidden{display:none!important}
 
-/* ===== TARGETED FIXES — 2026-09-25 ===== */
-html,body{width:100%;max-width:100%;overflow-x:hidden!important;box-sizing:border-box}
-*,*::before,*::after{box-sizing:border-box}
-.app{width:100%;max-width:100%;overflow-x:hidden}
-.header{position:sticky!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
-.login-box{min-width:0!important;width:min(430px,100%)!important;max-width:430px!important;box-sizing:border-box!important}
-.login-fields{min-width:0!important;width:100%!important;box-sizing:border-box!important}
-.login-fields input,.login-fields button{box-sizing:border-box!important;min-width:0!important}
-@media(max-width:900px){.login-box{width:100%!important;max-width:100%!important}.header{overflow-x:hidden!important}}
 
-/* Logo on the right; envelope directly below it. */
-.header{padding-right:18px!important;padding-bottom:72px!important;min-height:154px!important}
-.brand{margin-left:auto!important;margin-right:0!important;flex-direction:row-reverse!important;max-width:100%!important}
-.brand img{order:1!important}
-.brand>div{order:2!important}
-.admin-inbox-floating-button{position:absolute!important;right:68px!important;left:auto!important;top:88px!important;bottom:auto!important;transform:none!important;z-index:61!important}
-@media(max-width:850px){
-  .header{min-height:150px!important;padding-right:12px!important;padding-bottom:68px!important}
-  .admin-inbox-floating-button{right:44px!important;top:86px!important;width:42px!important;height:42px!important;font-size:19px!important}
-}
+/* =========================================================
+   FINAL FIXES — LOGIN / HEADER ROW / CART / LETTERS
+========================================================= */
+html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
+.header{width:100%;max-width:100%;overflow:visible!important;}
+.login-box{width:min(430px,100%);min-width:0!important;max-width:430px!important;overflow:visible!important;}
+.login-fields{width:100%;min-width:0;}
+.login-fields input,.login-fields button{min-width:0;max-width:100%;}
+@media(max-width:900px){.login-box{width:100%;max-width:none!important;flex:1 1 100%;}.login-fields{width:100%;}}
 
-/* Cart: package count updates immediately while typing the amount. */
-.cart-qty b{min-width:74px;text-align:center;display:inline-block}
+/* Envelope is on the same lower row as shopping actions; brand remains on the right. */
+.header-shopping-actions{position:absolute!important;left:16px!important;right:auto!important;bottom:10px!important;top:auto!important;display:flex!important;align-items:center!important;gap:8px!important;z-index:60!important;}
+.admin-inbox-floating-button{position:absolute!important;right:18px!important;left:auto!important;top:auto!important;bottom:10px!important;width:48px!important;height:48px!important;border-radius:50%!important;z-index:60!important;}
+.header{padding-bottom:72px!important;padding-right:18px!important;min-height:136px!important;}
+@media(max-width:700px){.header{padding-bottom:66px!important;padding-right:18px!important;min-height:128px!important;}.header-shopping-actions{left:10px!important;bottom:8px!important;}.admin-inbox-floating-button{right:10px!important;bottom:8px!important;width:44px!important;height:44px!important;font-size:20px!important;}}
 
-/* Letter inbox: distinct colors for cart / note / normal letters. */
-.letter-item.type-cart{background:linear-gradient(135deg,#fff7ed,#ffffff)!important;border-color:#fed7aa!important}
-.letter-item.type-cart .letter-item-subject{color:#c2410c!important}
-.letter-item.type-note{background:linear-gradient(135deg,#eff6ff,#ffffff)!important;border-color:#bfdbfe!important}
-.letter-item.type-note .letter-item-subject{color:#1d4ed8!important}
-.letter-item.type-reply{background:linear-gradient(135deg,#f5f3ff,#ffffff)!important;border-color:#ddd6fe!important}
-.letter-item.type-reply .letter-item-subject{color:#6d28d9!important}
-.letter-item.type-letter{background:linear-gradient(135deg,#f0fdf4,#ffffff)!important;border-color:#bbf7d0!important}
+/* Native recipient list is always visibly clickable for managers. */
+.letter-recipient-picker{display:none!important;}
+.letter-recipient-select{display:block!important;width:100%!important;min-height:50px!important;margin-top:0!important;padding:11px 13px!important;border:1px solid #b9d8c1!important;border-radius:13px!important;background:#fff!important;color:#1f2937!important;font:inherit!important;font-size:13px!important;font-weight:800!important;cursor:pointer!important;appearance:auto!important;opacity:1!important;visibility:visible!important;}
+.letter-recipient-select:focus{border-color:#22c55e!important;box-shadow:0 0 0 3px rgba(34,197,94,.10)!important;outline:none!important;}
 
-/* Keep the reply editor and its send button visible without hunting for a scrollbar. */
-.letter-thread{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important}
-.thread-messages{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2px 4px 10px}
-.thread-reply{flex:0 0 auto!important;position:sticky!important;bottom:0!important;z-index:5!important;background:rgba(255,255,255,.98)!important;border-top:1px solid #dbe4de!important;margin-top:8px!important;padding:12px 2px 2px!important;box-shadow:0 -8px 20px rgba(15,23,42,.05)}
-.thread-reply .letter-textarea{display:block;width:100%!important;min-height:92px!important;max-height:150px!important;resize:vertical!important;margin:0!important}
-.thread-reply .admin-primary{display:block!important;width:100%!important;min-height:50px!important;margin-top:8px!important}
-.thread-message.type-cart{background:linear-gradient(135deg,#fff7ed,#fffaf5)!important;border-color:#fdba74!important}
-.thread-message.type-note{background:linear-gradient(135deg,#eff6ff,#f8fbff)!important;border-color:#93c5fd!important}
-.thread-message.type-letter{background:linear-gradient(135deg,#f0fdf4,#fbfffc)!important;border-color:#86efac!important}
-.thread-message.type-reply{background:linear-gradient(135deg,#f5f3ff,#fbfaff)!important;border-color:#c4b5fd!important}
-.thread-message.mine{background:linear-gradient(135deg,#ecfdf5,#f7fff9)!important;border-color:#86efac!important}
-@media(max-width:850px){
-  .letter-thread{min-height:0!important;padding:12px!important}
-  .thread-messages{padding-bottom:6px}
-  .thread-reply .letter-textarea{min-height:82px!important}
-}
+/* Letter type colors. */
+.letter-item.letter-type-cart{background:linear-gradient(135deg,#fff7ed,#ffffff)!important;border-color:#fed7aa!important;}
+.letter-item.letter-type-cart .letter-item-subject{color:#c2410c!important;}
+.letter-item.letter-type-note{background:linear-gradient(135deg,#eff6ff,#ffffff)!important;border-color:#bfdbfe!important;}
+.letter-item.letter-type-note .letter-item-subject{color:#1d4ed8!important;}
+.letter-item.letter-type-order{background:linear-gradient(135deg,#fefce8,#ffffff)!important;border-color:#fde68a!important;}
+.letter-item.letter-type-order .letter-item-subject{color:#a16207!important;}
+.letter-item.letter-type-normal{background:linear-gradient(135deg,#f5f3ff,#ffffff)!important;border-color:#ddd6fe!important;}
+.letter-item.letter-type-normal .letter-item-subject{color:#6d28d9!important;}
 
-
-/* ===== FINAL TARGETED FIXES — 2026-09-25 ===== */
-/* Header: envelope on the right of the lower row, shopping buttons on the left. */
-.header{position:sticky!important;overflow:visible!important;}
-.admin-inbox-floating-button{position:absolute!important;right:18px!important;left:auto!important;top:88px!important;bottom:auto!important;z-index:61!important;}
-.header-shopping-actions{position:absolute!important;left:16px!important;right:auto!important;bottom:10px!important;top:auto!important;display:flex!important;align-items:center!important;gap:8px!important;}
-@media(max-width:850px){
-  .admin-inbox-floating-button{right:12px!important;top:86px!important;width:42px!important;height:42px!important;font-size:19px!important;}
-  .header-shopping-actions{left:10px!important;bottom:10px!important;}
-}
-
-/* Recipient picker: keep the list inside the compose card and make opening reliable. */
-.letter-recipient-picker{position:relative!important;width:100%!important;}
-.letter-recipient-list{position:relative!important;right:auto!important;left:auto!important;top:auto!important;width:100%!important;margin-top:7px!important;max-height:280px!important;overflow:auto!important;display:block;}
-.letter-recipient-list.hidden{display:none!important;}
-.letter-recipient-trigger{position:relative!important;z-index:2!important;cursor:pointer!important;}
-
-/* Send button in order/note form. */
-.request-submit{min-height:58px!important;height:58px!important;font-size:15px!important;font-weight:900!important;border-radius:14px!important;}
-
-
-/* ===== FINAL LETTER UI FIX — 2026-09-25 / v3 ===== */
-/* Put the envelope in the same lower action row as cart/orders, on the right. */
-.header{position:relative!important;overflow:visible!important;}
-.admin-inbox-floating-button{
-  position:absolute!important;
-  right:16px!important;
-  left:auto!important;
-  top:auto!important;
-  bottom:10px!important;
-  width:48px!important;
-  height:48px!important;
-  z-index:61!important;
-}
-.header-shopping-actions{
-  position:absolute!important;
-  left:16px!important;
-  right:auto!important;
-  top:auto!important;
-  bottom:10px!important;
-  display:flex!important;
-  align-items:center!important;
-  gap:8px!important;
-}
-@media(max-width:850px){
-  .admin-inbox-floating-button{right:12px!important;bottom:10px!important;width:42px!important;height:42px!important;font-size:19px!important;}
-  .header-shopping-actions{left:10px!important;bottom:10px!important;}
-}
-
-/* Make the upper letter-inbox header noticeably shorter. */
-.letter-inbox-header{padding:2px 50px 8px 6px!important;gap:14px!important;}
-.letter-account-date{padding:0 4px 0 12px!important;}
-.letter-kicker{margin-bottom:2px!important;}
-.letter-today-jalali{font-size:16px!important;line-height:1.3!important;}
-.letter-today-weekday{font-size:11px!important;margin-top:1px!important;}
-.letter-today-gregorian{font-size:9px!important;margin-top:2px!important;}
-.letter-logged-in-sender{margin-top:4px!important;padding:3px 8px!important;}
-.letter-mail-icon{width:38px!important;height:38px!important;flex-basis:38px!important;font-size:19px!important;}
-.letter-inbox-header h2{font-size:19px!important;}
-.letter-inbox-header p{margin:2px 0 3px!important;font-size:11px!important;}
-.letter-header-inbox-icon{padding:1px 0!important;font-size:10px!important;}
-.letter-compose-button{padding:8px 12px!important;}
-
-/* Keep the conversation itself scrollable, while the reply editor and send button stay visible. */
-.letter-thread{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important;padding:14px!important;}
-.thread-head{position:static!important;flex:0 0 auto!important;padding:0 2px 9px!important;}
-.thread-messages{flex:1 1 auto!important;min-height:70px!important;overflow-y:auto!important;overflow-x:hidden!important;padding:2px 4px 8px!important;}
-.thread-reply{
-  flex:0 0 auto!important;
-  position:static!important;
-  display:flex!important;
-  flex-direction:column!important;
-  gap:7px!important;
-  margin-top:7px!important;
-  padding:9px 0 0!important;
-  background:#fff!important;
-  border-top:1px solid #dbe4de!important;
-  box-shadow:none!important;
-}
-.thread-reply .letter-textarea{
-  display:block!important;
-  width:100%!important;
-  min-height:64px!important;
-  max-height:110px!important;
-  resize:vertical!important;
-  margin:0!important;
-}
-.thread-reply .admin-primary{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  width:100%!important;
-  min-height:50px!important;
-  height:50px!important;
-  margin:0!important;
-  flex:0 0 50px!important;
-  visibility:visible!important;
-  opacity:1!important;
-}
-@media(max-width:850px){
-  .letter-inbox-header{padding:3px 40px 7px 3px!important;gap:6px!important;}
-  .letter-account-date{padding:0!important;}
-  .letter-today-jalali{font-size:14px!important;}
-  .letter-inbox-header h2{font-size:17px!important;}
-  .letter-inbox-header p{font-size:10px!important;}
-  .letter-inbox-layout{height:calc(100% - 270px)!important;min-height:240px!important;}
-  .letter-thread{min-height:240px!important;padding:10px!important;}
-  .thread-reply .letter-textarea{min-height:58px!important;max-height:90px!important;}
-  .thread-reply .admin-primary{min-height:48px!important;height:48px!important;flex-basis:48px!important;}
-}
-@media(max-width:520px){
-  .letter-inbox-header{padding:2px 36px 6px 2px!important;}
-  .letter-filters{margin:8px 0!important;padding:8px!important;}
-  .letter-inbox-layout{height:calc(100% - 330px)!important;min-height:230px!important;}
-  .letter-thread{min-height:230px!important;}
-}
-
-/* Recipient picker: the API may return either an array or {customers:[...]}; the list itself must remain openable. */
-.letter-recipient-picker{position:relative!important;z-index:40!important;}
-.letter-recipient-list{position:absolute!important;right:0!important;left:0!important;top:calc(100% + 7px)!important;width:100%!important;max-height:300px!important;overflow-y:auto!important;overflow-x:hidden!important;display:block!important;z-index:100!important;}
-.letter-recipient-list.hidden{display:none!important;}
-.letter-compose-card{overflow:visible!important;}
-.letter-compose-card .letter-recipient-wrap{position:relative!important;z-index:50!important;}
-@media(max-width:850px){
-  .letter-recipient-list{position:absolute!important;max-height:260px!important;}
-  .letter-compose-card{overflow:visible!important;}
-}
-
-/* ===== FINAL TARGETED FIXES — 2026-09-25 / v4 ===== */
-/* Keep the startup screen completely fixed on desktop too; no temporary page scrollbar. */
-html:has(body.booting){overflow:hidden!important;height:100%!important;}
-body.booting{overflow:hidden!important;height:100vh!important;min-height:100vh!important;}
-#bootLoader{overflow:hidden!important;}
-
-/* The envelope, cart and order buttons share one lower header row. */
-.header{position:relative!important;overflow:visible!important;padding-bottom:72px!important;}
-.header-shopping-actions{
-  position:absolute!important;
-  left:16px!important;
-  right:16px!important;
-  bottom:10px!important;
-  top:auto!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:space-between!important;
-  gap:8px!important;
-  z-index:60!important;
-  pointer-events:none!important;
-}
-.header-shopping-actions > button{pointer-events:auto!important;}
-.header-shopping-actions .admin-inbox-floating-button{
-  position:relative!important;
-  right:auto!important;
-  left:auto!important;
-  top:auto!important;
-  bottom:auto!important;
-  order:3!important;
-  flex:0 0 auto!important;
-  width:48px!important;
-  height:48px!important;
-}
-.header-shopping-actions .cart-floating-button{order:1!important;}
-.header-shopping-actions .orders-floating-button{order:2!important;}
-@media(max-width:850px){
-  .header-shopping-actions{left:10px!important;right:10px!important;bottom:10px!important;}
-  .header-shopping-actions .admin-inbox-floating-button{width:42px!important;height:42px!important;font-size:19px!important;}
-}
-
-/* Letter inbox: let the list/thread occupy the real remaining height and scroll internally. */
-.letter-inbox-modal-card{
-  display:flex!important;
-  flex-direction:column!important;
-  overflow:hidden!important;
-  min-height:0!important;
-}
-.letter-inbox-header,
-.letter-filters{flex:0 0 auto!important;}
-.letter-inbox-layout{
-  flex:1 1 auto!important;
-  height:auto!important;
-  min-height:0!important;
-  overflow:hidden!important;
-}
-.letter-list,
-.thread-messages{
-  min-height:0!important;
-  overflow-y:auto!important;
-  overflow-x:hidden!important;
-  -webkit-overflow-scrolling:touch!important;
-}
-.letter-thread{min-height:0!important;overflow:hidden!important;}
-@media(max-width:850px){
-  .letter-inbox-layout{height:auto!important;min-height:0!important;overflow:hidden!important;}
-  .letter-list{min-height:180px!important;max-height:none!important;}
-  .letter-thread{min-height:220px!important;}
-}
-
-/* Recipient picker is the visible control; the native select stays only as the value source. */
-.letter-recipient-box{position:relative!important;overflow:visible!important;}
-.letter-recipient-picker{flex:1 1 auto!important;min-width:0!important;position:relative!important;z-index:100!important;}
-.letter-recipient-trigger{min-height:54px!important;}
-.letter-recipient-list{z-index:200!important;}
-
-
-/* FINAL TARGETED FIX — 2026-09-25
-   Keep only the requested header/mailbox/compose behavior. */
-.header-shopping-actions{
-  position:absolute!important;
-  left:16px!important;
-  right:16px!important;
-  bottom:10px!important;
-  top:auto!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-start!important;
-  gap:8px!important;
-  z-index:100!important;
-  pointer-events:none!important;
-}
-.header-shopping-actions > button{pointer-events:auto!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;}
-.header-shopping-actions .cart-floating-button{order:1!important;}
-.header-shopping-actions .orders-floating-button{order:2!important;}
-.header-shopping-actions .admin-inbox-floating-button{order:3!important;margin-left:auto!important;width:48px!important;height:48px!important;}
-
-/* Use the real native recipient list so it cannot disappear behind the custom picker. */
-.letter-recipient-box{display:flex!important;align-items:center!important;overflow:visible!important;}
-.letter-recipient-select{display:block!important;position:relative!important;flex:1 1 auto!important;width:100%!important;height:50px!important;min-height:50px!important;opacity:1!important;pointer-events:auto!important;visibility:visible!important;border:0!important;outline:0!important;background:#fff!important;color:#1f2937!important;font:inherit!important;font-size:13px!important;font-weight:700!important;direction:rtl!important;cursor:pointer!important;}
-.customer-select-hidden{display:none!important;}
-#letterRecipientPicker{display:none!important;}
-.letter-recipient-select:disabled{color:#64748b!important;opacity:1!important;}
-
-/* Mailbox: header stays compact; only the message areas scroll. */
-.letter-inbox-modal-card{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important;}
-.letter-inbox-header{flex:0 0 auto!important;padding-bottom:10px!important;}
-.letter-filters{flex:0 0 auto!important;padding:9px 0!important;}
-.letter-inbox-layout{flex:1 1 auto!important;height:auto!important;min-height:0!important;overflow:hidden!important;}
-.letter-list{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;}
-.letter-thread{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important;}
-.thread-messages{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;}
-.thread-reply{flex:0 0 auto!important;position:sticky!important;bottom:0!important;z-index:10!important;background:#fff!important;}
-
-/* Startup screen: no temporary desktop scrollbar. */
-html:has(body.booting),body.booting{overflow:hidden!important;width:100%!important;height:100%!important;min-height:100vh!important;}
-#bootLoader{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;overflow:hidden!important;}
-@media(max-width:850px){
-  .header-shopping-actions{left:10px!important;right:10px!important;bottom:10px!important;}
-  .header-shopping-actions .admin-inbox-floating-button{width:44px!important;height:44px!important;}
-  .letter-recipient-select{height:48px!important;min-height:48px!important;}
-}
-
-/* FINAL MAIL LAYOUT FIX — 2026-09-25 */
-.header-shopping-actions{
-  position:absolute!important;
-  left:16px!important;
-  right:16px!important;
-  bottom:10px!important;
-  top:auto!important;
-  height:50px!important;
-  display:flex!important;
-  flex-direction:row!important;
-  align-items:center!important;
-  justify-content:flex-start!important;
-  gap:10px!important;
-  direction:ltr!important;
-  z-index:100!important;
-  pointer-events:none!important;
-}
-.header-shopping-actions > button{pointer-events:auto!important;position:relative!important;inset:auto!important;}
-.header-shopping-actions .cart-floating-button{order:1!important;}
-.header-shopping-actions .orders-floating-button{order:2!important;}
-.header-shopping-actions .admin-inbox-floating-button{
-  order:3!important;
-  margin-left:auto!important;
-  margin-right:0!important;
-  width:48px!important;height:48px!important;
-  position:relative!important;inset:auto!important;
-}
-
-/* Letter compose recipient must always be an actual clickable native select. */
-#letterRecipientWrap{position:relative!important;z-index:500!important;}
-.letter-recipient-box{position:relative!important;display:flex!important;align-items:center!important;overflow:visible!important;min-height:58px!important;}
-#letterRecipientSelect{
-  display:block!important;visibility:visible!important;opacity:1!important;
-  pointer-events:auto!important;cursor:pointer!important;
-  position:relative!important;z-index:501!important;
-  flex:1 1 auto!important;width:100%!important;
-  min-height:50px!important;height:50px!important;
-  border:1px solid #d7e4da!important;border-radius:12px!important;
-  background:#fff!important;color:#1f2937!important;
-  padding:0 12px!important;font-size:14px!important;font-weight:700!important;
-}
-#letterRecipientSelect:disabled{cursor:not-allowed!important;opacity:.8!important;}
-
-/* Inbox: latest thread first, list and open thread both scroll independently. */
-.letter-inbox-modal-card{
-  height:min(88vh,850px)!important;
-  max-height:calc(100vh - 24px)!important;
-  display:flex!important;flex-direction:column!important;
-  min-height:0!important;overflow:hidden!important;
-}
-.letter-inbox-header,.letter-filters{flex:0 0 auto!important;}
-.letter-inbox-layout{
-  display:grid!important;
-  grid-template-columns:minmax(320px,390px) minmax(0,1fr)!important;
-  flex:1 1 auto!important;height:auto!important;min-height:0!important;
-  overflow:hidden!important;
-}
-.letter-list{
-  min-height:0!important;height:100%!important;
-  overflow-y:auto!important;overflow-x:hidden!important;
-  -webkit-overflow-scrolling:touch!important;
-}
-.letter-thread{
-  min-width:0!important;min-height:0!important;height:100%!important;
-  display:flex!important;flex-direction:column!important;
-  overflow:hidden!important;
-}
-.thread-messages{
-  flex:1 1 auto!important;min-height:0!important;
-  overflow-y:auto!important;overflow-x:hidden!important;
-  -webkit-overflow-scrolling:touch!important;
-}
-.thread-reply{
-  flex:0 0 auto!important;position:relative!important;
-  background:#fff!important;z-index:20!important;
-  border-top:1px solid #e5e7eb!important;padding-top:10px!important;
-}
-@media(max-width:850px){
-  .header-shopping-actions{left:10px!important;right:10px!important;bottom:10px!important;height:46px!important;}
-  .header-shopping-actions .admin-inbox-floating-button{width:44px!important;height:44px!important;}
-  .letter-inbox-modal-card{height:calc(100vh - 12px)!important;max-height:none!important;}
-  .letter-inbox-layout{grid-template-columns:1fr!important;min-height:0!important;}
-  .letter-list{height:45%!important;min-height:150px!important;}
-  .letter-thread{height:55%!important;min-height:230px!important;}
-}
+/* Each clicked letter becomes a full conversation page inside the mailbox. */
+.letter-list-hidden{display:none!important;}
+.letter-inbox-layout:has(.letter-thread-full){grid-template-columns:minmax(0,1fr)!important;}
+.letter-thread.letter-thread-full{grid-column:1/-1!important;width:100%!important;min-width:0!important;}
+.letter-thread-back{display:inline-flex;align-items:center;gap:6px;margin-bottom:12px;padding:8px 12px;border:1px solid #dbe4de;border-radius:10px;background:#f8faf9;color:#166534;font:inherit;font-weight:800;cursor:pointer;}
+.letter-thread-back:hover{background:#ecfdf5;border-color:#86efac;}
+.letter-thread-full .thread-messages{padding-bottom:8px;}
+.letter-thread-full .thread-reply{position:sticky;bottom:0;z-index:5;padding:14px 0 3px;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);}
+.letter-thread-full .thread-reply .letter-textarea{min-height:120px;display:block;}
+.letter-thread-full .thread-reply .admin-primary{display:block!important;width:100%!important;min-height:52px!important;margin-top:10px!important;}
+@media(max-width:850px){.letter-inbox-layout:has(.letter-thread-full){height:calc(100% - 300px)!important;}.letter-thread.letter-thread-full{min-height:0!important;}.letter-thread-full .thread-reply{bottom:-14px;}}
+@media(max-width:520px){.letter-inbox-layout:has(.letter-thread-full){height:calc(100% - 390px)!important;}.letter-thread-full .thread-reply .letter-textarea{min-height:105px;}}

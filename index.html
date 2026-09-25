@@ -63,7 +63,7 @@
   .app{visibility:hidden}
   #bootLoader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ecfdf5,#f0fdf4,#dcfce7);transition:opacity .25s}
   #bootLoader.hide{opacity:0;pointer-events:none}
-  .boot-card{min-width:230px;padding:26px 30px;text-align:center;background:rgba(255,255,255,.94);border:1px solid #bbf7d0;border-radius:24px;box-shadow:0 18px 50px rgba(22,101,52,.16)}
+  .boot-card{width:300px;height:174px;min-width:300px;min-height:174px;box-sizing:border-box;padding:26px 30px;text-align:center;background:rgba(255,255,255,.94);border:1px solid #bbf7d0;border-radius:24px;box-shadow:0 18px 50px rgba(22,101,52,.16);flex:0 0 300px}
   .boot-icon{font-size:42px;margin-bottom:10px}
   .boot-title{font-size:18px;font-weight:800;color:#166534}
   .boot-sub{margin-top:8px;font-size:12px;color:#6b7280}
@@ -110,11 +110,12 @@
   </div>
 
 
+  <button id="letterInboxButton" class="admin-inbox-floating-button hidden" type="button" onclick="openLetterInbox()" aria-label="نامه‌ها" title="نامه‌ها">
+    ✉️
+    <span id="letterInboxCount" class="admin-inbox-badge">۰</span>
+  </button>
+
   <div class="header-shopping-actions">
-    <button id="letterInboxButton" class="admin-inbox-floating-button hidden" type="button" onclick="openLetterInbox()" aria-label="نامه‌ها" title="نامه‌ها">
-      ✉️
-      <span id="letterInboxCount" class="admin-inbox-badge">۰</span>
-    </button>
     <button id="cartButton" class="cart-floating-button" type="button" onclick="openCart()" aria-label="سبد خرید" title="سبد خرید">
       🛒
       <span id="cartCount" class="cart-count empty">۰</span>
@@ -378,12 +379,12 @@
     <p id="letterComposeHelp" class="request-help">پیام خود را برای مشکفام فارس بنویسید.</p>
     <div id="letterRecipientWrap" class="letter-recipient-wrap hidden">
       <label class="letter-field-label">گیرنده نامه</label>
-      <div class="letter-recipient-box">
-        <div class="letter-recipient-icon">👤</div>
-        <select id="letterRecipientSelect" class="letter-recipient-select" aria-label="انتخاب گیرنده نامه">
-          <option value="">در حال دریافت فهرست نماینده‌ها...</option>
-        </select>
+      <div id="letterRecipientPicker" class="letter-recipient-picker hidden">
+        <div class="letter-recipient-empty">در حال دریافت فهرست نماینده‌ها...</div>
       </div>
+      <select id="letterRecipientSelect" class="letter-recipient-select" aria-label="گیرنده نامه">
+        <option value="">در حال دریافت فهرست نماینده‌ها...</option>
+      </select>
       <small class="letter-field-hint">نام یا نام کاربری نماینده را جستجو و انتخاب کنید.</small>
     </div>
     <input id="letterComposeSubject" class="letter-input" placeholder="عنوان نامه">
@@ -594,7 +595,7 @@
     <section id="adminSection-limits" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <div class="limits-panel-head">
-        <div><h3>📊 محدودیت‌ها و مصرف سرویس‌ها</h3><p>گزارش مصرف ثبت‌شده سامانه؛ عددی بدون داده واقعی نمایش داده نمی‌شود.</p></div>
+        <div><h3>📊 محدودیت‌ها و مصرف سرویس‌ها</h3><p>گزارش واقعی درخواست‌های ثبت‌شده سامانه در امروز؛ آمار از لاگ مصرف Worker محاسبه می‌شود.</p></div>
         <button type="button" class="limits-refresh" onclick="loadServiceLimits()">↻ به‌روزرسانی</button>
       </div>
       <div id="serviceLimitsPanel" class="service-limits-panel">

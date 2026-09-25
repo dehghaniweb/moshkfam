@@ -110,9 +110,9 @@
   </div>
 
 
-  <button id="adminInboxButton" class="admin-inbox-floating-button hidden" type="button" onclick="showAdminSection('requests')" aria-label="نامه‌ها" title="نامه‌ها">
+  <button id="letterInboxButton" class="admin-inbox-floating-button hidden" type="button" onclick="openLetterInbox()" aria-label="نامه‌ها" title="نامه‌ها">
     ✉️
-    <span id="adminInboxCount" class="admin-inbox-badge">۰</span>
+    <span id="letterInboxCount" class="admin-inbox-badge">۰</span>
   </button>
 
   <div class="header-shopping-actions">
@@ -332,6 +332,43 @@
       <button id="appDialogCancel" type="button" class="app-dialog-cancel" onclick="appDialogCancel()">انصراف</button>
       <button id="appDialogOk" type="button" class="app-dialog-ok" onclick="appDialogOk()">باشه</button>
     </div>
+  </div>
+</div>
+
+<!-- LETTER INBOX MODAL -->
+<div id="letterInboxModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-backdrop" onclick="closeLetterInbox()"></div>
+  <div class="modal-card letter-inbox-modal-card">
+    <button class="close" type="button" onclick="closeLetterInbox()" aria-label="بستن">×</button>
+    <div class="letter-inbox-header">
+      <div><span class="letter-kicker">صندوق پیام</span><h2>✉️ نامه‌ها</h2><p>گفت‌وگوها و پاسخ‌های شما با مشکفام فارس</p></div>
+      <button id="letterComposeButton" class="letter-compose-button" type="button" onclick="openLetterCompose()">✍️ نامه جدید</button>
+    </div>
+    <div class="letter-filters">
+      <label>از تاریخ<input id="letterDateFrom" type="date"></label>
+      <label>تا تاریخ<input id="letterDateTo" type="date"></label>
+      <label>وضعیت<select id="letterReadFilter"><option value="all">همه نامه‌ها</option><option value="unread">خوانده‌نشده</option></select></label>
+      <label id="letterSenderFilterWrap">فرستنده<select id="letterSenderFilter"><option value="">همه فرستنده‌ها</option></select></label>
+      <button type="button" class="letter-filter-button" onclick="loadLetterInbox()">🔎 نمایش</button>
+      <button type="button" class="letter-filter-reset" onclick="resetLetterFilters()">↺ امروز</button><button type="button" class="letter-filter-reset" onclick="showAllLetters()">📚 همه تاریخ‌ها</button>
+    </div>
+    <div class="letter-inbox-layout">
+      <div id="letterList" class="letter-list"><div class="message">در حال دریافت نامه‌ها...</div></div>
+      <div id="letterThread" class="letter-thread"><div class="letter-empty-state">✉️<strong>یک نامه را انتخاب کنید</strong><span>متن کامل و تاریخچه پاسخ‌ها اینجا نمایش داده می‌شود.</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- LETTER COMPOSE MODAL -->
+<div id="letterComposeModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-backdrop" onclick="closeLetterCompose()"></div>
+  <div class="modal-card letter-compose-card">
+    <button class="close" type="button" onclick="closeLetterCompose()">×</button>
+    <h2>✍️ نامه جدید</h2>
+    <p class="request-help">پیام خود را برای مشکفام فارس بنویسید.</p>
+    <input id="letterComposeSubject" class="letter-input" placeholder="عنوان نامه">
+    <textarea id="letterComposeBody" class="letter-textarea" rows="8" placeholder="متن نامه..."></textarea>
+    <button class="admin-primary" type="button" onclick="sendNewLetter()">📨 ارسال نامه</button>
   </div>
 </div>
 

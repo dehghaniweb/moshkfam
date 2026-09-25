@@ -441,9 +441,9 @@ async function loginWithUsernamePassword(){
   const username=$("loginUsername")?.value.trim()||"", password=$("loginPassword")?.value||"", msg=$("loginMessage");
   if(!username||!password){if(msg)msg.textContent="نام کاربری و رمز عبور را وارد کنید.";return;}
   if(msg)msg.textContent="در حال ورود...";
-  try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=String(r.user?.role||"").toLowerCase()==="admin" || String(r.user?.role||"").toLowerCase()==="super_admin";adminPermissions=[];try{const session=await apiRequest("/api/session",{method:"GET"});if(session?.authenticated&&session.user){currentUser=session.user;isAdmin=!!session.isAdmin || String(session.user.role||"").toLowerCase()==="admin" || String(session.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(session.permissions)?session.permissions:[];}}catch(sessionError){console.warn("Login permission session:",sessionError);}if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();loadCart();await loadProducts();await loadOrderHistoryCount();if(isAdmin){await loadAdminInboxCount();startAdminInboxPolling();}}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
+  try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=String(r.user?.role||"").toLowerCase()==="admin" || String(r.user?.role||"").toLowerCase()==="super_admin";adminPermissions=[];try{const session=await apiRequest("/api/session",{method:"GET"});if(session?.authenticated&&session.user){currentUser=session.user;isAdmin=!!session.isAdmin || String(session.user.role||"").toLowerCase()==="admin" || String(session.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(session.permissions)?session.permissions:[];}}catch(sessionError){console.warn("Login permission session:",sessionError);}if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();loadCart();await loadProducts();await loadOrderHistoryCount();if(currentUser){await loadLetterUnreadCount();startLetterPolling();}}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
 }
-async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=!!r.isAdmin || String(r.user.role||"").toLowerCase()==="admin" || String(r.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(r.permissions)?r.permissions:[];updateAccountUI();loadCart();await loadOrderHistoryCount();if(isAdmin){await loadAdminInboxCount();startAdminInboxPolling();}}else setStoredToken("");}catch{setStoredToken("");}}
+async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=!!r.isAdmin || String(r.user.role||"").toLowerCase()==="admin" || String(r.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(r.permissions)?r.permissions:[];updateAccountUI();loadCart();await loadOrderHistoryCount();if(currentUser){await loadLetterUnreadCount();startLetterPolling();}}else setStoredToken("");}catch{setStoredToken("");}}
 async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;cartItems={};updateCartBadge();updateAccountUI();await loadProducts();}
 async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
@@ -658,10 +658,9 @@ function updateAccountUI() {
   const ordersButton = $("ordersButton");
   if (ordersButton) ordersButton.classList.remove("hidden");
 
-  const inboxButton = $("adminInboxButton");
+  const inboxButton = $("letterInboxButton");
   if (inboxButton) {
-    const canSeeInbox = !!isAdmin;
-    inboxButton.classList.toggle("hidden", !canSeeInbox);
+    inboxButton.classList.toggle("hidden", !currentUser);
   }
 
   const mobileAccount = $("mobileAccountInfo");
@@ -2010,6 +2009,88 @@ async function deleteAdminUser(id){
 }
 
 /* =========================================================
+   LETTER INBOX / MAILBOX
+========================================================= */
+
+let letterThreads = [];
+let letterCurrentThread = null;
+let letterPollingTimer = null;
+
+function localDateInputValue(d=new Date()){
+  const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+  return x.toISOString().slice(0,10);
+}
+function openLetterInbox(){
+  if(!currentUser)return;
+  const modal=$("letterInboxModal"); if(!modal)return;
+  modal.classList.remove("hidden"); modal.setAttribute("aria-hidden","false");
+  const from=$("letterDateFrom"),to=$("letterDateTo");
+  if(from&&!from.value) from.value=localDateInputValue();
+  if(to&&!to.value) to.value=localDateInputValue();
+  loadLetterInbox();
+}
+function closeLetterInbox(){const m=$("letterInboxModal");if(m){m.classList.add("hidden");m.setAttribute("aria-hidden","true");}}
+function resetLetterFilters(){const t=localDateInputValue();$("letterDateFrom").value=t;$("letterDateTo").value=t;$("letterReadFilter").value="all";if($("letterSenderFilter"))$("letterSenderFilter").value="";loadLetterInbox();}
+function showAllLetters(){$("letterDateFrom").value="";$("letterDateTo").value="";$("letterReadFilter").value="all";if($("letterSenderFilter"))$("letterSenderFilter").value="";loadLetterInbox();}
+function openLetterCompose(){
+  if(!currentUser||isAdmin)return;
+  const m=$("letterComposeModal"); if(!m)return;m.classList.remove("hidden");m.setAttribute("aria-hidden","false");
+  $("letterComposeSubject").value="";$("letterComposeBody").value="";
+}
+function closeLetterCompose(){const m=$("letterComposeModal");if(m){m.classList.add("hidden");m.setAttribute("aria-hidden","true");}}
+
+async function loadLetterUnreadCount(){
+  if(!currentUser)return;
+  try{
+    const endpoint=isAdmin?"/api/admin/letters-unread-count":"/api/customer/letters-unread-count";
+    const r=await postJson(endpoint,{}); const n=Number(r?.count||0);
+    setAdminCount("letterInboxCount",n);
+    const b=$("letterInboxCount");if(b)b.classList.toggle("has-unread",n>0);
+  }catch(e){console.warn("Letter unread count",e);}
+}
+function startLetterPolling(){if(letterPollingTimer)clearInterval(letterPollingTimer);if(!currentUser)return;loadLetterUnreadCount();letterPollingTimer=setInterval(loadLetterUnreadCount,15000);}
+
+async function loadLetterInbox(){
+  const list=$("letterList"), thread=$("letterThread"); if(!list||!thread)return;
+  list.innerHTML='<div class="message">در حال دریافت نامه‌ها...</div>';
+  try{
+    const payload={from:$("letterDateFrom")?.value||"",to:$("letterDateTo")?.value||"",read_filter:$("letterReadFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||""};
+    const endpoint=isAdmin?"/api/admin/letters":"/api/customer/letters";
+    const r=await postJson(endpoint,payload); letterThreads=Array.isArray(r?.messages)?r.messages:[];
+    renderLetterSenderFilter(letterThreads);
+    if(!letterThreads.length){list.innerHTML='<div class="message">نامه‌ای با این فیلتر پیدا نشد.</div>';return;}
+    list.innerHTML=letterThreads.map((m,i)=>{
+      const unread=!m.read;
+      const sender=m.sender_name||m.sender_username||"کاربر";
+      return `<div class="letter-item ${unread?'unread':''}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${escapeHtml(m.subject||'بدون عنوان')}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
+    }).join("");
+    if(letterCurrentThread!=null){const idx=letterThreads.findIndex(x=>String(x.thread_id||x.id)===String(letterCurrentThread));if(idx>=0)openLetterThread(idx);}
+    await loadLetterUnreadCount();
+  }catch(e){list.innerHTML=`<div class="message error">دریافت صندوق نامه انجام نشد.<br>${escapeHtml(e.message||'')}</div>`;}
+}
+function renderLetterSenderFilter(messages){
+  const sel=$("letterSenderFilter");if(!sel||!isAdmin)return;
+  const current=sel.value; const seen=new Map();messages.forEach(m=>{if(m.sender_customer_id&&!seen.has(String(m.sender_customer_id)))seen.set(String(m.sender_customer_id),m.sender_name||m.sender_username||"کاربر")});
+  sel.innerHTML='<option value="">همه فرستنده‌ها</option>'+Array.from(seen.entries()).map(([id,name])=>`<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`).join("");if(current)sel.value=current;
+}
+function formatLetterDate(v){try{return new Date(v).toLocaleString('fa-IR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return v||'';}}
+async function openLetterThread(index){
+  const m=letterThreads[index];if(!m)return;letterCurrentThread=String(m.thread_id||m.id);
+  const thread=$("letterThread");if(!thread)return;thread.innerHTML='<div class="message">در حال دریافت گفتگو...</div>';
+  try{
+    const endpoint=isAdmin?"/api/admin/letter-thread":"/api/customer/letter-thread";
+    const r=await postJson(endpoint,{thread_id:m.thread_id||m.id}); const messages=Array.isArray(r?.messages)?r.messages:[];
+    const subject=m.subject||messages[0]?.subject||"بدون عنوان";
+    thread.innerHTML=`<div class="thread-head"><h3>✉️ ${escapeHtml(subject)}</h3><small>گفتگوی کامل نامه و پاسخ‌ها</small></div><div class="thread-messages">${messages.map(x=>{const mine=String(x.sender_customer_id||'')===String(currentUser?.id||'');return `<div class="thread-message ${mine?'mine':''}"><div class="tm-head"><strong>${escapeHtml(x.sender_name||x.sender_username||'کاربر')}</strong><span>${escapeHtml(formatLetterDate(x.created_at))}</span></div><div class="tm-body">${escapeHtml(x.body||'')}</div></div>`}).join('')}</div><div class="thread-reply"><textarea id="letterReplyBody" class="letter-textarea" rows="4" placeholder="پاسخ خود را بنویسید..."></textarea><button class="admin-primary" type="button" onclick="sendLetterReply(${Number(m.thread_id||m.id)})">📨 ارسال پاسخ</button></div>`;
+    await postJson(isAdmin?"/api/admin/letter-mark-read":"/api/customer/letter-mark-read",{thread_id:m.thread_id||m.id});
+    m.read=true;renderLetterListAfterRead();await loadLetterUnreadCount();
+  }catch(e){thread.innerHTML=`<div class="message error">دریافت گفتگو انجام نشد.<br>${escapeHtml(e.message||'')}</div>`;}
+}
+function renderLetterListAfterRead(){document.querySelectorAll('.letter-item').forEach(el=>el.classList.remove('unread'));}
+async function sendLetterReply(threadId){const body=$("letterReplyBody")?.value.trim();if(!body)return appAlert("لطفاً متن پاسخ را بنویسید.");try{await postJson(isAdmin?"/api/admin/letter-reply":"/api/customer/letter-reply",{thread_id:Number(threadId),body});appAlert("✅ پاسخ با موفقیت ارسال شد.");await loadLetterInbox();}catch(e){appAlert("❌ ارسال پاسخ انجام نشد:\n"+(e.message||''));}}
+async function sendNewLetter(){const subject=$("letterComposeSubject")?.value.trim();const body=$("letterComposeBody")?.value.trim();if(!subject||!body)return appAlert("لطفاً عنوان و متن نامه را کامل کنید.");try{await postJson('/api/customer/letter',{subject,body});closeLetterCompose();appAlert("✅ نامه با موفقیت ارسال شد.");await loadLetterInbox();}catch(e){appAlert("❌ ارسال نامه انجام نشد:\n"+(e.message||''));}}
+
+/* =========================================================
    CUSTOMER ORDER / NOTE
 ========================================================= */
 
@@ -2356,6 +2437,7 @@ window.openCart=openCart;
 window.closeCart=closeCart;
 window.openOrderHistory=openOrderHistory;
 window.closeOrderHistory=closeOrderHistory;
+window.openLetterInbox=openLetterInbox;window.closeLetterInbox=closeLetterInbox;window.openLetterCompose=openLetterCompose;window.closeLetterCompose=closeLetterCompose;window.loadLetterInbox=loadLetterInbox;window.openLetterThread=openLetterThread;window.sendLetterReply=sendLetterReply;window.sendNewLetter=sendNewLetter;window.resetLetterFilters=resetLetterFilters;window.showAllLetters=showAllLetters;
 window.toggleCustomerPicker=toggleCustomerPicker;
 window.selectCustomerPicker=selectCustomerPicker;
 window.searchCustomerPriceCustomer=searchCustomerPriceCustomer;

@@ -278,7 +278,8 @@ function updateCartAmountLive(productId,value){
   const totalEl=$("cartTotal");
   if(totalEl) totalEl.textContent=formatNumber(Math.round(grand))+" تومان";
   // Live update: keep the package count synchronized with the entered amount.
-  const row=document.querySelector(`.cart-row-weight:has(#cart-line-total-${Number(productId)})`);
+  const totalNode=document.getElementById(`cart-line-total-${Number(productId)}`);
+  const row=totalNode?.closest('.cart-row-weight');
   const qtyEl=row?.querySelector('.cart-qty b');
   if(qtyEl) qtyEl.textContent=formatDecimal(packages)+" بسته";
 }
@@ -2137,7 +2138,7 @@ function renderLetterRecipientPicker(customers){
   });
   const selected=list.find(x=>x.id===current);
   picker.innerHTML=`
-    <button type="button" class="letter-recipient-trigger" onclick="toggleLetterRecipientPicker()">
+    <button type="button" class="letter-recipient-trigger" onclick="event.preventDefault();event.stopPropagation();toggleLetterRecipientPicker(event)">
       <span class="recipient-trigger-main">
         <span class="recipient-trigger-icon">👤</span>
         <span class="recipient-trigger-text">
@@ -2162,11 +2163,19 @@ function renderLetterRecipientPicker(customers){
       </div>
     </div>`;
 }
-function toggleLetterRecipientPicker(){
-  const list=$('letterRecipientPicker')?.querySelector('.letter-recipient-list');
+function toggleLetterRecipientPicker(event){
+  if(event){event.preventDefault();event.stopPropagation();}
+  const picker=$('letterRecipientPicker');
+  const list=picker?.querySelector('.letter-recipient-list');
   if(!list)return;
-  list.classList.toggle('hidden');
-  if(!list.classList.contains('hidden'))setTimeout(()=>$('letterRecipientSearch')?.focus(),30);
+  const opening=list.classList.contains('hidden');
+  list.classList.toggle('hidden',!opening);
+  if(opening){
+    list.style.display='block';
+    setTimeout(()=>{const input=$('letterRecipientSearch');input?.focus();input?.select();},30);
+  }else{
+    list.style.display='none';
+  }
 }
 function filterLetterRecipients(){
   const q=String($('letterRecipientSearch')?.value||'').trim().toLocaleLowerCase('fa-IR');
@@ -2180,7 +2189,7 @@ function selectLetterRecipient(value){
   if(!sel)return;
   sel.value=String(value||'');
   const list=$('letterRecipientPicker')?.querySelector('.letter-recipient-list');
-  if(list)list.classList.add('hidden');
+  if(list){list.classList.add('hidden');list.style.display='none';}
   const options=[...sel.options];
   const opt=options.find(o=>o.value===sel.value);
   const picker=$('letterRecipientPicker');

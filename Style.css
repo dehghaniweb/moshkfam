@@ -2539,3 +2539,23 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important;box-sizing:borde
   .thread-messages{padding-bottom:6px}
   .thread-reply .letter-textarea{min-height:82px!important}
 }
+
+
+/* ===== FINAL TARGETED FIXES — 2026-09-25 ===== */
+/* Header: envelope on the right of the lower row, shopping buttons on the left. */
+.header{position:sticky!important;overflow:visible!important;}
+.admin-inbox-floating-button{position:absolute!important;right:18px!important;left:auto!important;top:88px!important;bottom:auto!important;z-index:61!important;}
+.header-shopping-actions{position:absolute!important;left:16px!important;right:auto!important;bottom:10px!important;top:auto!important;display:flex!important;align-items:center!important;gap:8px!important;}
+@media(max-width:850px){
+  .admin-inbox-floating-button{right:12px!important;top:86px!important;width:42px!important;height:42px!important;font-size:19px!important;}
+  .header-shopping-actions{left:10px!important;bottom:10px!important;}
+}
+
+/* Recipient picker: keep the list inside the compose card and make opening reliable. */
+.letter-recipient-picker{position:relative!important;width:100%!important;}
+.letter-recipient-list{position:relative!important;right:auto!important;left:auto!important;top:auto!important;width:100%!important;margin-top:7px!important;max-height:280px!important;overflow:auto!important;display:block;}
+.letter-recipient-list.hidden{display:none!important;}
+.letter-recipient-trigger{position:relative!important;z-index:2!important;cursor:pointer!important;}
+
+/* Send button in order/note form. */
+.request-submit{min-height:58px!important;height:58px!important;font-size:15px!important;font-weight:900!important;border-radius:14px!important;}

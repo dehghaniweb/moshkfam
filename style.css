@@ -2421,3 +2421,37 @@ footer span{font-size:12px}
   .letter-item{padding:12px;border-radius:14px}.letter-item-subject{font-size:13px}
   .thread-head h3{font-size:16px}.thread-message{padding:11px}.thread-message .tm-body{font-size:12px;line-height:1.85}
 }
+
+/* ===== LETTER FIXES — only mailbox ===== */
+.admin-inbox-floating-button{
+  position:fixed!important;
+  right:18px!important;
+  left:auto!important;
+  top:105px!important;
+  bottom:auto!important;
+  z-index:9999!important;
+  width:48px!important;height:48px!important;
+}
+@media(max-width:700px){
+  .admin-inbox-floating-button{
+    position:fixed!important;right:12px!important;left:auto!important;top:125px!important;bottom:auto!important;
+    width:44px!important;height:44px!important;
+  }
+}
+.letter-compose-card .letter-input.hidden{display:none!important}
+
+/* ===== LIMITS PANEL — new feature only ===== */
+.limits-modal-card{width:min(900px,94vw);max-height:88vh;overflow:auto;padding:22px}
+.limits-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:15px;border-bottom:1px solid #e5e7eb}
+.limits-head h2{margin:4px 0;color:#14532d}.limits-head p{margin:0;color:#64748b;font-size:12px}
+.limits-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+.limit-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:5px}
+.limit-card strong{color:#166534}.limit-card b{font-size:22px;color:#1f2937}.limit-card span{font-size:11px;color:#64748b}
+.limit-progress{height:14px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin:12px 0 20px}
+.limit-progress div{height:100%;background:#22c55e;border-radius:999px;transition:width .25s}
+.limits-services{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.limits-services>div,.limits-routes>div{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:11px 13px}
+.limits-services span{font-size:12px;color:#64748b;text-align:left}
+.limits-routes{display:grid;gap:8px}.limits-routes code{direction:ltr;color:#334155}.limits-routes strong{color:#166534}
+.limits-note{margin-top:14px;padding:12px;border-radius:12px;background:#fffbeb;color:#92400e;font-size:11px;line-height:1.8}
+@media(max-width:600px){.limits-summary{grid-template-columns:1fr}.limits-services{grid-template-columns:1fr}.limits-head{align-items:flex-start}.limits-head .letter-filter-button{padding:8px 10px}}

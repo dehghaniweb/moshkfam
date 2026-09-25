@@ -377,9 +377,20 @@
     <button class="close" type="button" onclick="closeLetterCompose()">×</button>
     <h2>✍️ نامه جدید</h2>
     <p class="request-help">پیام خود را برای مشکفام فارس بنویسید.</p>
+    <select id="letterComposeRecipient" class="letter-input hidden"><option value="">انتخاب نماینده</option></select>
     <input id="letterComposeSubject" class="letter-input" placeholder="عنوان نامه">
     <textarea id="letterComposeBody" class="letter-textarea" rows="8" placeholder="متن نامه..."></textarea>
     <button class="admin-primary" type="button" onclick="sendNewLetter()">📨 ارسال نامه</button>
+  </div>
+</div>
+
+<!-- LIMITS MODAL -->
+<div id="limitsModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-backdrop" onclick="closeLimitsPanel()"></div>
+  <div class="modal-card limits-modal-card">
+    <button class="close" type="button" onclick="closeLimitsPanel()">×</button>
+    <div class="limits-head"><div><span class="letter-kicker">پایش مصرف</span><h2>📊 محدودیت‌ها</h2><p>مصرف واقعی ثبت‌شده و وضعیت سرویس‌ها</p></div><button type="button" class="letter-filter-button" onclick="loadLimitsPanel()">↻ به‌روزرسانی</button></div>
+    <div id="limitsContent"></div>
   </div>
 </div>
 
@@ -454,6 +465,7 @@
         <button class="admin-menu-item" onclick="showAdminSection('admins')"><span>🛡️</span><b>مدیران سیستم</b><small>اضافه، ویرایش و حذف مدیران پنل</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('footer')"><span>🏢</span><b>اطلاعات پایین صفحه</b><small>نام شرکت، تلفن و آدرس</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('archives')"><span>🗄️</span><b>بایگانی عکس‌ها</b><small>مشاهده و بازگردانی تصاویر قبلی</small></button>
+        <button class="admin-menu-item" type="button" onclick="openLimitsPanel()"><span>📊</span><b>محدودیت‌ها</b><small>مصرف واقعی سرویس‌ها و مسیرهای پرمصرف</small></button>
       </div>
     </div>
 

@@ -2025,8 +2025,14 @@ let letterCurrentThread = null;
 let letterPollingTimer = null;
 
 function localDateInputValue(d=new Date()){
-  const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);
-  return x.toISOString().slice(0,10);
+  try{
+    const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehran',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);
+    const m=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+    return `${m.year}-${m.month}-${m.day}`;
+  }catch{
+    const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+    return x.toISOString().slice(0,10);
+  }
 }
 
 /* Persian/Jalali date helpers — UI is Persian, API continues using Gregorian dates. */
@@ -2283,10 +2289,11 @@ async function sendNewLetter(){
   const subjectEl=$("letterComposeSubject"), bodyEl=$("letterComposeBody"), recipientEl=$("letterRecipientSelect");
   const subject=String(subjectEl?.value||"").trim();
   const body=String(bodyEl?.value||"").trim();
-  const recipientId=String(recipientEl?.value||"").trim();
+  const picker=$('letterRecipientPicker');
+  const recipientId=String(picker?.dataset?.selectedId || recipientEl?.value || "").trim();
   if(!subject){subjectEl?.focus();return appAlert("⚠️ عنوان نامه را وارد کنید.");}
   if(!body){bodyEl?.focus();return appAlert("⚠️ متن نامه را وارد کنید.");}
-  if(isAdmin && (!recipientId || !Number.isFinite(Number(recipientId)))){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
+  if(isAdmin && (!recipientId || !Number.isFinite(Number(recipientId)))){toggleLetterRecipientPicker();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
   const button=document.querySelector('#letterComposeModal .admin-primary');
   if(button){button.disabled=true;button.textContent="⏳ در حال ارسال...";}
   try{

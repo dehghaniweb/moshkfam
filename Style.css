@@ -2560,3 +2560,37 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
 @media(max-width:700px){.header-shopping-actions{right:10px!important;bottom:8px!important;left:auto!important;gap:6px!important}.header-shopping-actions .admin-inbox-floating-button,.header-shopping-actions .cart-floating-button,.header-shopping-actions .orders-floating-button{width:44px!important;height:44px!important;font-size:20px!important}}
 @media(max-width:850px){.letter-inbox-modal-card{height:calc(100vh - 12px)!important;max-height:none!important;overflow-y:auto!important}.letter-inbox-layout,.letter-inbox-layout:has(.letter-thread-full){height:auto!important;min-height:0!important;display:grid!important}.letter-list{max-height:none!important;overflow:visible!important}.letter-thread,.letter-thread.letter-thread-full{height:auto!important;min-height:320px!important;overflow:visible!important}.letter-thread-full .thread-reply{position:static!important;bottom:auto!important}}
 @media(max-width:520px){.letter-inbox-modal-card{height:calc(100vh - 8px)!important;padding:10px!important;overflow-y:auto!important}.letter-inbox-layout,.letter-inbox-layout:has(.letter-thread-full){height:auto!important;display:block!important}.letter-list,.letter-thread,.letter-thread.letter-thread-full{max-height:none!important;overflow:visible!important}.thread-reply{position:static!important}}
+
+
+/* ===== FINAL FIX v4 — LETTER RECIPIENT / HEADER ROW / MOBILE MAILBOX ===== */
+.header-shopping-actions{
+  position:absolute!important;left:10px!important;right:10px!important;bottom:10px!important;top:auto!important;
+  width:calc(100% - 20px)!important;box-sizing:border-box!important;
+  display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
+  gap:10px!important;z-index:70!important;direction:rtl!important;
+}
+.header-shopping-actions .admin-inbox-floating-button,
+.header-shopping-actions .cart-floating-button,
+.header-shopping-actions .orders-floating-button{
+  position:relative!important;inset:auto!important;margin:0!important;flex:0 0 48px!important;
+}
+.header-shopping-actions .admin-inbox-floating-button{order:3!important;width:48px!important;height:48px!important;border-radius:16px!important}
+.header-shopping-actions .cart-floating-button{order:2!important}
+.header-shopping-actions .orders-floating-button{order:1!important}
+.header{padding-bottom:72px!important;padding-right:18px!important;min-height:136px!important;}
+.letter-recipient-picker{display:block!important;position:relative!important;width:100%!important;}
+.letter-recipient-wrap .letter-recipient-select{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;}
+.letter-recipient-trigger{pointer-events:auto!important;cursor:pointer!important;}
+.letter-recipient-list{pointer-events:auto!important;}
+.letter-recipient-option{pointer-events:auto!important;cursor:pointer!important;}
+.letter-inbox-modal-card{overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;}
+@media(max-width:700px){
+  .header{padding-bottom:66px!important;min-height:128px!important;}
+  .header-shopping-actions{left:8px!important;right:8px!important;bottom:7px!important;width:calc(100% - 16px)!important;gap:7px!important;}
+  .header-shopping-actions .admin-inbox-floating-button,
+  .header-shopping-actions .cart-floating-button,
+  .header-shopping-actions .orders-floating-button{flex-basis:44px!important;width:44px!important;height:44px!important;font-size:20px!important;}
+  .letter-inbox-modal-card{width:calc(100vw - 8px)!important;height:calc(100vh - 8px)!important;max-height:none!important;padding:10px!important;overflow-y:auto!important;}
+  .letter-inbox-layout,.letter-inbox-layout:has(.letter-thread-full){height:auto!important;min-height:0!important;display:block!important;}
+  .letter-list,.letter-thread,.letter-thread.letter-thread-full{max-height:none!important;height:auto!important;overflow:visible!important;}
+}

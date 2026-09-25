@@ -2083,42 +2083,53 @@ function openLetterInbox(){
   const modal=$('letterInboxModal'); if(!modal)return;
   modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
   bindJalaliDateInputs(); updateLetterTodayHeader();
-  const today=localDateInputValue();
-  if(!$('letterDateFrom').value)setJalaliInput('letterDateFrom',today);
-  if(!$('letterDateTo').value)setJalaliInput('letterDateTo',today);
+  // صندوق نامه به‌صورت پیش‌فرض همه تاریخ‌ها را نشان می‌دهد؛ جدیدترین نامه اول است.
   updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();
 }
 function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
+
+function canUseAdminLetters(){
+  const role=String(currentUser?.role||"").toLowerCase();
+  return !!isAdmin || role==="admin" || role==="super_admin" || (Array.isArray(adminPermissions) && adminPermissions.length>0);
+}
 
 async function loadLetterRecipients(){
   const wrap=$('letterRecipientWrap');
   const sel=$('letterRecipientSelect');
   if(!wrap||!sel)return;
-  const role=String(currentUser?.role||'').toLowerCase();
-  const adminMode=isAdmin || role==='admin' || role==='super_admin';
-  if(!adminMode){wrap.classList.add('hidden');return;}
+  if(!canUseAdminLetters()){wrap.classList.add('hidden');return;}
   wrap.classList.remove('hidden');
   sel.disabled=true;
   sel.innerHTML='<option value="">در حال دریافت فهرست نماینده‌ها...</option>';
   try{
     const r=await postJson('/api/admin/customers',{});
-    const customers=Array.isArray(r)?r:(Array.isArray(r?.customers)?r.customers:(Array.isArray(r?.data?.customers)?r.data.customers:(Array.isArray(r?.data)?r.data:[])));
-    if(!customers.length){
+    const customers=Array.isArray(r)?r:(Array.isArray(r?.customers)?r.customers:(Array.isArray(r?.data?.customers)?r.data.customers:[]));
+    const reps=customers.filter(c=>{
+      const role=String(c?.role||'customer').toLowerCase();
+      return role==='customer'||role==='representative'||role==='rep'||role==='sales';
+    });
+    sel.innerHTML='<option value="">انتخاب نماینده...</option>';
+    if(!reps.length){
       sel.innerHTML='<option value="">نماینده‌ای برای انتخاب وجود ندارد</option>';
-      sel.disabled=true;
+      sel.disabled=false;
       return;
     }
-    sel.innerHTML='<option value="">انتخاب نماینده...</option>'+customers.map(c=>{
+    reps.forEach(c=>{
       const id=String(c.id||c.customer_id||'');
+      if(!id)return;
       const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||c.name||c.username||'نماینده';
       const user=c.username?`@${String(c.username).replace(/^@/,'')}`:'بدون نام کاربری';
-      return `<option value="${escapeHtml(id)}">${escapeHtml(name)} — ${escapeHtml(user)}</option>`;
-    }).join('');
+      const opt=document.createElement('option');
+      opt.value=id; opt.textContent=`${name} — ${user}`;
+      sel.appendChild(opt);
+    });
     sel.disabled=false;
+    sel.style.pointerEvents='auto';
   }catch(e){
     console.error('Letter recipients:',e);
-    sel.innerHTML='<option value="">خطا در دریافت فهرست نماینده‌ها</option>';
-    sel.disabled=true;
+    sel.innerHTML=`<option value="">خطا در دریافت فهرست نماینده‌ها</option>`;
+    sel.disabled=false;
+    sel.title=e.message||'خطا در دریافت فهرست نماینده‌ها';
   }
 }
 
@@ -2167,7 +2178,7 @@ function openLetterCompose(){
   const subject=$('letterComposeSubject'), body=$('letterComposeBody');
   if(subject)subject.value=''; if(body)body.value='';
   const role=String(currentUser?.role||'').toLowerCase();
-  const adminMode=isAdmin || role==='admin' || role==='super_admin';
+  const adminMode=canUseAdminLetters();
   if(adminMode){
     $('letterComposeHelp')?.replaceChildren(document.createTextNode('نامه را برای نماینده موردنظر ارسال کنید.'));
     loadLetterRecipients();
@@ -2184,7 +2195,7 @@ function showAllLetters(){$('letterDateFrom').value='';$('letterDateTo').value='
 async function loadLetterUnreadCount(){
   if(!currentUser)return;
   try{
-    const endpoint=isAdmin?"/api/admin/letters-unread-count":"/api/customer/letters-unread-count";
+    const endpoint=canUseAdminLetters()?"/api/admin/letters-unread-count":"/api/customer/letters-unread-count";
     const r=await postJson(endpoint,{}); const n=Number(r?.count||0);
     setAdminCount("letterInboxCount",n);
     const b=$("letterInboxCount");if(b)b.classList.toggle("has-unread",n>0);
@@ -2197,8 +2208,9 @@ async function loadLetterInbox(){
   list.innerHTML='<div class="message">در حال دریافت نامه‌ها...</div>';
   try{
     const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:$("letterReadFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||""};
-    const endpoint=isAdmin?"/api/admin/letters":"/api/customer/letters";
+    const endpoint=canUseAdminLetters()?"/api/admin/letters":"/api/customer/letters";
     const r=await postJson(endpoint,payload); letterThreads=Array.isArray(r?.messages)?r.messages:[];
+    letterThreads.sort((a,b)=>new Date(b?.created_at||0)-new Date(a?.created_at||0));
     renderLetterSenderFilter(letterThreads);
     if(!letterThreads.length){list.innerHTML='<div class="message">نامه‌ای با این فیلتر پیدا نشد.</div>';return;}
     list.innerHTML=letterThreads.map((m,i)=>{
@@ -2222,16 +2234,16 @@ async function openLetterThread(index){
   const m=letterThreads[index];if(!m)return;letterCurrentThread=String(m.thread_id||m.id);
   const thread=$("letterThread");if(!thread)return;thread.innerHTML='<div class="message">در حال دریافت گفتگو...</div>';
   try{
-    const endpoint=isAdmin?"/api/admin/letter-thread":"/api/customer/letter-thread";
+    const endpoint=canUseAdminLetters()?"/api/admin/letter-thread":"/api/customer/letter-thread";
     const r=await postJson(endpoint,{thread_id:m.thread_id||m.id}); const messages=Array.isArray(r?.messages)?r.messages:[];
     const subject=m.subject||messages[0]?.subject||"بدون عنوان";
     thread.innerHTML=`<div class="thread-head"><h3>✉️ ${escapeHtml(subject)}</h3><small>گفتگوی کامل نامه و پاسخ‌ها</small></div><div class="thread-messages">${messages.map((x,idx)=>{const mine=String(x.sender_customer_id||'')===String(currentUser?.id||'');const subjectValue=String(x.subject||subject||'');const kind=subjectValue.includes('🛒')?'type-cart':subjectValue.includes('📝')?'type-note':idx>0?'type-reply':'type-letter';return `<div class="thread-message ${mine?'mine':''} ${kind}"><div class="tm-head"><strong>${escapeHtml(x.sender_name||x.sender_username||'کاربر')}</strong><span>${escapeHtml(formatLetterDate(x.created_at))}</span></div><div class="tm-body">${escapeHtml(x.body||'')}</div></div>`}).join('')}</div><div class="thread-reply"><textarea id="letterReplyBody" class="letter-textarea" rows="4" placeholder="پاسخ خود را بنویسید..."></textarea><button class="admin-primary" type="button" onclick="sendLetterReply(${Number(m.thread_id||m.id)})">📨 ارسال پاسخ</button></div>`;
-    await postJson(isAdmin?"/api/admin/letter-mark-read":"/api/customer/letter-mark-read",{thread_id:m.thread_id||m.id});
+    await postJson(canUseAdminLetters()?"/api/admin/letter-mark-read":"/api/customer/letter-mark-read",{thread_id:m.thread_id||m.id});
     m.read=true;renderLetterListAfterRead();await loadLetterUnreadCount();
   }catch(e){thread.innerHTML=`<div class="message error">دریافت گفتگو انجام نشد.<br>${escapeHtml(e.message||'')}</div>`;}
 }
 function renderLetterListAfterRead(){document.querySelectorAll('.letter-item').forEach(el=>el.classList.remove('unread'));}
-async function sendLetterReply(threadId){const body=$("letterReplyBody")?.value.trim();if(!body)return appAlert("لطفاً متن پاسخ را بنویسید.");try{await postJson(isAdmin?"/api/admin/letter-reply":"/api/customer/letter-reply",{thread_id:Number(threadId),body});appAlert("✅ پاسخ با موفقیت ارسال شد.");await loadLetterInbox();}catch(e){appAlert("❌ ارسال پاسخ انجام نشد:\n"+(e.message||''));}}
+async function sendLetterReply(threadId){const body=$("letterReplyBody")?.value.trim();if(!body)return appAlert("لطفاً متن پاسخ را بنویسید.");try{await postJson(canUseAdminLetters()?"/api/admin/letter-reply":"/api/customer/letter-reply",{thread_id:Number(threadId),body});appAlert("✅ پاسخ با موفقیت ارسال شد.");await loadLetterInbox();}catch(e){appAlert("❌ ارسال پاسخ انجام نشد:\n"+(e.message||''));}}
 async function sendNewLetter(){
   const subjectEl=$("letterComposeSubject"), bodyEl=$("letterComposeBody"), recipientEl=$("letterRecipientSelect");
   const subject=String(subjectEl?.value||"").trim();
@@ -2239,14 +2251,14 @@ async function sendNewLetter(){
   const recipientId=String(recipientEl?.value||"").trim();
   if(!subject){subjectEl?.focus();return appAlert("⚠️ عنوان نامه را وارد کنید.");}
   if(!body){bodyEl?.focus();return appAlert("⚠️ متن نامه را وارد کنید.");}
-  if(isAdmin && (!recipientId || !Number.isFinite(Number(recipientId)))){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
+  if(canUseAdminLetters() && (!recipientId || !Number.isFinite(Number(recipientId)))){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
   const button=document.querySelector('#letterComposeModal .admin-primary');
   if(button){button.disabled=true;button.textContent="⏳ در حال ارسال...";}
   try{
-    const payload=isAdmin
+    const payload=canUseAdminLetters()
       ? {recipient_customer_id:Number(recipientId),subject:subject,body:body}
       : {subject:subject,body:body};
-    const result=await postJson(isAdmin?'/api/admin/letter':'/api/customer/letter',payload);
+    const result=await postJson(canUseAdminLetters()?'/api/admin/letter':'/api/customer/letter',payload);
     if(result?.ok===false) throw new Error(result.error||'سرور نامه را ثبت نکرد.');
     closeLetterCompose();
     appAlert("✅ نامه با موفقیت ارسال شد.");

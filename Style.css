@@ -2789,3 +2789,89 @@ html:has(body.booting),body.booting{overflow:hidden!important;width:100%!importa
   .header-shopping-actions .admin-inbox-floating-button{width:44px!important;height:44px!important;}
   .letter-recipient-select{height:48px!important;min-height:48px!important;}
 }
+
+/* FINAL MAIL LAYOUT FIX — 2026-09-25 */
+.header-shopping-actions{
+  position:absolute!important;
+  left:16px!important;
+  right:16px!important;
+  bottom:10px!important;
+  top:auto!important;
+  height:50px!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  direction:ltr!important;
+  z-index:100!important;
+  pointer-events:none!important;
+}
+.header-shopping-actions > button{pointer-events:auto!important;position:relative!important;inset:auto!important;}
+.header-shopping-actions .cart-floating-button{order:1!important;}
+.header-shopping-actions .orders-floating-button{order:2!important;}
+.header-shopping-actions .admin-inbox-floating-button{
+  order:3!important;
+  margin-left:auto!important;
+  margin-right:0!important;
+  width:48px!important;height:48px!important;
+  position:relative!important;inset:auto!important;
+}
+
+/* Letter compose recipient must always be an actual clickable native select. */
+#letterRecipientWrap{position:relative!important;z-index:500!important;}
+.letter-recipient-box{position:relative!important;display:flex!important;align-items:center!important;overflow:visible!important;min-height:58px!important;}
+#letterRecipientSelect{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  pointer-events:auto!important;cursor:pointer!important;
+  position:relative!important;z-index:501!important;
+  flex:1 1 auto!important;width:100%!important;
+  min-height:50px!important;height:50px!important;
+  border:1px solid #d7e4da!important;border-radius:12px!important;
+  background:#fff!important;color:#1f2937!important;
+  padding:0 12px!important;font-size:14px!important;font-weight:700!important;
+}
+#letterRecipientSelect:disabled{cursor:not-allowed!important;opacity:.8!important;}
+
+/* Inbox: latest thread first, list and open thread both scroll independently. */
+.letter-inbox-modal-card{
+  height:min(88vh,850px)!important;
+  max-height:calc(100vh - 24px)!important;
+  display:flex!important;flex-direction:column!important;
+  min-height:0!important;overflow:hidden!important;
+}
+.letter-inbox-header,.letter-filters{flex:0 0 auto!important;}
+.letter-inbox-layout{
+  display:grid!important;
+  grid-template-columns:minmax(320px,390px) minmax(0,1fr)!important;
+  flex:1 1 auto!important;height:auto!important;min-height:0!important;
+  overflow:hidden!important;
+}
+.letter-list{
+  min-height:0!important;height:100%!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.letter-thread{
+  min-width:0!important;min-height:0!important;height:100%!important;
+  display:flex!important;flex-direction:column!important;
+  overflow:hidden!important;
+}
+.thread-messages{
+  flex:1 1 auto!important;min-height:0!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.thread-reply{
+  flex:0 0 auto!important;position:relative!important;
+  background:#fff!important;z-index:20!important;
+  border-top:1px solid #e5e7eb!important;padding-top:10px!important;
+}
+@media(max-width:850px){
+  .header-shopping-actions{left:10px!important;right:10px!important;bottom:10px!important;height:46px!important;}
+  .header-shopping-actions .admin-inbox-floating-button{width:44px!important;height:44px!important;}
+  .letter-inbox-modal-card{height:calc(100vh - 12px)!important;max-height:none!important;}
+  .letter-inbox-layout{grid-template-columns:1fr!important;min-height:0!important;}
+  .letter-list{height:45%!important;min-height:150px!important;}
+  .letter-thread{height:55%!important;min-height:230px!important;}
+}

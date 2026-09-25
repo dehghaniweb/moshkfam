@@ -2020,24 +2020,72 @@ function localDateInputValue(d=new Date()){
   const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);
   return x.toISOString().slice(0,10);
 }
+
+/* Persian/Jalali date helpers — UI is Persian, API continues using Gregorian dates. */
+function jalaliToGregorian(jy,jm,jd){
+  jy=Number(jy);jm=Number(jm);jd=Number(jd);
+  let jYear=jy+1595;
+  let days=-355668 + 365*jYear + Math.floor(jYear/33)*8 + Math.floor(((jYear%33)+3)/4) + jd + (jm<7?(jm-1)*31:(jm-7)*30+186);
+  let gy=400*Math.floor(days/146097); days%=146097;
+  if(days>36524){gy+=100*Math.floor(--days/36524);days%=36524;if(days>=365)days++;}
+  gy+=4*Math.floor(days/1461);days%=1461;
+  if(days>365){gy+=Math.floor((days-1)/365);days=(days-1)%365;}
+  const gd=days+1;
+  const leap=(gy%4===0&&gy%100!==0)||gy%400===0;
+  const monthDays=[0,31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+  let gm=1, rem=gd; while(rem>monthDays[gm]){rem-=monthDays[gm];gm++;}
+  return {gy,gm,gd:rem};
+}
+function gregorianToJalali(date){
+  const g=new Date(date), gy=g.getFullYear(),gm=g.getMonth()+1,gd=g.getDate();
+  const gDays=[0,31,28,31,30,31,30,31,31,30,31,30,31];
+  let gy2=gy-1600, gm2=gm-1, gd2=gd-1;
+  let day=365*gy2+Math.floor((gy2+3)/4)-Math.floor((gy2+99)/100)+Math.floor((gy2+399)/400);
+  for(let i=0;i<gm2;i++) day+=gDays[i+1];
+  if(gm2>1&&((gy%4===0&&gy%100!==0)||gy%400===0))day++;
+  day+=gd2;
+  let jday=day-79, jNp=Math.floor(jday/12053); jday%=12053;
+  let jy=979+33*jNp+4*Math.floor(jday/1461); jday%=1461;
+  if(jday>=366){jy+=Math.floor((jday-1)/365);jday=(jday-1)%365;}
+  const jm=jday<186?1+Math.floor(jday/31):7+Math.floor((jday-186)/30);
+  const jd=1+(jday<186?jday%31:(jday-186)%30);
+  return {jy,jm,jd};
+}
+function faDigits(v){return String(v).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);}
+function enDigits(v){return String(v).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d));}
+function normalizeJalaliInput(v){return enDigits(String(v||'').trim()).replace(/[-.]/g,'/').replace(/\s+/g,'');}
+function jalaliInputToGregorian(v){
+  const m=normalizeJalaliInput(v).match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/); if(!m)return null;
+  const [_,jy,jm,jd]=m.map(Number); if(jy<1300||jm<1||jm>12||jd<1||jd>(jm<=6?31:jm<=11?30:30))return null;
+  const g=jalaliToGregorian(jy,jm,jd); const d=new Date(g.gy,g.gm-1,g.gd); return localDateInputValue(d);
+}
+function setJalaliInput(id,iso){const el=$(id);if(!el)return;if(!iso){el.value='';return;}const d=new Date(`${iso}T12:00:00`),j=gregorianToJalali(d);el.value=`${faDigits(j.jy)}/${faDigits(String(j.jm).padStart(2,'0'))}/${faDigits(String(j.jd).padStart(2,'0'))}`;}
+function updateLetterDateSubtext(input){
+  if(!input)return; let sub=input.parentElement.querySelector('.jalali-date-gregorian'); if(!sub){sub=document.createElement('small');sub.className='jalali-date-gregorian';input.parentElement.appendChild(sub);}
+  const iso=jalaliInputToGregorian(input.value); sub.textContent=iso?`معادل میلادی: ${iso.replace(/-/g,'/')}`:'تاریخ میلادی پس از انتخاب نمایش داده می‌شود';
+}
+function bindJalaliDateInputs(){['letterDateFrom','letterDateTo'].forEach(id=>{const el=$(id);if(!el||el.dataset.jalaliBound)return;el.dataset.jalaliBound='1';el.addEventListener('input',()=>updateLetterDateSubtext(el));el.addEventListener('blur',()=>{const iso=jalaliInputToGregorian(el.value);if(el.value.trim()&&!iso){el.value='';updateLetterDateSubtext(el);appAlert('تاریخ شمسی واردشده معتبر نیست.');}});});}
+function updateLetterTodayHeader(){
+  const now=new Date(),j=gregorianToJalali(now), weekdays=['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
+  const name=(currentUser?.first_name||currentUser?.username||currentUser?.name||'کاربر')+(currentUser?.last_name?` ${currentUser.last_name}`:'');
+  if($('letterTodayJalali'))$('letterTodayJalali').textContent=`امروز ${faDigits(j.jy)}/${faDigits(String(j.jm).padStart(2,'0'))}/${faDigits(String(j.jd).padStart(2,'0'))}`;
+  if($('letterTodayWeekday'))$('letterTodayWeekday').textContent=`روز ${weekdays[now.getDay()]}`;
+  if($('letterTodayGregorian'))$('letterTodayGregorian').textContent=`معادل میلادی: ${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+  if($('letterLoggedInSender'))$('letterLoggedInSender').textContent=`فرستنده این حساب: ${name}`;
+}
 function openLetterInbox(){
   if(!currentUser)return;
-  const modal=$("letterInboxModal"); if(!modal)return;
-  modal.classList.remove("hidden"); modal.setAttribute("aria-hidden","false");
-  const from=$("letterDateFrom"),to=$("letterDateTo");
-  if(from&&!from.value) from.value=localDateInputValue();
-  if(to&&!to.value) to.value=localDateInputValue();
-  loadLetterInbox();
+  const modal=$('letterInboxModal'); if(!modal)return;
+  modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
+  bindJalaliDateInputs(); updateLetterTodayHeader();
+  const today=localDateInputValue();
+  if(!$('letterDateFrom').value)setJalaliInput('letterDateFrom',today);
+  if(!$('letterDateTo').value)setJalaliInput('letterDateTo',today);
+  updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();
 }
-function closeLetterInbox(){const m=$("letterInboxModal");if(m){m.classList.add("hidden");m.setAttribute("aria-hidden","true");}}
-function resetLetterFilters(){const t=localDateInputValue();$("letterDateFrom").value=t;$("letterDateTo").value=t;$("letterReadFilter").value="all";if($("letterSenderFilter"))$("letterSenderFilter").value="";loadLetterInbox();}
-function showAllLetters(){$("letterDateFrom").value="";$("letterDateTo").value="";$("letterReadFilter").value="all";if($("letterSenderFilter"))$("letterSenderFilter").value="";loadLetterInbox();}
-function openLetterCompose(){
-  if(!currentUser||isAdmin)return;
-  const m=$("letterComposeModal"); if(!m)return;m.classList.remove("hidden");m.setAttribute("aria-hidden","false");
-  $("letterComposeSubject").value="";$("letterComposeBody").value="";
-}
-function closeLetterCompose(){const m=$("letterComposeModal");if(m){m.classList.add("hidden");m.setAttribute("aria-hidden","true");}}
+function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
+function resetLetterFilters(){const t=localDateInputValue();setJalaliInput('letterDateFrom',t);setJalaliInput('letterDateTo',t);$('letterReadFilter').value='all';if($('letterSenderFilter'))$('letterSenderFilter').value='';updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();}
+function showAllLetters(){$('letterDateFrom').value='';$('letterDateTo').value='';$('letterReadFilter').value='all';if($('letterSenderFilter'))$('letterSenderFilter').value='';updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();}
 
 async function loadLetterUnreadCount(){
   if(!currentUser)return;
@@ -2054,7 +2102,7 @@ async function loadLetterInbox(){
   const list=$("letterList"), thread=$("letterThread"); if(!list||!thread)return;
   list.innerHTML='<div class="message">در حال دریافت نامه‌ها...</div>';
   try{
-    const payload={from:$("letterDateFrom")?.value||"",to:$("letterDateTo")?.value||"",read_filter:$("letterReadFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||""};
+    const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:$("letterReadFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||""};
     const endpoint=isAdmin?"/api/admin/letters":"/api/customer/letters";
     const r=await postJson(endpoint,payload); letterThreads=Array.isArray(r?.messages)?r.messages:[];
     renderLetterSenderFilter(letterThreads);

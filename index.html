@@ -341,12 +341,23 @@
   <div class="modal-card letter-inbox-modal-card">
     <button class="close" type="button" onclick="closeLetterInbox()" aria-label="بستن">×</button>
     <div class="letter-inbox-header">
-      <div><span class="letter-kicker">صندوق پیام</span><h2>✉️ نامه‌ها</h2><p>گفت‌وگوها و پاسخ‌های شما با مشکفام فارس</p></div>
-      <button id="letterComposeButton" class="letter-compose-button" type="button" onclick="openLetterCompose()">✍️ نامه جدید</button>
+      <div class="letter-account-date">
+        <span class="letter-kicker">صندوق پیام امن</span>
+        <div id="letterTodayJalali" class="letter-today-jalali">تاریخ امروز</div>
+        <div id="letterTodayWeekday" class="letter-today-weekday"></div>
+        <div id="letterTodayGregorian" class="letter-today-gregorian"></div>
+        <div id="letterLoggedInSender" class="letter-logged-in-sender"></div>
+      </div>
+      <div class="letter-header-main">
+        <div class="letter-header-title"><span class="letter-mail-icon">✉️</span><div><h2>نامه‌ها</h2><p>گفت‌وگوها و پاسخ‌های شما با مشکفام فارس</p><button class="letter-header-inbox-icon" type="button" onclick="loadLetterInbox()" aria-label="به‌روزرسانی صندوق" title="به‌روزرسانی">✉️ <span>صندوق نامه</span></button></div></div>
+        <div class="letter-header-actions">
+          <button id="letterComposeButton" class="letter-compose-button" type="button" onclick="openLetterCompose()">✍️ نامه جدید</button>
+        </div>
+      </div>
     </div>
     <div class="letter-filters">
-      <label>از تاریخ<input id="letterDateFrom" type="date"></label>
-      <label>تا تاریخ<input id="letterDateTo" type="date"></label>
+      <label>از تاریخ شمسی<input id="letterDateFrom" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off"></label>
+      <label>تا تاریخ شمسی<input id="letterDateTo" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off"></label>
       <label>وضعیت<select id="letterReadFilter"><option value="all">همه نامه‌ها</option><option value="unread">خوانده‌نشده</option></select></label>
       <label id="letterSenderFilterWrap">فرستنده<select id="letterSenderFilter"><option value="">همه فرستنده‌ها</option></select></label>
       <button type="button" class="letter-filter-button" onclick="loadLetterInbox()">🔎 نمایش</button>

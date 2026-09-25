@@ -2099,7 +2099,7 @@ async function loadLetterRecipients(){
   sel.innerHTML='<option value="">در حال دریافت فهرست نماینده‌ها...</option>';
   try{
     const r=await postJson('/api/admin/customers',{});
-    const customers=Array.isArray(r?.customers)?r.customers:[];
+    const customers=Array.isArray(r)?r:(Array.isArray(r?.customers)?r?.customers:[]);
     const picker=$('letterRecipientPicker');
     if(!picker){
       sel.innerHTML='<option value="">نماینده‌ای برای انتخاب وجود ندارد</option>';

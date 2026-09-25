@@ -2025,14 +2025,8 @@ let letterCurrentThread = null;
 let letterPollingTimer = null;
 
 function localDateInputValue(d=new Date()){
-  try{
-    const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehran',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);
-    const m=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
-    return `${m.year}-${m.month}-${m.day}`;
-  }catch{
-    const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);
-    return x.toISOString().slice(0,10);
-  }
+  const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+  return x.toISOString().slice(0,10);
 }
 
 /* Persian/Jalali date helpers — UI is Persian, API continues using Gregorian dates. */
@@ -2090,14 +2084,14 @@ function updateLetterTodayHeader(){
 function openLetterInbox(){
   if(!currentUser)return;
   const modal=$('letterInboxModal'); if(!modal)return;
-  modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
+  modal.classList.remove('hidden'); modal.classList.remove('letter-thread-mode'); modal.setAttribute('aria-hidden','false');
   bindJalaliDateInputs(); updateLetterTodayHeader();
   const today=localDateInputValue();
-  if(!$('letterDateFrom').value)setJalaliInput('letterDateFrom',today);
-  if(!$('letterDateTo').value)setJalaliInput('letterDateTo',today);
+  // ابتدا همه نامه‌ها را می‌خوانیم تا نامه‌های ثبت‌شده با تاریخ/تقویم متفاوت پنهان نشوند.
+  $('letterDateFrom').value=''; $('letterDateTo').value='';
   updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();
 }
-function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
+function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.remove('letter-thread-mode');m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
 
 async function loadLetterRecipients(){
   const wrap=$('letterRecipientWrap');
@@ -2281,7 +2275,7 @@ async function openLetterThread(index){
 function backToLetterList(){
   const list=$("letterList"),thread=$("letterThread");
   if(list)list.classList.remove("letter-list-hidden");
-  if(thread){thread.classList.remove("letter-thread-full");thread.innerHTML='<div class="letter-empty-state">✉️<strong>یک نامه را انتخاب کنید</strong><span>متن کامل و تاریخچه پاسخ‌ها اینجا نمایش داده می‌شود.</span></div>';}
+  if(thread){thread.classList.remove("letter-thread-full");$('letterInboxModal')?.classList.remove('letter-thread-mode');thread.innerHTML='<div class="letter-empty-state">✉️<strong>یک نامه را انتخاب کنید</strong><span>متن کامل و تاریخچه پاسخ‌ها اینجا نمایش داده می‌شود.</span></div>';}
 }
 function renderLetterListAfterRead(){document.querySelectorAll('.letter-item').forEach(el=>el.classList.remove('unread'));}
 async function sendLetterReply(threadId){const body=$("letterReplyBody")?.value.trim();if(!body)return appAlert("لطفاً متن پاسخ را بنویسید.");try{await postJson(isAdmin?"/api/admin/letter-reply":"/api/customer/letter-reply",{thread_id:Number(threadId),body});appAlert("✅ پاسخ با موفقیت ارسال شد.");await loadLetterInbox();}catch(e){appAlert("❌ ارسال پاسخ انجام نشد:\n"+(e.message||''));}}
@@ -2289,16 +2283,15 @@ async function sendNewLetter(){
   const subjectEl=$("letterComposeSubject"), bodyEl=$("letterComposeBody"), recipientEl=$("letterRecipientSelect");
   const subject=String(subjectEl?.value||"").trim();
   const body=String(bodyEl?.value||"").trim();
-  const picker=$('letterRecipientPicker');
-  const recipientId=String(picker?.dataset?.selectedId || recipientEl?.value || "").trim();
+  const recipientId=String(recipientEl?.value||$('letterRecipientPicker')?.dataset?.selectedId||"").trim();
   if(!subject){subjectEl?.focus();return appAlert("⚠️ عنوان نامه را وارد کنید.");}
   if(!body){bodyEl?.focus();return appAlert("⚠️ متن نامه را وارد کنید.");}
-  if(isAdmin && (!recipientId || !Number.isFinite(Number(recipientId)))){toggleLetterRecipientPicker();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
+  if(isAdmin && !recipientId){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
   const button=document.querySelector('#letterComposeModal .admin-primary');
   if(button){button.disabled=true;button.textContent="⏳ در حال ارسال...";}
   try{
     const payload=isAdmin
-      ? {recipient_customer_id:Number(recipientId),subject:subject,body:body}
+      ? {recipient_customer_id:recipientId,subject:subject,body:body}
       : {subject:subject,body:body};
     const result=await postJson(isAdmin?'/api/admin/letter':'/api/customer/letter',payload);
     if(result?.ok===false) throw new Error(result.error||'سرور نامه را ثبت نکرد.');

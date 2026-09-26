@@ -3631,3 +3631,45 @@ body:not(:has(#bootLoader:not(.hide))){
   height:auto!important;
   min-height:100vh!important;
 }
+
+/* ===== V1.0.11 FINAL FIXES ===== */
+/* Product details: force the scrollbar to the RIGHT while keeping Persian content RTL. */
+#modal .modal-card{
+  direction:ltr!important;
+  overflow-y:scroll!important;
+  overflow-x:hidden!important;
+  scrollbar-gutter:stable!important;
+}
+#modal .modal-card #modalContent,
+#modal .modal-card #modalContent *{
+  direction:rtl;
+}
+#modal .modal-card > .close{
+  right:10px!important;
+  left:auto!important;
+}
+
+/* Startup screen: fixed geometry from the first paint; prevents laptop reflow/jump. */
+html:has(#bootLoader:not(.hide)),
+body:has(#bootLoader:not(.hide)){
+  scrollbar-gutter:stable!important;
+}
+#bootLoader .boot-card{
+  width:280px!important;
+  min-width:280px!important;
+  max-width:280px!important;
+  height:184px!important;
+  min-height:184px!important;
+  max-height:184px!important;
+  box-sizing:border-box!important;
+  position:absolute!important;
+  top:50%!important;
+  left:50%!important;
+  margin:0!important;
+  transform:translate(-50%,-50%)!important;
+  flex:none!important;
+}
+#bootLoader .boot-icon{width:42px;height:42px;line-height:42px;flex:0 0 42px!important}
+#bootLoader .boot-title{width:100%;height:29px;min-height:29px;max-height:29px;overflow:hidden}
+#bootLoader .boot-sub{width:100%;height:22px;min-height:22px;max-height:22px;overflow:hidden}
+#bootLoader .boot-spinner{flex:0 0 34px!important;width:34px!important;height:34px!important}

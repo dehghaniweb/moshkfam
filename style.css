@@ -4395,3 +4395,64 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
   #letterInboxModal .thread-reply{padding-bottom:14px!important;margin-bottom:4px!important;}
   #letterInboxModal .thread-reply .admin-primary{margin-bottom:4px!important;}
 }
+
+
+/* =========================================================
+   MOSHKFAM V1.0.30 — representative mobile actions + date editor
+========================================================= */
+
+/* Representative/customer: cart and order-history stay together on the LEFT. */
+@media(max-width:700px){
+  body:not(.login-active) .header-shopping-actions{
+    left:10px!important;right:auto!important;width:96px!important;height:48px!important;
+    display:block!important;bottom:0!important;
+  }
+  body:not(.login-active) .header-shopping-actions .orders-floating-button{
+    left:0!important;right:auto!important;bottom:0!important;top:auto!important;transform:none!important;
+  }
+  body:not(.login-active) .header-shopping-actions .cart-floating-button{
+    left:48px!important;right:auto!important;bottom:0!important;top:auto!important;transform:none!important;
+  }
+  body:not(.login-active) .header-shopping-actions .admin-inbox-floating-button{
+    right:10px!important;left:auto!important;bottom:0!important;top:auto!important;
+  }
+
+  /* Inbox: date on the LEFT, new-letter on the RIGHT, with comfortable top spacing. */
+  #letterInboxModal .letter-inbox-modal-card{
+    margin-top:14px!important;
+    padding-top:18px!important;
+  }
+  #letterInboxModal .letter-inbox-header{
+    padding:8px 8px 10px!important;
+  }
+  #letterInboxModal .letter-account-date{
+    grid-area:date!important;justify-self:start!important;text-align:left!important;
+  }
+  #letterInboxModal .letter-header-actions{
+    grid-area:actions!important;justify-self:end!important;margin-top:0!important;
+  }
+
+  /* Open thread: top controls and reply button must not touch the edges. */
+  #letterInboxModal .thread-head{
+    margin:12px 10px 0!important;padding-top:14px!important;
+  }
+  #letterInboxModal .thread-reply{
+    padding:10px 10px 22px!important;margin:0!important;
+  }
+  #letterInboxModal .thread-reply .admin-primary{
+    margin-bottom:8px!important;
+  }
+}
+
+/* Date fields are editable Persian dates in YYYY/MM/DD form. */
+.jalali-date-input{
+  direction:ltr!important;text-align:center!important;
+  font-variant-numeric:tabular-nums!important;
+  letter-spacing:.03em!important;
+  cursor:text!important;
+  user-select:text!important;
+}
+.jalali-date-input:focus{
+  outline:2px solid rgba(23,108,73,.25)!important;
+  border-color:#176c49!important;
+}

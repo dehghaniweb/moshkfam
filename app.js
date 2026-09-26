@@ -2087,7 +2087,24 @@ function updateLetterDateSubtext(input){
   if(!input)return; let sub=input.parentElement.querySelector('.jalali-date-gregorian'); if(!sub){sub=document.createElement('small');sub.className='jalali-date-gregorian';input.parentElement.appendChild(sub);}
   const iso=jalaliInputToGregorian(input.value); sub.textContent=iso?`معادل میلادی: ${iso.replace(/-/g,'/')}`:'تاریخ میلادی پس از انتخاب نمایش داده می‌شود';
 }
-function bindJalaliDateInputs(){['letterDateFrom','letterDateTo'].forEach(id=>{const el=$(id);if(!el||el.dataset.jalaliBound)return;el.dataset.jalaliBound='1';el.addEventListener('input',()=>updateLetterDateSubtext(el));el.addEventListener('blur',()=>{const iso=jalaliInputToGregorian(el.value);if(el.value.trim()&&!iso){el.value='';updateLetterDateSubtext(el);appAlert('تاریخ شمسی واردشده معتبر نیست.');}});});}
+function formatJalaliDateInput(el){
+  if(!el)return;
+  const raw=enDigits(String(el.value||''));
+  const before=String(el.value||'').slice(0,Math.max(0,el.selectionStart||0));
+  const beforeDigits=(before.match(/[0-9۰-۹]/g)||[]).length;
+  const digits=raw.replace(/\D/g,'').slice(0,8);
+  let out='';
+  if(digits.length>0)out=digits.slice(0,4);
+  if(digits.length>4)out+='/'+digits.slice(4,6);
+  if(digits.length>6)out+='/'+digits.slice(6,8);
+  const digitCount=Math.min(beforeDigits,digits.length);
+  let pos=digitCount;
+  if(digitCount>4)pos+=1;
+  if(digitCount>6)pos+=1;
+  el.value=faDigits(out);
+  try{el.setSelectionRange(pos,pos);}catch{}
+}
+function bindJalaliDateInputs(){['letterDateFrom','letterDateTo'].forEach(id=>{const el=$(id);if(!el||el.dataset.jalaliBound)return;el.dataset.jalaliBound='1';el.maxLength=10;el.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End','Tab','Backspace','Delete'].includes(e.key)||e.ctrlKey||e.metaKey)return;if(!/[0-9۰-۹]/.test(e.key))e.preventDefault();});el.addEventListener('input',()=>{formatJalaliDateInput(el);updateLetterDateSubtext(el);});el.addEventListener('blur',()=>{formatJalaliDateInput(el);const value=normalizeJalaliInput(el.value);const complete=/^\d{4}\/\d{2}\/\d{2}$/.test(value);const iso=complete?jalaliInputToGregorian(el.value):null;if(el.value.trim()&&!iso){el.value='';updateLetterDateSubtext(el);appAlert('تاریخ شمسی را به صورت سال ۴ رقمی / ماه ۲ رقمی / روز ۲ رقمی وارد کنید.');}});});}
 function bindLetterLiveFilters(){ const ids=['letterReadFilter','letterSenderFilter']; ids.forEach(id=>{const el=$(id);if(!el||el.dataset.liveBound)return;el.dataset.liveBound='1';el.addEventListener('change',()=>loadLetterInbox());}); ['letterDateFrom','letterDateTo'].forEach(id=>{const el=$(id);if(!el||el.dataset.liveChangeBound)return;el.dataset.liveChangeBound='1';el.addEventListener('change',()=>loadLetterInbox());}); }
 function updateLetterTodayHeader(){
   const now=new Date(),j=gregorianToJalali(now), weekdays=['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
@@ -2232,7 +2249,8 @@ function openLetterCompose(){
   const subject=$('letterComposeSubject'), body=$('letterComposeBody');
   if(subject)subject.value=''; if(body)body.value='';
   const role=String(currentUser?.role||'').toLowerCase();
-  const adminMode=canUseAdminLetters();
+  const isSalesRole=role==='sales';
+  const adminMode=canUseAdminLetters() && !isSalesRole;
   if(adminMode){
     $('letterComposeHelp')?.replaceChildren(document.createTextNode('نامه را برای نماینده موردنظر ارسال کنید.'));
     loadLetterRecipients();
@@ -2349,15 +2367,18 @@ async function sendNewLetter(){
   ).trim();
   if(!subject){subjectEl?.focus();return appAlert("⚠️ عنوان نامه را وارد کنید.");}
   if(!body){bodyEl?.focus();return appAlert("⚠️ متن نامه را وارد کنید.");}
-  if(canUseAdminLetters() && !recipientId){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
-  if(canUseAdminLetters() && recipientEl && selectedOption && selectedOption.value!==recipientId) recipientEl.value=recipientId;
+  const role=String(currentUser?.role||'').toLowerCase();
+  const isSalesRole=role==='sales';
+  const adminMode=canUseAdminLetters() && !isSalesRole;
+  if(adminMode && !recipientId){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
+  if(adminMode && recipientEl && selectedOption && selectedOption.value!==recipientId) recipientEl.value=recipientId;
   const button=document.querySelector('#letterComposeModal .admin-primary');
   if(button){button.disabled=true;button.textContent="⏳ در حال ارسال...";}
   try{
-    const payload=canUseAdminLetters()
+    const payload=adminMode
       ? {recipient_customer_id:recipientId,subject:subject,body:body}
       : {subject:subject,body:body};
-    const result=await postJson(canUseAdminLetters()?'/api/admin/letter':'/api/customer/letter',payload);
+    const result=await postJson(adminMode?'/api/admin/letter':'/api/customer/letter',payload);
     if(result?.ok===false) throw new Error(result.error||'سرور نامه را ثبت نکرد.');
     closeLetterCompose();
     appAlert("✅ نامه با موفقیت ارسال شد.");

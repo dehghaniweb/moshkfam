@@ -5050,3 +5050,48 @@ body[data-account-role="software-admin"] .header-shopping-actions{
 /* V1.0.49 — recipient selection belongs only to sales/admin compose. */
 #letterComposeModal.customer-compose-mode #letterRecipientWrap{display:none!important;}
 
+
+/* V1.0.50 — FINAL mobile header tools fix.
+   Keep cart, orders and mailbox in the header grid, never floating over page content. */
+@media(max-width:700px){
+  body:not(.login-active) .header .header-shopping-actions{
+    grid-area:tools!important;
+    position:static!important;
+    top:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    left:auto!important;
+    inset:auto!important;
+    width:100%!important;
+    height:50px!important;
+    min-height:50px!important;
+    margin:0!important;
+    padding:0 8px!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+    direction:ltr!important;
+    transform:none!important;
+    pointer-events:none!important;
+    z-index:20!important;
+  }
+  body:not(.login-active) .header .header-shopping-actions > button{
+    position:static!important;
+    top:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    left:auto!important;
+    inset:auto!important;
+    transform:none!important;
+    margin:0!important;
+    pointer-events:auto!important;
+    flex:0 0 44px!important;
+    width:44px!important;
+    height:44px!important;
+  }
+  body:not(.login-active) .header .header-shopping-actions .cart-floating-button{order:1!important;}
+  body:not(.login-active) .header .header-shopping-actions .orders-floating-button{order:2!important;}
+  body:not(.login-active) .header .header-shopping-actions .admin-inbox-floating-button{order:3!important;margin-left:auto!important;}
+}

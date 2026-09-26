@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.46";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.48";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -2029,24 +2029,35 @@ async function loadAdminUsers(){
       const key=id || String(a.telegram_user_id||"");
       const main=!!a.is_primary;
       const name=[a.first_name,a.last_name].filter(Boolean).join(" ")||a.username||"مدیر";
-      if(main){
-        const body=`<div class="admin-accordion-summary"><span>👑 مدیر اصلی</span><span>دسترسی کامل · غیرقابل حذف</span>${a.telegram_user_id?`<span>Telegram ID: ${escapeHtml(a.telegram_user_id)}</span>`:""}</div>`;
-        return adminAccordion(`admin-system-primary-${key}`, `<span class="admin-item-number">${formatNumber(index+1)}</span><strong>🛡️ ${escapeHtml(name)}</strong><small>مدیر اصلی</small>`, body, "admin-system-accordion admin-primary-accordion");
-      }
       const perms=Array.isArray(a.permissions)?a.permissions:[];
+      if(main){
+        const primaryBody=`<div class="admin-edit-grid admin-system-edit-grid">
+          <label>نام<input id="afirst-${escapeHtml(key)}" value="${escapeHtml(a.first_name||"")}"></label>
+          <label>نام خانوادگی<input id="alast-${escapeHtml(key)}" value="${escapeHtml(a.last_name||"")}"></label>
+          <label>نوع حساب<select id="arole-${escapeHtml(key)}" disabled><option value="super_admin" selected>مدیر نرم‌افزار</option></select></label>
+          <label>Telegram ID<input id="atele-${escapeHtml(key)}" value="${escapeHtml(a.telegram_user_id||"")}" inputmode="numeric"></label>
+          <label>نام کاربری وب<input id="auser-${escapeHtml(key)}" value="${escapeHtml(a.username||"")}" autocomplete="off"></label>
+          <label class="password-field">رمز عبور وب<div class="password-input-wrap"><input id="apass-${escapeHtml(key)}" type="text" value="${escapeHtml(a.password||"")}" placeholder="${a.password?"رمز فعلی":"برای تعریف رمز وب وارد کنید"}" autocomplete="off"><button type="button" class="password-eye" id="eye-apass-${escapeHtml(key)}" onclick="togglePasswordVisibility('apass-${escapeHtml(key)}','eye-apass-${escapeHtml(key)}'); return false;" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">🙈</button></div></label>
+        </div>
+        <div class="admin-permission-box"><strong>سطح دسترسی</strong><div class="admin-permission-grid">${ADMIN_PERMISSION_KEYS.map(k=>`<label><input type="checkbox" id="aperm-${escapeHtml(key)}-${k}" checked disabled> ${({products:'محصولات',customers:'نماینده‌ها',prices:'قیمت‌های اختصاصی',requests:'سفارش‌ها و یادداشت‌ها',footer:'اطلاعات شرکت'})[k]}</label>`).join('')}</div></div>
+        <div class="admin-system-actions">
+          <button type="button" class="admin-save-customer-button" data-update-admin="${escapeHtml(key)}">💾 ذخیره مدیر / کارشناس</button>
+        </div>`;
+        return adminAccordion(`admin-system-primary-${key}`, `<span class="admin-item-number">${formatNumber(index+1)}</span><strong>🛡️ ${escapeHtml(name)}</strong><small>مدیر اصلی · قابل ویرایش</small>`, primaryBody, "admin-system-accordion admin-primary-accordion");
+      }
       const body=`<div class="admin-edit-grid admin-system-edit-grid">
           <label>نام<input id="afirst-${escapeHtml(key)}" value="${escapeHtml(a.first_name||"")}"></label>
           <label>نام خانوادگی<input id="alast-${escapeHtml(key)}" value="${escapeHtml(a.last_name||"")}"></label>
           <label>نوع حساب<select id="arole-${escapeHtml(key)}"><option value="admin" ${String(a.role||"").toLowerCase() === "admin" ? "selected" : ""}>مدیر نرم‌افزار</option><option value="sales" ${String(a.role||"").toLowerCase() === "sales" ? "selected" : ""}>کارشناس فروش</option></select></label>
           <label>Telegram ID<input id="atele-${escapeHtml(key)}" value="${escapeHtml(a.telegram_user_id||"")}" inputmode="numeric"></label>
           <label>نام کاربری وب<input id="auser-${escapeHtml(key)}" value="${escapeHtml(a.username||"")}" autocomplete="off"></label>
-          <label class="password-field">رمز جدید<div class="password-input-wrap"><input id="apass-${escapeHtml(key)}" type="password" placeholder="برای تغییر رمز وارد کنید" autocomplete="new-password"><button type="button" class="password-eye" id="eye-apass-${escapeHtml(key)}" onclick="togglePasswordVisibility('apass-${escapeHtml(key)}','eye-apass-${escapeHtml(key)}'); return false;" aria-label="نمایش رمز جدید" title="نمایش رمز جدید">👁️</button></div></label>
+          <label class="password-field">رمز عبور وب<div class="password-input-wrap"><input id="apass-${escapeHtml(key)}" type="text" value="${escapeHtml(a.password||"")}" placeholder="${a.password?"رمز فعلی":"برای تغییر/تعریف رمز وارد کنید"}" autocomplete="off"><button type="button" class="password-eye" id="eye-apass-${escapeHtml(key)}" onclick="togglePasswordVisibility('apass-${escapeHtml(key)}','eye-apass-${escapeHtml(key)}'); return false;" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">🙈</button></div></label>
           <label>وضعیت<select id="astatus-${escapeHtml(key)}"><option value="active" ${a.status!=="disabled"?'selected':''}>فعال</option><option value="disabled" ${a.status==="disabled"?'selected':''}>غیرفعال</option></select></label>
         </div>
         <div class="admin-permission-box"><strong>سطح دسترسی حساب</strong><div class="admin-permission-grid">${ADMIN_PERMISSION_KEYS.map(k=>`<label><input type="checkbox" id="aperm-${escapeHtml(key)}-${k}" ${perms.includes(k)?'checked':''}> ${({products:'محصولات',customers:'نماینده‌ها',prices:'قیمت‌های اختصاصی',requests:'سفارش‌ها و یادداشت‌ها',footer:'اطلاعات شرکت'})[k]}</label>`).join('')}</div></div>
         <div class="admin-system-actions">
-          <button type="button" class="admin-save-customer-button" data-update-admin="${escapeHtml(key)}">💾 ذخیره مدیر</button>
-          <button type="button" class="admin-danger admin-delete-admin-button" data-delete-admin="${escapeHtml(key)}">🗑️ حذف مدیر</button>
+          <button type="button" class="admin-save-customer-button" data-update-admin="${escapeHtml(key)}">💾 ذخیره مدیر / کارشناس</button>
+          <button type="button" class="admin-danger admin-delete-admin-button" data-delete-admin="${escapeHtml(key)}">🗑️ حذف مدیر / کارشناس</button>
         </div>`;
       return adminAccordion(`admin-system-edit-${key}`, `<span class="admin-item-number">${formatNumber(index+1)}</span><strong>🛡️ ${escapeHtml(name)}</strong><small>${a.username ? escapeHtml(a.username) : (a.telegram_user_id ? `Telegram: ${escapeHtml(a.telegram_user_id)}` : (String(a.role||"").toLowerCase()==="sales" ? "کارشناس فروش" : "مدیر نرم‌افزار"))}</small>`, body, "admin-system-accordion");
     }).join("");

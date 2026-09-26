@@ -656,6 +656,7 @@ function updateAccountUI() {
   }
 
   const customerButton = $("customerButton");
+  if (customerButton) { customerButton.textContent = "📝 ثبت یادداشت"; customerButton.setAttribute("aria-label", "ثبت یادداشت"); customerButton.setAttribute("title", "ثبت یادداشت"); }
   if(loginBox) loginBox.classList.add("hidden");
   if(logoutButton) logoutButton.classList.remove("hidden");
 

@@ -3706,3 +3706,33 @@ body:has(#bootLoader:not(.hide)){
 @media(max-width:850px){
   .header-shopping-actions .customer-note-button{min-width:96px!important;height:36px!important;font-size:11px!important;padding:0 8px!important;}
 }
+
+
+/* V1.0.16 — note button position/size and new-letter heading spacing */
+.header-shopping-actions .customer-note-button{
+  order:3!important;
+  min-width:88px!important;
+  width:auto!important;
+  height:32px!important;
+  padding:0 8px!important;
+  font-size:10px!important;
+  border-radius:9px!important;
+}
+.header-shopping-actions .admin-inbox-floating-button{order:4!important;}
+.letter-compose-card h2{
+  margin:0!important;
+  padding:11px 14px!important;
+  border-radius:12px!important;
+  background:#e0f2fe!important;
+  color:#075985!important;
+  line-height:1.6!important;
+}
+.letter-compose-card .letter-textarea{
+  margin-top:16px!important;
+  font-weight:600!important;
+  color:#1f2937!important;
+}
+.letter-compose-card .request-help{margin-top:10px!important;margin-bottom:0!important;}
+@media(max-width:850px){
+  .header-shopping-actions .customer-note-button{min-width:82px!important;height:30px!important;font-size:10px!important;padding:0 7px!important;}
+}

@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.33";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.35";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -661,10 +661,54 @@ function updateAccountUI() {
   }
 
   const role = String(currentUser?.role || "").toLowerCase();
-  const hasSettingsPanel = role === "sales" && adminPermissions.includes("settings");
+  const hasSalesPanel = role === "sales" && adminPermissions.length > 0;
   if (adminButton) {
-    adminButton.classList.toggle("hidden", !(isAdmin || hasSettingsPanel));
-    adminButton.textContent = isAdmin ? "⚙️ پنل مدیر نرم‌افزار" : "⚙️ پنل تنظیمات";
+    adminButton.classList.toggle("hidden", !(isAdmin || hasSalesPanel));
+    adminButton.textContent = isAdmin ? "⚙️ پنل مدیر نرم‌افزار" : "⚙️ پنل کارشناس فروش";
+  }
+
+  // پنل کارشناس فروش همان پنل مدیر نرم‌افزار است، اما فقط بخش‌هایی را
+  // نشان می‌دهد که مدیر نرم‌افزار برای این حساب مجاز کرده است.
+  const adminMenuItems = document.querySelectorAll("#adminHome .admin-menu-item");
+  adminMenuItems.forEach(item => {
+    if (isAdmin || role !== "sales") {
+      item.classList.remove("hidden");
+      return;
+    }
+    const match = String(item.getAttribute("onclick") || "").match(/showAdminSection\(['\"]([^'\"]+)['\"]\)/);
+    const sectionName = match ? match[1] : "";
+    const permissionMap = {
+      products: "products",
+      "edit-products": "products",
+      customers: "customers",
+      "edit-customers": "customers",
+      prices: "prices",
+      admins: "admins",
+      limits: "limits",
+      settings: "settings",
+      footer: "footer",
+      archives: "products",
+      cleanup: "cleanup"
+    };
+    const needed = permissionMap[sectionName];
+    const allowed = !!needed && needed !== "cleanup" && adminPermissions.includes(needed);
+    item.classList.toggle("hidden", !allowed);
+  });
+
+  const adminModalTitle = $("adminModal")?.querySelector(".admin-header h2");
+  const adminModalKicker = $("adminModal")?.querySelector(".admin-kicker");
+  const adminWelcomeTitle = $("adminHome")?.querySelector(".admin-welcome strong");
+  const adminWelcomeText = $("adminHome")?.querySelector(".admin-welcome span");
+  if (role === "sales" && !isAdmin) {
+    if (adminModalKicker) adminModalKicker.textContent = "مشکفام فارس";
+    if (adminModalTitle) adminModalTitle.textContent = "⚙️ پنل کارشناس فروش";
+    if (adminWelcomeTitle) adminWelcomeTitle.textContent = "پنل کارشناس فروش";
+    if (adminWelcomeText) adminWelcomeText.textContent = "بخش‌های مجاز از پنل مدیر نرم‌افزار برای شما نمایش داده می‌شود.";
+  } else {
+    if (adminModalKicker) adminModalKicker.textContent = "مشکفام فارس";
+    if (adminModalTitle) adminModalTitle.textContent = "⚙️ پنل مدیر نرم‌افزار";
+    if (adminWelcomeTitle) adminWelcomeTitle.textContent = "مدیریت مشکفام فارس";
+    if (adminWelcomeText) adminWelcomeText.textContent = "یکی از بخش‌های زیر را انتخاب کنید.";
   }
 
   const isSalesRole = role === "sales";
@@ -1316,9 +1360,9 @@ async function openAdmin() {
   }
 
   const role = String(currentUser?.role||"").toLowerCase();
-  const canOpenSettings = role === "sales" && adminPermissions.includes("settings");
+  const canOpenSalesPanel = role === "sales" && adminPermissions.length > 0;
   const canOpenReports = false;
-  if (!isAdmin && !canOpenSettings && !canOpenReports) {
+  if (!isAdmin && !canOpenSalesPanel && !canOpenReports) {
     if (error) {
       error.textContent =
         "❌ این حساب به پنل مدیریت دسترسی ندارد. لطفاً سامانه را از داخل ربات تلگرام و با حساب مدیر باز کنید.";
@@ -1327,8 +1371,10 @@ async function openAdmin() {
     return;
   }
 
-  if (canOpenSettings && !isAdmin) {
-    showAdminSection("settings");
+  if (canOpenSalesPanel && !isAdmin) {
+    // کارشناس همان پنل مدیر را می‌بیند، اما منو و بخش‌ها بر اساس مجوزها فیلتر می‌شوند.
+    await loadAdminData();
+    showAdminHome();
   } else {
     await loadAdminData();
   }
@@ -2757,7 +2803,7 @@ function showAdminHome() {
 }
 
 async function showAdminSection(sectionName) {
-  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",settings:"settings",admins:"admins",archives:"products"};
+  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",settings:"settings",admins:"admins",limits:"limits",archives:"products"};
   const needed=permissionMap[sectionName];
   const roleNow=String(currentUser?.role||"").toLowerCase();
   const isSoftwareAdmin=roleNow==="super_admin" || isAdmin && roleNow==="admin";

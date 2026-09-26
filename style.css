@@ -4519,3 +4519,41 @@ body.login-active .sales-reports-floating-button{display:none!important;}
 .admin-cleanup-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .admin-cleanup-actions .admin-danger-button{flex:1 1 220px}
 @media(max-width:600px){.admin-cleanup-actions{flex-direction:column}.admin-cleanup-actions .admin-danger-button{width:100%}}
+
+
+/* =========================================================
+   MOSHKFAM V1.0.35 — mailbox mobile final positioning + privacy hardening UI
+========================================================= */
+@media(max-width:700px){
+  /* Envelope: one step lower than V1.0.33. */
+  .admin-inbox-floating-button{
+    top:132px!important;
+  }
+
+  /* Mailbox header: new-letter at the far LEFT, date at the far RIGHT, title centered. */
+  #letterInboxModal .letter-inbox-header{
+    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;
+    grid-template-areas:"actions title date"!important;
+  }
+  #letterInboxModal .letter-account-date{
+    grid-area:date!important;
+    justify-self:end!important;
+    text-align:right!important;
+    direction:rtl!important;
+    margin-right:2px!important;
+  }
+  #letterInboxModal .letter-header-actions{
+    grid-area:actions!important;
+    justify-self:start!important;
+    margin-top:0!important;
+    margin-left:2px!important;
+  }
+}
+
+
+/* ===== V1.0.35 — mobile header logo text ===== */
+@media(max-width:600px){
+  /* فقط آرم شرکت در موبایل بماند؛ عنوان و توضیح کنار آرم حذف شوند. */
+  .header .brand > div{display:none!important;}
+  .header .brand{justify-content:flex-start!important;}
+}

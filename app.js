@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.13";
+const APP_VERSION = "V1.0.13";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-05";
@@ -2617,12 +2617,22 @@ function finishBootLoader() {
   const app = document.querySelector(".app");
   const loader = document.getElementById("bootLoader");
 
+  // Keep the page locked while the startup overlay is being removed.
+  // This prevents the brief scrollbar/reflow jump seen on some screens.
   if (app) app.style.visibility = "visible";
-  document.body.classList.remove("booting");
 
   if (loader) {
     loader.classList.add("hide");
-    setTimeout(() => loader.remove(), 300);
+    setTimeout(() => {
+      loader.remove();
+      document.body.classList.remove("booting");
+      document.documentElement.style.overflow = "";
+      document.documentElement.style.height = "";
+    }, 300);
+  } else {
+    document.body.classList.remove("booting");
+    document.documentElement.style.overflow = "";
+    document.documentElement.style.height = "";
   }
 }
 

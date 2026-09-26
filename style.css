@@ -5548,3 +5548,317 @@ body[data-account-role="software-admin"] .header-shopping-actions{
   #letterInboxModal .letter-inbox-header h2{font-size:15px!important;}
   #letterInboxModal .letter-compose-button{padding:7px 7px!important;font-size:9px!important;}
 }
+
+/* =========================================================
+   MOSHKFAM V1.0.56 — FINAL HEADER ONLY
+   Scope: ONLY the main page header.
+   No other page/modal/section is modified.
+========================================================= */
+
+/* Common header layout: clean 2-column CSS Grid. */
+.header{
+  display:grid!important;
+  grid-template-columns:minmax(280px,1fr) minmax(280px,1fr)!important;
+  grid-template-areas:
+    "auth brand"
+    "actions tools"!important;
+  align-items:center!important;
+  gap:12px 24px!important;
+  padding:14px 20px!important;
+  min-height:0!important;
+  position:sticky!important;
+  top:0!important;
+  overflow:visible!important;
+}
+
+.header .brand{
+  grid-area:brand!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-self:end!important;
+  width:auto!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  flex:none!important;
+}
+
+.header .brand img{
+  width:54px!important;
+  height:54px!important;
+  flex:0 0 54px!important;
+}
+
+.header .brand>div{
+  min-width:0!important;
+}
+
+.header .brand h1{
+  margin:0!important;
+  font-size:20px!important;
+  line-height:1.4!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+.header .brand p{
+  margin:3px 0 0!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+/* Login / account area on the LEFT. */
+.header .login-box,
+.header .account{
+  grid-area:auth!important;
+  justify-self:start!important;
+  align-self:start!important;
+  width:min(300px,100%)!important;
+  max-width:300px!important;
+  min-width:0!important;
+  margin:0!important;
+}
+
+/* Login fields: username, password, then login button. */
+body.login-active .header .login-fields{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:7px!important;
+  width:100%!important;
+}
+
+body.login-active .header .login-fields input,
+body.login-active .header .login-fields button{
+  width:100%!important;
+  min-width:0!important;
+  height:38px!important;
+  box-sizing:border-box!important;
+}
+
+body.login-active .header .login-fields input{
+  padding:8px 10px!important;
+  font-size:12px!important;
+}
+
+body.login-active .header .login-fields button{
+  padding:8px 10px!important;
+  font-size:12px!important;
+}
+
+/* Logged-in account card. */
+body:not(.login-active) .header .account{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  padding:8px 10px!important;
+  min-height:52px!important;
+  box-sizing:border-box!important;
+}
+
+/* Action buttons: second row, left side. */
+.header .header-actions{
+  grid-area:actions!important;
+  justify-self:start!important;
+  align-self:center!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+  width:auto!important;
+  margin:0!important;
+}
+
+.header .header-actions .admin-button,
+.header .header-actions .logout-button{
+  min-height:38px!important;
+  padding:8px 13px!important;
+  font-size:12px!important;
+  box-sizing:border-box!important;
+}
+
+/* Role-specific tools: second row, right side. */
+.header .header-shopping-actions{
+  grid-area:tools!important;
+  justify-self:end!important;
+  align-self:center!important;
+  position:static!important;
+  inset:auto!important;
+  width:auto!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  flex-direction:row!important;
+  gap:10px!important;
+  direction:ltr!important;
+  pointer-events:auto!important;
+}
+
+.header .header-shopping-actions>button{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  margin:0!important;
+  flex:0 0 auto!important;
+}
+
+/* Representative: envelope + cart + order history. */
+body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions{
+  justify-content:flex-end!important;
+}
+
+body:not(.login-active)[data-account-role="customer"] .header .orders-floating-button,
+body:not(.login-active)[data-account-role="customer"] .header .cart-floating-button,
+body:not(.login-active)[data-account-role="customer"] .header .admin-inbox-floating-button{
+  width:46px!important;
+  height:46px!important;
+  flex:0 0 46px!important;
+}
+
+/* Sales: envelope only in tools; sales panel remains in actions. */
+body:not(.login-active)[data-account-role="sales"] .header .header-shopping-actions{
+  justify-content:flex-end!important;
+}
+
+/* Software admin: no customer/sales tool row. */
+body:not(.login-active)[data-account-role="software-admin"] .header .header-shopping-actions{
+  display:none!important;
+}
+
+/* Never let hidden role controls reserve layout space. */
+.header .hidden{
+  display:none!important;
+}
+
+/* -------------------------
+   MOBILE
+------------------------- */
+@media(max-width:700px){
+  .header{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-areas:
+      "auth brand"
+      "actions tools"!important;
+    gap:8px 10px!important;
+    padding:10px 12px!important;
+  }
+
+  .header .brand{
+    justify-self:end!important;
+    max-width:100%!important;
+  }
+
+  .header .brand img{
+    width:48px!important;
+    height:48px!important;
+    flex-basis:48px!important;
+  }
+
+  .header .brand h1{
+    font-size:16px!important;
+  }
+
+  .header .brand p{
+    font-size:9px!important;
+  }
+
+  .header .brand .app-version{
+    font-size:8px!important;
+  }
+
+  .header .login-box,
+  .header .account{
+    width:100%!important;
+    max-width:100%!important;
+  }
+
+  body.login-active .header .login-fields{
+    gap:5px!important;
+  }
+
+  body.login-active .header .login-fields input,
+  body.login-active .header .login-fields button{
+    height:34px!important;
+    font-size:11px!important;
+  }
+
+  .header .header-actions{
+    justify-self:start!important;
+    width:auto!important;
+    max-width:100%!important;
+    gap:5px!important;
+  }
+
+  .header .header-actions .admin-button,
+  .header .header-actions .logout-button{
+    min-height:34px!important;
+    padding:7px 9px!important;
+    font-size:10px!important;
+  }
+
+  .header .header-shopping-actions{
+    justify-self:end!important;
+    width:auto!important;
+    max-width:100%!important;
+    gap:7px!important;
+  }
+
+  body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{
+    width:42px!important;
+    height:42px!important;
+    flex-basis:42px!important;
+  }
+}
+
+@media(max-width:420px){
+  .header{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    gap:7px 8px!important;
+    padding:8px 9px!important;
+  }
+
+  .header .brand img{
+    width:44px!important;
+    height:44px!important;
+    flex-basis:44px!important;
+  }
+
+  .header .brand h1{font-size:14px!important;}
+  .header .brand p{font-size:8px!important;}
+
+  body.login-active .header .login-fields input,
+  body.login-active .header .login-fields button{
+    height:32px!important;
+    font-size:10px!important;
+  }
+
+  .header .header-actions .admin-button,
+  .header .header-actions .logout-button{
+    min-height:32px!important;
+    padding:6px 8px!important;
+    font-size:9px!important;
+  }
+
+  body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{
+    width:39px!important;
+    height:39px!important;
+    flex-basis:39px!important;
+  }
+}
+
+/* Login state: only the authentication block and brand occupy the header. */
+body.login-active .header{
+  grid-template-areas:"auth brand"!important;
+  grid-template-rows:auto!important;
+}
+body.login-active .header .header-actions,
+body.login-active .header .header-shopping-actions{
+  display:none!important;
+}

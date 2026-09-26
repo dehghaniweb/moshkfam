@@ -5665,7 +5665,7 @@ body[data-account-role="software-admin"] .header-shopping-actions{
 body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions{
   display:grid!important;
   grid-template-columns:auto auto 1fr!important;
-  grid-template-areas:"cart orders inbox"!important;
+  grid-template-areas:"orders cart inbox"!important;
   direction:ltr!important;
   justify-content:stretch!important;
   align-items:center!important;
@@ -5704,7 +5704,7 @@ body.login-active .header .login-box{display:flex!important;}
     padding:10px 12px!important;
   }
   .header .brand{justify-self:end!important;}
-  .header .brand img{width:84px!important;height:84px!important;flex-basis:84px!important;}
+  .header .brand img{width:94px!important;height:94px!important;flex-basis:94px!important;}
   .header .brand h1{font-size:17px!important;}
   .header .brand p{font-size:9px!important;}
   .header .login-box,.header .account{width:100%!important;max-width:300px!important;}
@@ -5716,7 +5716,7 @@ body.login-active .header .login-box{display:flex!important;}
 }
 @media(max-width:420px){
   .header{min-height:170px!important;gap:7px 8px!important;padding:10px 9px!important;}
-  .header .brand img{width:82px!important;height:82px!important;flex-basis:82px!important;}
+  .header .brand img{width:92px!important;height:92px!important;flex-basis:92px!important;}
   .header .brand h1{font-size:15px!important;}
   .header .brand p{font-size:8px!important;}
   .header .login-box,.header .account{max-width:270px!important;}

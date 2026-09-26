@@ -16,10 +16,10 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.6";
+const APP_VERSION = "V1.0.7";
 (async function forceClearCacheFromApp() {
   try {
-    const version = "moshkfam-app-20260926-05";
+    const version = "moshkfam-app-20260926-06";
     const flag = "moshkfam_cache_cleared_" + version;
 
     if (sessionStorage.getItem(flag)) return;
@@ -2142,13 +2142,18 @@ async function loadLetterRecipients(){
         const btn=document.createElement('button');
         btn.type='button'; btn.className='letter-recipient-option'; btn.dataset.id=id;
         btn.dataset.search=`${name} ${user}`.toLocaleLowerCase('fa-IR');
-        btn.innerHTML=`<span class="recipient-option-avatar">👤</span><span class="recipient-option-text"><span class="recipient-option-name">${escapeHtml(name)}</span><span class="recipient-option-user">${escapeHtml(user)}</span></span><span class="recipient-option-number">${formatNumber(index+1)}</span>`;
+        btn.innerHTML=`<span class="recipient-option-avatar">👤</span><span class="recipient-option-text"><span class="recipient-option-name">نماینده ${formatNumber(index+1)} · ${escapeHtml(name)}</span><span class="recipient-option-user">${escapeHtml(user)}</span></span><span class="recipient-option-number">${formatNumber(index+1)}</span>`;
         btn.onclick=()=>selectLetterRecipient(id);
         optionBox.appendChild(btn);
       }
     });
     sel.disabled=false;
     sel.style.pointerEvents='auto';
+    const picker=$('letterRecipientPicker');
+    const list=picker?.querySelector('.letter-recipient-list');
+    if(list){list.classList.add('hidden');list.style.display='none';}
+    const trigger=$('letterRecipientTrigger');
+    if(trigger)trigger.setAttribute('aria-expanded','false');
     const syncRecipientSelection=()=>{
       const selected=sel.options[sel.selectedIndex];
       const value=String(selected?.value || selected?.dataset?.customerId || '').trim();

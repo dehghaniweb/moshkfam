@@ -37,7 +37,7 @@
 
 <script>
   // مرجع واحد شماره نسخه برای تمام بخش‌های برنامه
-  window.MOSHKFAM_VERSION = "V1.0.42";
+  window.MOSHKFAM_VERSION = "V1.0.45";
 </script>
 
 <!--
@@ -443,8 +443,14 @@
         <h2>⚙️ پنل مدیر نرم‌افزار</h2>
       </div>
       <div class="admin-header-status">
-        <div id="adminLoading" class="admin-loading-inline">در حال دریافت اطلاعات...</div>
         <div id="adminAccountInfo" class="admin-account-mini admin-account-top"></div>
+      </div>
+    </div>
+
+    <div id="adminLoadingOverlay" class="admin-loading-overlay hidden" aria-live="polite">
+      <div class="admin-loading-box">
+        <span class="admin-loading-spinner">⏳</span>
+        <span>در حال دریافت اطلاعات...</span>
       </div>
     </div>
 
@@ -452,10 +458,6 @@
 
     <!-- HOME -->
     <div id="adminHome" class="admin-view">
-      <div class="admin-welcome">
-        <strong>مدیریت مشکفام فارس</strong>
-        <span>یکی از بخش‌های زیر را انتخاب کنید.</span>
-      </div>
       <div class="admin-menu">
         <button class="admin-menu-item" onclick="showAdminSection('products')"><span>📦</span><b>اضافه و حذف محصول</b><small>ایجاد محصول جدید یا حذف محصول</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('edit-products')"><span>✏️</span><b>ویرایش محصول</b><small>ویرایش مشخصات، قیمت و فایل‌های محصول</small></button>
@@ -464,7 +466,6 @@
         <button class="admin-menu-item" onclick="showAdminSection('prices')"><span>💰</span><b>قیمت اختصاصی مشتری</b><small>تعیین قیمت مخصوص هر نماینده</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('admins')"><span>🛡️</span><b>مدیران و کارشناسان فروش</b><small>مدیریت مدیران نرم‌افزار و کارشناسان فروش</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('limits')"><span>📊</span><b>محدودیت‌ها و مصرف سرویس‌ها</b><small>گزارش مصرف امروز، سقف روزانه و وضعیت سرویس‌ها</small></button>
-        <button class="admin-menu-item" onclick="showAdminSection('settings')"><span>⚙️</span><b>پنل تنظیمات</b><small>تنظیمات قابل دسترسی کارشناس فروش</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('footer')"><span>🏢</span><b>اطلاعات پایین صفحه</b><small>نام شرکت، تلفن و آدرس</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('archives')"><span>🗄️</span><b>بایگانی عکس‌ها</b><small>مشاهده و بازگردانی تصاویر قبلی</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('cleanup')"><span>🧹</span><b>مدیریت نامه‌ها و سبدهای خرید</b><small>گزارش نامه‌ها و پاک‌سازی کامل داده‌های آزمایشی</small></button>
@@ -587,7 +588,6 @@
             <label><input type="checkbox" id="newAdminPerm-prices" checked> 💰 قیمت‌های اختصاصی</label>
             <label><input type="checkbox" id="newAdminPerm-requests" checked> 📨 سفارش‌ها و یادداشت‌ها</label>
             <label><input type="checkbox" id="newAdminPerm-footer" checked> 🏢 اطلاعات شرکت</label>
-            <label><input type="checkbox" id="newAdminPerm-settings"> ⚙️ پنل تنظیمات</label>
           </div></div>
           <button type="button" class="admin-primary admin-add-user-button" onclick="createAdminUser(); return false;">🛡️ افزودن حساب</button>
         </div>
@@ -634,19 +634,6 @@
     </section>
 
     <!-- FOOTER -->
-    <section id="adminSection-settings" class="admin-view admin-inner-view hidden">
-      <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3 class="admin-section-title">⚙️ پنل تنظیمات</h3>
-      <p class="admin-section-help">این بخش برای کارشناس فروش فعال می‌شود و فقط با مجوز مدیر اصلی قابل استفاده است.</p>
-      <div class="admin-edit-grid">
-        <label>نام شرکت<input id="salesSettingCompanyName"></label>
-        <label>تلفن<input id="salesSettingPhone"></label>
-        <label class="admin-edit-grid-wide-label">متن زیر نام شرکت<textarea id="salesSettingFooterText"></textarea></label>
-        <label class="admin-edit-grid-wide-label">آدرس<textarea id="salesSettingAddress"></textarea></label>
-      </div>
-      <button class="admin-primary" onclick="saveSalesSettings()">💾 ذخیره تنظیمات</button>
-    </section>
-
     <section id="adminSection-footer" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3>🏢 اطلاعات پایین صفحه</h3>

@@ -4820,3 +4820,89 @@ body[data-account-role="software-admin"] .header-shopping-actions{
   #letterInboxModal .letter-header-actions{justify-self:end!important;}
   #letterInboxModal .letter-compose-button{font-size:11px!important;padding:8px 10px!important;}
 }
+
+
+/* V1.0.44 — unread/read mailbox appearance */
+#letterInboxModal .letter-item{background:#fff!important;border-color:#e2e8f0!important;opacity:1!important;}
+#letterInboxModal .letter-item.unread{background:#eff6ff!important;border-color:#bfdbfe!important;box-shadow:0 5px 16px rgba(59,130,246,.10)!important;}
+#letterInboxModal .letter-item.unread:before{background:#2563eb!important;}
+#letterInboxModal .letter-item:not(.unread){background:#fff!important;border-color:#e2e8f0!important;}
+#letterInboxModal .letter-item.type-cart.unread{background:#eff6ff!important;border-color:#bfdbfe!important;}
+#letterInboxModal .letter-item.type-cart:not(.unread){background:#fff!important;border-color:#e2e8f0!important;}
+#letterInboxModal .letter-item.type-note.unread,#letterInboxModal .letter-item.type-order.unread,#letterInboxModal .letter-item.type-letter.unread,#letterInboxModal .letter-item.type-reply.unread{background:#eff6ff!important;border-color:#bfdbfe!important;}
+#letterInboxModal .letter-item.type-note:not(.unread),#letterInboxModal .letter-item.type-order:not(.unread),#letterInboxModal .letter-item.type-letter:not(.unread),#letterInboxModal .letter-item.type-reply:not(.unread){background:#fff!important;border-color:#e2e8f0!important;}
+
+
+/* =========================================================
+   V1.0.44 — final mobile mailbox tool position + desktop/mobile inbox header
+========================================================= */
+/* Keep the mailbox row comfortably between the logo and account card on mobile. */
+@media(max-width:700px){
+  body:not(.login-active) .header-shopping-actions{
+    top:auto!important;
+    bottom:62px!important;
+    height:48px!important;
+    min-height:48px!important;
+    z-index:70!important;
+  }
+  body:not(.login-active) .header-shopping-actions .admin-inbox-floating-button{
+    position:static!important;
+    top:auto!important;
+    bottom:auto!important;
+    right:auto!important;
+    left:auto!important;
+    transform:none!important;
+    margin-left:auto!important;
+    width:44px!important;
+    height:44px!important;
+  }
+}
+
+/* Mailbox header: date on LEFT, title in CENTER, new-letter on RIGHT. */
+#letterInboxModal .letter-inbox-header{
+  direction:ltr!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;
+  grid-template-areas:"date title actions"!important;
+  align-items:center!important;
+  width:100%!important;
+}
+#letterInboxModal .letter-account-date{
+  grid-area:date!important;
+  justify-self:start!important;
+  text-align:left!important;
+  direction:rtl!important;
+}
+#letterInboxModal .letter-header-main{display:contents!important;}
+#letterInboxModal .letter-header-title{
+  grid-area:title!important;
+  justify-self:center!important;
+  text-align:center!important;
+  direction:rtl!important;
+}
+#letterInboxModal .letter-header-actions{
+  grid-area:actions!important;
+  justify-self:end!important;
+  text-align:right!important;
+  direction:rtl!important;
+  margin:0!important;
+}
+#letterInboxModal .letter-compose-button{white-space:nowrap!important;}
+@media(max-width:700px){
+  #letterInboxModal .letter-inbox-header{
+    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;
+    padding:8px 10px!important;
+    min-height:78px!important;
+  }
+  #letterInboxModal .letter-account-date{justify-self:start!important;text-align:left!important;}
+  #letterInboxModal .letter-header-actions{justify-self:end!important;text-align:right!important;}
+}
+
+
+/* V1.0.45 — admin loading overlay */
+#adminModal .admin-card{position:relative!important;}
+#adminLoadingOverlay.admin-loading-overlay{position:absolute!important;inset:0!important;z-index:120!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:24px!important;background:rgba(255,255,255,.72)!important;backdrop-filter:blur(3px)!important;}
+#adminLoadingOverlay.admin-loading-overlay.hidden{display:none!important;}
+#adminLoadingOverlay .admin-loading-box{display:flex;align-items:center;gap:10px;padding:12px 18px;border:1px solid #bbf7d0;border-radius:14px;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);color:#166534;font-size:13px;font-weight:800;box-shadow:0 8px 24px rgba(22,101,52,.12);direction:rtl;}
+#adminLoadingOverlay .admin-loading-spinner{font-size:18px;line-height:1;}
+@media(max-width:700px){#adminLoadingOverlay .admin-loading-box{font-size:12px;padding:10px 14px;}}

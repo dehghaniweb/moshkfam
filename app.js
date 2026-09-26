@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.42";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.45";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -63,7 +63,7 @@ let isAdmin = false;
 let selectedCustomer = null;
 let cartItems = {};
 let adminPermissions = [];
-const ADMIN_PERMISSION_KEYS = ["products","customers","prices","requests","footer","settings"];
+const ADMIN_PERMISSION_KEYS = ["products","customers","prices","requests","footer"];
 
 
 
@@ -685,7 +685,6 @@ function updateAccountUI() {
       prices: "prices",
       admins: "admins",
       limits: "limits",
-      settings: "settings",
       footer: "footer",
       archives: "products",
       cleanup: "cleanup"
@@ -733,6 +732,14 @@ function updateAccountUI() {
   const inboxButton = $("letterInboxButton");
   if (inboxButton) {
     inboxButton.classList.toggle("hidden", !currentUser || isSoftwareAdmin);
+    // Software admin must never see the mailbox button, even if an older
+    // stylesheet/cache tries to restore its position.
+    inboxButton.style.display = (currentUser && !isSoftwareAdmin) ? "" : "none";
+  }
+
+  const headerTools = $("headerShoppingActions");
+  if (headerTools) {
+    headerTools.style.display = isSoftwareAdmin ? "none" : "";
   }
 
   const mobileAccount = $("mobileAccountInfo");
@@ -1397,9 +1404,9 @@ function closeAdmin() {
 }
 
 async function loadAdminData() {
-  const loading = $("adminLoading");
+  const loading = $("adminLoadingOverlay");
   const error = $("adminError");
-  if (loading) { loading.classList.remove("hidden"); loading.textContent = "⏳  در حال دریافت اطلاعات..."; }
+  if (loading) loading.classList.remove("hidden");
   const accountInfo = $("adminAccountInfo");
   if (accountInfo) accountInfo.classList.add("hidden");
   if (error) { error.classList.add("hidden"); }
@@ -2036,7 +2043,7 @@ async function loadAdminUsers(){
           <label class="password-field">رمز جدید<div class="password-input-wrap"><input id="apass-${escapeHtml(key)}" type="password" placeholder="برای تغییر رمز وارد کنید" autocomplete="new-password"><button type="button" class="password-eye" id="eye-apass-${escapeHtml(key)}" onclick="togglePasswordVisibility('apass-${escapeHtml(key)}','eye-apass-${escapeHtml(key)}'); return false;" aria-label="نمایش رمز جدید" title="نمایش رمز جدید">👁️</button></div></label>
           <label>وضعیت<select id="astatus-${escapeHtml(key)}"><option value="active" ${a.status!=="disabled"?'selected':''}>فعال</option><option value="disabled" ${a.status==="disabled"?'selected':''}>غیرفعال</option></select></label>
         </div>
-        <div class="admin-permission-box"><strong>سطح دسترسی حساب</strong><div class="admin-permission-grid">${ADMIN_PERMISSION_KEYS.map(k=>`<label><input type="checkbox" id="aperm-${escapeHtml(key)}-${k}" ${perms.includes(k)?'checked':''}> ${({products:'محصولات',customers:'نماینده‌ها',prices:'قیمت‌های اختصاصی',requests:'سفارش‌ها و یادداشت‌ها',footer:'اطلاعات شرکت',settings:'پنل تنظیمات'})[k]}</label>`).join('')}</div></div>
+        <div class="admin-permission-box"><strong>سطح دسترسی حساب</strong><div class="admin-permission-grid">${ADMIN_PERMISSION_KEYS.map(k=>`<label><input type="checkbox" id="aperm-${escapeHtml(key)}-${k}" ${perms.includes(k)?'checked':''}> ${({products:'محصولات',customers:'نماینده‌ها',prices:'قیمت‌های اختصاصی',requests:'سفارش‌ها و یادداشت‌ها',footer:'اطلاعات شرکت'})[k]}</label>`).join('')}</div></div>
         <div class="admin-system-actions">
           <button type="button" class="admin-save-customer-button" data-update-admin="${escapeHtml(key)}">💾 ذخیره مدیر</button>
           <button type="button" class="admin-danger admin-delete-admin-button" data-delete-admin="${escapeHtml(key)}">🗑️ حذف مدیر</button>
@@ -2777,7 +2784,7 @@ window.appDialogCancel = appDialogCancel;
 
 async function loadServiceLimits(){
   const panel=$("serviceLimitsPanel"); if(!panel)return;
-  panel.innerHTML='<div class="limits-loading">در حال دریافت گزارش مصرف...</div>';
+  panel.innerHTML='<div class="limits-loading">⏳ در حال دریافت گزارش واقعی سامانه...</div>';
   try{
     const r=await postJson('/api/admin/service-limits',{});
     const services=Array.isArray(r?.services)?r.services:[];
@@ -2785,10 +2792,10 @@ async function loadServiceLimits(){
     const cards=services.map(x=>{
       const pct=Number.isFinite(Number(x.percentage))?Math.max(0,Math.min(100,Number(x.percentage))):0;
       const recorded=x.recorded===true;
-      return `<div class="limit-service-card"><h4>${escapeHtml(x.icon||'◉')} ${escapeHtml(x.name||'سرویس')}</h4><div class="limit-metric"><span>امروز</span><b>${escapeHtml(x.today_display||'ثبت نشده')}</b></div><div class="limit-metric"><span>سقف روزانه</span><b>${escapeHtml(x.cap_display||'تعریف نشده')}</b></div>${recorded?`<div class="limit-progress"><span style="width:${pct}%"></span></div><div class="limit-metric"><span>درصد مصرف</span><b>${escapeHtml(String(pct))}%</b></div>`:''}<span class="limit-status ${recorded?'recorded':''}">${recorded?'✓ مصرف واقعی ثبت شده':'ℹ️ داده مصرف واقعی ثبت نشده'}</span>${x.note?`<p>${escapeHtml(x.note)}</p>`:''}</div>`;
+      return `<div class="limit-service-card"><h4>${escapeHtml(x.icon||'◉')} ${escapeHtml(x.name||'سرویس')}</h4><div class="limit-metric"><span>وضعیت</span><b>${escapeHtml(x.today_display||'—')}</b></div><div class="limit-metric"><span>اطلاعات ثبت‌شده</span><b>${escapeHtml(x.cap_display||'—')}</b></div>${recorded?`<div class="limit-progress"><span style="width:${pct}%"></span></div><div class="limit-metric"><span>درصد</span><b>${escapeHtml(String(pct))}%</b></div>`:''}<span class="limit-status ${recorded?'recorded':''}">${recorded?'✓ داده واقعی':'ℹ️ وضعیت سرویس'}</span>${x.note?`<p>${escapeHtml(x.note)}</p>`:''}</div>`;
     }).join('');
-    const routeHtml=routes.length?`<div class="limit-service-card limit-routes"><h4>🔝 ۱۰ مسیر API پرترافیک</h4>${routes.slice(0,10).map((x,i)=>`<div class="limit-route-row"><span>${escapeHtml(faDigits(i+1))}. ${escapeHtml(x.route||'—')}</span><b>${escapeHtml(x.count_display||'ثبت نشده')}</b></div>`).join('')}</div>`:'';
-    panel.innerHTML=cards+routeHtml||'<div class="limits-loading">گزارش مصرفی موجود نیست.</div>';
+    const routeHtml=routes.length?`<div class="limit-service-card limit-routes"><h4>🔝 مسیرهای ثبت‌شده</h4>${routes.slice(0,10).map((x,i)=>`<div class="limit-route-row"><span>${escapeHtml(faDigits(i+1))}. ${escapeHtml(x.route||'—')}</span><b>${escapeHtml(x.count_display||'—')}</b></div>`).join('')}</div>`:'';
+    panel.innerHTML=(cards+routeHtml)||'<div class="limits-loading">گزارش واقعی در دسترس نیست.</div>';
   }catch(e){panel.innerHTML=`<div class="message error">دریافت گزارش محدودیت‌ها انجام نشد.<br>${escapeHtml(e.message||'خطای نامشخص')}</div>`;}
 }
 
@@ -2801,12 +2808,13 @@ function showAdminHome() {
 }
 
 async function showAdminSection(sectionName) {
-  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",settings:"settings",admins:"admins",limits:"limits",archives:"products"};
+  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",admins:"admins",limits:"limits",archives:"products"};
   const needed=permissionMap[sectionName];
   const roleNow=String(currentUser?.role||"").toLowerCase();
   const isSoftwareAdmin=roleNow==="super_admin" || isAdmin && roleNow==="admin";
   const salesCanViewReports = false;
-  if(sectionName==="cleanup" && roleNow!=="super_admin"){
+  const primaryNow = !!isAdmin || roleNow === "super_admin";
+  if(sectionName==="cleanup" && !primaryNow){
     appAlert("❌ این بخش فقط برای مدیر نرم‌افزار است.");
     return;
   }
@@ -2836,10 +2844,6 @@ async function showAdminSection(sectionName) {
     if (sectionName === "requests") {
       await loadAdminRequests();
       await loadAdminInboxCount();
-    }
-
-    if (sectionName === "settings") {
-      await loadSiteSettings();
     }
 
     if (sectionName === "admins") {

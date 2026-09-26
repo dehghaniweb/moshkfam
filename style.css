@@ -4174,3 +4174,192 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
 
 /* V1.0.27 — remove the duplicate sender line under the date. */
 .letter-logged-in-sender{display:none!important;}
+
+
+/* =========================================================
+   V1.0.28 — MOBILE HEADER + LETTER THREAD DISPLAY
+   Only the requested mobile/header/mail-thread fixes.
+========================================================= */
+
+/* The clicked letter must switch from the list to the full conversation. */
+#letterInboxModal .letter-inbox-modal-card.thread-open .letter-inbox-layout{
+  display:block!important;
+  height:auto!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+#letterInboxModal .letter-inbox-modal-card.thread-open .letter-list{
+  display:none!important;
+}
+#letterInboxModal .letter-inbox-modal-card.thread-open .letter-thread{
+  display:flex!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+}
+#letterInboxModal .letter-inbox-modal-card.thread-open .thread-messages{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  direction:rtl!important;
+}
+
+/* Keep the application version sourced from one central value. */
+.app-version{direction:ltr!important;white-space:nowrap!important;}
+
+/* Compact mobile main header: same item directions as desktop, only smaller. */
+@media(max-width:700px){
+  .header{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    align-items:flex-start!important;
+    justify-content:space-between!important;
+    direction:rtl!important;
+    gap:8px!important;
+    padding:8px 10px 66px!important;
+    min-height:0!important;
+    overflow:visible!important;
+  }
+  .brand{
+    order:1!important;
+    flex:0 1 52%!important;
+    max-width:52%!important;
+    min-width:0!important;
+    margin:0!important;
+    gap:6px!important;
+    align-items:center!important;
+  }
+  .brand img{width:42px!important;height:42px!important;padding:3px!important;border-radius:10px!important;}
+  .brand h1{font-size:13px!important;line-height:1.3!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  .brand p{font-size:8px!important;line-height:1.35!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin-top:1px!important;}
+  .brand .app-version{font-size:8px!important;margin-top:2px!important;}
+
+  .login-box{
+    order:2!important;
+    flex:0 1 44%!important;
+    width:44%!important;
+    max-width:44%!important;
+    min-width:0!important;
+    margin:0!important;
+    align-self:flex-start!important;
+  }
+  .login-fields{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:4px!important;
+    width:100%!important;
+  }
+  .login-fields input{
+    width:100%!important;
+    min-width:0!important;
+    height:32px!important;
+    padding:5px 6px!important;
+    font-size:10px!important;
+  }
+  .login-fields button{
+    grid-column:1 / -1!important;
+    justify-self:start!important;
+    width:auto!important;
+    min-width:54px!important;
+    height:30px!important;
+    padding:4px 9px!important;
+    font-size:10px!important;
+  }
+
+  .account{
+    order:2!important;
+    flex:0 1 48%!important;
+    max-width:48%!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:5px 7px!important;
+    font-size:10px!important;
+  }
+  .account .avatar{width:28px!important;height:28px!important;font-size:15px!important;}
+  .account-main{gap:5px!important;min-width:0!important;}
+  .account strong,.account span{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+
+  .header-actions{
+    order:3!important;
+    width:auto!important;
+    margin:0!important;
+    justify-content:flex-start!important;
+    align-items:center!important;
+    gap:5px!important;
+  }
+  .header-actions .logout-button{
+    min-width:52px!important;
+    width:auto!important;
+    min-height:30px!important;
+    height:30px!important;
+    padding:4px 8px!important;
+    font-size:10px!important;
+    border-radius:8px!important;
+  }
+  .header-actions .admin-button{height:30px!important;padding:4px 8px!important;font-size:10px!important;}
+
+  /* Do not alter the requested left/right direction of the three tools. */
+  .header-shopping-actions{
+    order:4!important;
+    position:absolute!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    width:100%!important;
+    height:54px!important;
+    display:block!important;
+  }
+  .header-shopping-actions .admin-inbox-floating-button{right:10px!important;left:auto!important;bottom:5px!important;top:auto!important;width:42px!important;height:42px!important;}
+  .header-shopping-actions .cart-floating-button{right:auto!important;left:50%!important;bottom:5px!important;top:auto!important;transform:translateX(-50%)!important;width:42px!important;height:42px!important;}
+  .header-shopping-actions .orders-floating-button{right:auto!important;left:10px!important;bottom:5px!important;top:auto!important;width:42px!important;height:42px!important;}
+
+  /* Mobile mailbox header: date left, title centered, new-letter right. */
+  #letterInboxModal .letter-inbox-header{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;
+    grid-template-areas:"date title actions"!important;
+    align-items:start!important;
+    gap:6px!important;
+    direction:ltr!important;
+    padding:4px 2px 8px!important;
+  }
+  #letterInboxModal .letter-account-date{
+    grid-area:date!important;
+    order:initial!important;
+    width:auto!important;
+    position:static!important;
+    text-align:left!important;
+    direction:rtl!important;
+    justify-self:start!important;
+  }
+  #letterInboxModal .letter-header-main{
+    grid-area:title!important;
+    order:initial!important;
+    width:auto!important;
+    min-width:0!important;
+    position:static!important;
+    direction:rtl!important;
+    justify-self:center!important;
+  }
+  #letterInboxModal .letter-header-title{justify-content:center!important;text-align:center!important;gap:4px!important;}
+  #letterInboxModal .letter-mail-icon{font-size:20px!important;}
+  #letterInboxModal .letter-header-title h2{font-size:15px!important;line-height:1.35!important;margin:0!important;white-space:nowrap!important;}
+  #letterInboxModal .letter-header-title p{display:none!important;}
+  #letterInboxModal .letter-header-inbox-icon{font-size:9px!important;padding:4px 6px!important;margin-top:3px!important;}
+  #letterInboxModal .letter-header-actions{
+    grid-area:actions!important;
+    position:static!important;
+    order:initial!important;
+    justify-self:end!important;
+    padding:0!important;
+    margin-top:30px!important;
+    direction:rtl!important;
+  }
+  #letterInboxModal .letter-compose-button{font-size:10px!important;padding:7px 8px!important;white-space:nowrap!important;}
+  #letterInboxModal .letter-inbox-modal-card>.close{right:8px!important;left:auto!important;top:7px!important;}
+  #letterInboxModal .letter-filters{grid-template-columns:1fr 1fr!important;gap:6px!important;}
+}

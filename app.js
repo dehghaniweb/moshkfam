@@ -16,10 +16,10 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.7";
+const APP_VERSION = "V1.0.6";
 (async function forceClearCacheFromApp() {
   try {
-    const version = "moshkfam-app-20260926-06";
+    const version = "moshkfam-app-20260926-05";
     const flag = "moshkfam_cache_cleared_" + version;
 
     if (sessionStorage.getItem(flag)) return;
@@ -691,20 +691,8 @@ function updateAccountUI() {
 
 
 async function loadProductDetailGallery(productId){
-  const box=document.getElementById(`product-detail-gallery-${Number(productId)}`);
-  if(!box)return;
-  try{
-    const r=await get(`/api/product-detail-images?product_id=${encodeURIComponent(productId)}`);
-    const images=Array.isArray(r?.images)?r.images:[];
-    if(!images.length){box.innerHTML="";return;}
-    box.innerHTML=`<div class="product-gallery-grid">${images.map((im,i)=>{
-      const description=String(im.caption ?? im.description ?? im.title ?? "").trim();
-      return `<figure class="product-gallery-item"><img src="${escapeHtml(im.file_url||"")}" alt="${escapeHtml(description||"تصویر محصول")}" loading="lazy"><figcaption>${escapeHtml(description||"توضیحی برای این تصویر ثبت نشده است.")}</figcaption></figure>`;
-    }).join("")}</div>`;
-  }catch(e){
-    console.warn("Product gallery:",e);
-    box.innerHTML="";
-  }
+  const box=document.getElementById(`product-detail-gallery-${Number(productId)}`); if(!box)return;
+  try{const r=await get(`/api/product-detail-images?product_id=${encodeURIComponent(productId)}`); const images=Array.isArray(r?.images)?r.images:[]; if(!images.length){box.innerHTML="";return;} box.innerHTML=`<div class="product-gallery-grid">${images.map((im,i)=>`<figure class="product-gallery-item"><img src="${escapeHtml(im.file_url||"")}" alt="${escapeHtml(im.caption||"تصویر محصول")}" loading="lazy"><figcaption>${escapeHtml(im.caption||"")}</figcaption></figure>`).join("")}</div>`;}catch(e){console.warn("Product gallery:",e);box.innerHTML="";}
 }
 
 async function loadProducts() {
@@ -1533,10 +1521,10 @@ async function uploadAdminProductGalleryImage(productId){
   const fd=new FormData(); fd.append("product_id",String(productId)); fd.append("caption",captionInput?.value||""); fd.append("file",fileInput.files[0],fileInput.files[0].name);
   try{await apiRequest("/api/admin/upload-product-detail-image",{method:"POST",body:fd}); alert("✅ تصویر جزئیات اضافه شد."); fileInput.value=""; if(captionInput)captionInput.value=""; await loadAdminProductGallery(productId);}catch(e){alert("❌ خطا در آپلود تصویر جزئیات:\n"+e.message);}
 }
-async function saveAdminProductGalleryCaption(id,productId){const input=document.getElementById(`detail-cap-${Number(id)}`);try{await postJson("/api/admin/update-product-detail-image",{id:Number(id),caption:input?.value||""});alert("✅ توضیحات تصویر ذخیره شد.");}catch(e){alert("❌ خطا:\n"+e.message);}}
+async function saveAdminProductGalleryCaption(id,productId){const input=document.getElementById(`detail-cap-${Number(id)}`);try{await postJson("/api/admin/update-product-detail-image",{id:Number(id),caption:input?.value||""});alert("✅ عنوان تصویر ذخیره شد.");}catch(e){alert("❌ خطا:\n"+e.message);}}
 async function replaceAdminProductGalleryImage(id,productId){const input=document.getElementById(`detail-replace-${Number(id)}`);if(!input?.files?.length)return alert("لطفاً تصویر جدید را انتخاب کنید.");const fd=new FormData();fd.append("id",String(id));fd.append("file",input.files[0],input.files[0].name);try{await apiRequest("/api/admin/replace-product-detail-image",{method:"POST",body:fd});alert("✅ تصویر جایگزین شد.");await loadAdminProductGallery(productId);}catch(e){alert("❌ خطا در جایگزینی:\n"+e.message);}}
 async function deleteAdminProductGalleryImage(id,productId){if(!(await appConfirm("این تصویر به بایگانی منتقل و از جزئیات محصول حذف شود؟")))return;try{await postJson("/api/admin/delete-product-detail-image",{id:Number(id)});alert("✅ تصویر بایگانی شد.");await loadAdminProductGallery(productId);}catch(e){alert("❌ خطا:\n"+e.message);}}
-async function loadAdminProductGallery(productId){const wrap=document.getElementById(`admin-detail-images-${Number(productId)}`);if(!wrap)return;try{const r=await get(`/api/product-detail-images?product_id=${encodeURIComponent(productId)}`);const images=Array.isArray(r?.images)?r.images:[];const list=wrap.querySelector('.admin-detail-gallery-list');list.innerHTML=`<div class="admin-detail-upload"><input type="file" id="detail-file-${Number(productId)}" accept="image/*"><input id="detail-caption-${Number(productId)}" placeholder="توضیحات تصویر را وارد کنید"><button type="button" onclick="uploadAdminProductGalleryImage(${Number(productId)});return false;">➕ افزودن تصویر</button></div>${images.length?images.map(im=>`<div class="admin-gallery-row"><img src="${escapeHtml(im.file_url||"")}" alt=""><div class="admin-gallery-fields"><input id="detail-cap-${Number(im.id)}" value="${escapeHtml(im.caption||"")}" placeholder="توضیحات تصویر را وارد کنید"><div><button type="button" onclick="saveAdminProductGalleryCaption(${Number(im.id)},${Number(productId)});return false;">💾 عنوان</button><input type="file" id="detail-replace-${Number(im.id)}" accept="image/*"><button type="button" onclick="replaceAdminProductGalleryImage(${Number(im.id)},${Number(productId)});return false;">🔄 جایگزین</button><button type="button" class="danger" onclick="deleteAdminProductGalleryImage(${Number(im.id)},${Number(productId)});return false;">🗄️ بایگانی</button></div></div></div>`).join(""):"<div class=\"admin-gallery-empty\">هنوز عکس جزئیاتی ثبت نشده است.</div>"}`;}catch(e){console.error(e);alert("❌ دریافت عکس‌های جزئیات انجام نشد.\n"+e.message);}}
+async function loadAdminProductGallery(productId){const wrap=document.getElementById(`admin-detail-images-${Number(productId)}`);if(!wrap)return;try{const r=await get(`/api/product-detail-images?product_id=${encodeURIComponent(productId)}`);const images=Array.isArray(r?.images)?r.images:[];const list=wrap.querySelector('.admin-detail-gallery-list');list.innerHTML=`<div class="admin-detail-upload"><input type="file" id="detail-file-${Number(productId)}" accept="image/*"><input id="detail-caption-${Number(productId)}" placeholder="عنوان / توضیح تصویر"><button type="button" onclick="uploadAdminProductGalleryImage(${Number(productId)});return false;">➕ افزودن تصویر</button></div>${images.length?images.map(im=>`<div class="admin-gallery-row"><img src="${escapeHtml(im.file_url||"")}" alt=""><div class="admin-gallery-fields"><input id="detail-cap-${Number(im.id)}" value="${escapeHtml(im.caption||"")}" placeholder="عنوان تصویر"><div><button type="button" onclick="saveAdminProductGalleryCaption(${Number(im.id)},${Number(productId)});return false;">💾 عنوان</button><input type="file" id="detail-replace-${Number(im.id)}" accept="image/*"><button type="button" onclick="replaceAdminProductGalleryImage(${Number(im.id)},${Number(productId)});return false;">🔄 جایگزین</button><button type="button" class="danger" onclick="deleteAdminProductGalleryImage(${Number(im.id)},${Number(productId)});return false;">🗄️ بایگانی</button></div></div></div>`).join(""):"<div class=\"admin-gallery-empty\">هنوز عکس جزئیاتی ثبت نشده است.</div>"}`;}catch(e){console.error(e);alert("❌ دریافت عکس‌های جزئیات انجام نشد.\n"+e.message);}}
 async function loadImageArchives(){const box=document.getElementById('imageArchivesList');if(!box)return;box.innerHTML='<div class="message">در حال دریافت بایگانی...</div>';try{const r=await get('/api/admin/image-archives');const files=Array.isArray(r?.files)?r.files:[];box.innerHTML=files.length?files.map(f=>`<div class="archive-image-row"><img src="${escapeHtml(f.file_url)}"><div><strong>${escapeHtml(f.name)}</strong><small>${escapeHtml(f.created_at||'')}</small><div class="archive-restore"><input type="number" min="1" id="archive-product-${escapeHtml(f.name.replace(/[^a-zA-Z0-9]/g,''))}" placeholder="شماره محصول"><button type="button" onclick="restoreArchivedImage(${JSON.stringify(f.storage_key)},this);return false;">↩️ بازگردانی</button></div></div></div>`).join(''):'<div class="message">بایگانی تصویری خالی است.</div>';}catch(e){box.innerHTML=`<div class="message error">دریافت بایگانی انجام نشد: ${escapeHtml(e.message)}</div>`;}}
 async function restoreArchivedImage(storageKey,button){const wrap=button.closest('.archive-restore');const productId=Number(wrap?.querySelector('input')?.value);if(!productId)return alert('شماره محصول را وارد کنید.');if(!(await appConfirm('این تصویر به عنوان تصویر اصلی محصول بازگردانی شود؟')))return;try{await postJson('/api/admin/restore-image-archive',{storage_key:storageKey,product_id:productId});alert('✅ تصویر بازگردانی شد.');await loadImageArchives();await loadProducts();await loadAdminProducts();}catch(e){alert('❌ بازگردانی انجام نشد:\n'+e.message);}}
 
@@ -2105,6 +2093,7 @@ function openLetterInbox(){
   if($('letterDateTo'))$('letterDateTo').value='';
   if($('letterReadFilter'))$('letterReadFilter').value='all';
   if($('letterSenderFilter'))$('letterSenderFilter').value='';
+  if($('letterDirectionFilter')){$('letterDirectionFilter').value='all';$('letterDirectionFilterWrap')?.classList.toggle('hidden',!canUseAdminLetters());}
   updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();
 }
 function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
@@ -2154,18 +2143,13 @@ async function loadLetterRecipients(){
         const btn=document.createElement('button');
         btn.type='button'; btn.className='letter-recipient-option'; btn.dataset.id=id;
         btn.dataset.search=`${name} ${user}`.toLocaleLowerCase('fa-IR');
-        btn.innerHTML=`<span class="recipient-option-avatar">👤</span><span class="recipient-option-text"><span class="recipient-option-name">نماینده ${formatNumber(index+1)} · ${escapeHtml(name)}</span><span class="recipient-option-user">${escapeHtml(user)}</span></span><span class="recipient-option-number">${formatNumber(index+1)}</span>`;
+        btn.innerHTML=`<span class="recipient-option-avatar">👤</span><span class="recipient-option-text"><span class="recipient-option-name">${escapeHtml(name)}</span><span class="recipient-option-user">${escapeHtml(user)}</span></span><span class="recipient-option-number">${formatNumber(index+1)}</span>`;
         btn.onclick=()=>selectLetterRecipient(id);
         optionBox.appendChild(btn);
       }
     });
     sel.disabled=false;
     sel.style.pointerEvents='auto';
-    const picker=$('letterRecipientPicker');
-    const list=picker?.querySelector('.letter-recipient-list');
-    if(list){list.classList.add('hidden');list.style.display='none';}
-    const trigger=$('letterRecipientTrigger');
-    if(trigger)trigger.setAttribute('aria-expanded','false');
     const syncRecipientSelection=()=>{
       const selected=sel.options[sel.selectedIndex];
       const value=String(selected?.value || selected?.dataset?.customerId || '').trim();
@@ -2263,7 +2247,7 @@ async function loadLetterInbox(){
   const list=$("letterList"), thread=$("letterThread"); if(!list||!thread)return;
   list.innerHTML='<div class="message">در حال دریافت نامه‌ها...</div>';
   try{
-    const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:$("letterReadFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||""};
+    const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:$("letterReadFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||"",direction:$("letterDirectionFilter")?.value||"all"};
     const endpoint=canUseAdminLetters()?"/api/admin/letters":"/api/customer/letters";
     const r=await postJson(endpoint,payload); letterThreads=Array.isArray(r?.messages)?r.messages:[];
     letterThreads.sort((a,b)=>new Date(b?.created_at||0)-new Date(a?.created_at||0));
@@ -2274,7 +2258,8 @@ async function loadLetterInbox(){
       const subjectText=String(m.subject||'');
       const typeClass=subjectText.includes('🛒')?'type-cart':subjectText.includes('📝')?'type-note':subjectText.includes('📦')?'type-order':subjectText.includes('↩️')?'type-reply':'type-letter';
       const sender=m.sender_name||m.sender_username||"کاربر";
-      return `<div class="letter-item ${unread?'unread':''} ${typeClass}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${escapeHtml(m.subject||'بدون عنوان')}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
+      const directionLabel=(canUseAdminLetters()&&m.direction==='incoming')?'📥 ورودی':(canUseAdminLetters()&&m.direction==='outgoing')?'📤 ارسالی':'';
+      return `<div class="letter-item ${unread?'unread':''} ${typeClass}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${escapeHtml(m.subject||'بدون عنوان')}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${directionLabel} ${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
     }).join("");
     if(letterCurrentThread!=null){const idx=letterThreads.findIndex(x=>String(x.thread_id||x.id)===String(letterCurrentThread));if(idx>=0)openLetterThread(idx);}
     await loadLetterUnreadCount();
@@ -2734,6 +2719,30 @@ async function loadServiceLimits(){
   }catch(e){panel.innerHTML=`<div class="message error">دریافت گزارش محدودیت‌ها انجام نشد.<br>${escapeHtml(e.message||'خطای نامشخص')}</div>`;}
 }
 
+
+async function loadAdminCleanupStats(){
+  const box=$("adminLetterCleanupStats"); if(!box)return;
+  box.textContent="در حال دریافت آمار...";
+  try{
+    const r=await postJson("/api/admin/cleanup-stats",{});
+    box.innerHTML=`✉️ نامه‌ها: <b>${formatNumber(Number(r?.messages||0))}</b><br>🛒 سفارش‌ها/درخواست‌ها: <b>${formatNumber(Number(r?.requests||0))}</b>`;
+  }catch(e){box.textContent="دریافت آمار انجام نشد: "+(e.message||"");}
+}
+async function adminCleanupTestData(){
+  const confirmBox=$("adminCleanupConfirm");
+  if(!confirmBox?.checked){return appAlert("⚠️ برای پاک‌سازی، گزینه تأیید را فعال کنید.");}
+  const ok=await appConfirm("⚠️ همه نامه‌ها، پاسخ‌های نامه و سفارش‌ها/درخواست‌های ثبت‌شده حذف می‌شوند. ادامه می‌دهید؟");
+  if(!ok)return;
+  try{
+    const r=await postJson("/api/admin/cleanup-test-data",{confirm:true});
+    if(r?.ok===false)throw new Error(r.error||"پاک‌سازی انجام نشد.");
+    if(confirmBox)confirmBox.checked=false;
+    await loadAdminCleanupStats();
+    await loadLetterUnreadCount();
+    appAlert(`✅ پاک‌سازی انجام شد.\nنامه‌ها: ${formatNumber(Number(r?.messages||0))}\nسفارش‌ها/درخواست‌ها: ${formatNumber(Number(r?.requests||0))}`);
+  }catch(e){appAlert("❌ پاک‌سازی انجام نشد:\n"+(e.message||"خطای نامشخص"));}
+}
+
 function showAdminHome() {
   const home = $("adminHome");
   const sections = document.querySelectorAll("[id^='adminSection-']");
@@ -2743,7 +2752,7 @@ function showAdminHome() {
 }
 
 async function showAdminSection(sectionName) {
-  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",admins:"admins",archives:"products"};
+  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",admins:"admins",archives:"products",cleanup:"requests"};
   const needed=permissionMap[sectionName];
   if(needed && sectionName !== "requests" && !(adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins")){
     appAlert("❌ سطح دسترسی این بخش برای شما فعال نیست.");
@@ -2785,6 +2794,9 @@ async function showAdminSection(sectionName) {
     }
     if (sectionName === "limits") {
       await loadServiceLimits();
+    }
+    if (sectionName === "cleanup") {
+      await loadAdminCleanupStats();
     }
   } catch (error) {
     console.error("Admin section:", error);

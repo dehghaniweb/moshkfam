@@ -3411,336 +3411,99 @@ body.login-active .login-box{
 
 
 /* =========================================================
-   MOSHKFAM V1.0.7 — FINAL TARGETED FIXES
-   Only startup overflow, lower header action row, product gallery,
-   and recipient picker are corrected here.
+   V1.0.7 — FINAL STABILITY / HEADER / DETAIL FIXES
 ========================================================= */
 
-/* 1) No temporary horizontal/vertical scrollbar during startup. */
-html,body{width:100%!important;max-width:100%!important;overflow-x:hidden!important;}
-html:has(body.booting),html:has(body.booting) body,body.booting{overflow:hidden!important;width:100%!important;height:100%!important;max-width:100%!important;}
-#bootLoader{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;overflow:hidden!important;}
-
-/* 2) Logo remains in the upper-right; cart/orders/mail occupy one lower row. */
-.header{position:relative!important;overflow:visible!important;box-sizing:border-box!important;padding-bottom:70px!important;}
-.header-shopping-actions{
-  position:absolute!important;
-  left:10px!important;
-  right:10px!important;
-  top:auto!important;
-  bottom:8px!important;
-  width:auto!important;
-  height:50px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-start!important;
-  gap:10px!important;
-  z-index:1000!important;
-  pointer-events:none!important;
-}
-.header-shopping-actions>button{
-  position:relative!important;
-  inset:auto!important;
-  top:auto!important;
-  right:auto!important;
-  bottom:auto!important;
-  left:auto!important;
+/* Startup loader: one fixed geometry from the first paint. */
+html:has(body.booting){overflow:hidden!important;width:100%!important;height:100%!important;}
+body.booting{overflow:hidden!important;width:100%!important;height:100vh!important;min-height:100vh!important;}
+#bootLoader{overflow:hidden!important;width:100vw!important;height:100vh!important;}
+#bootLoader .boot-card{
+  width:280px!important;min-width:280px!important;max-width:calc(100vw - 32px)!important;
+  min-height:184px!important;padding:26px 30px!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
   transform:none!important;
-  margin:0!important;
-  pointer-events:auto!important;
-  flex:0 0 48px!important;
-  width:48px!important;
-  height:48px!important;
 }
+#bootLoader .boot-title{font-size:18px!important;line-height:1.6!important;min-height:29px!important;}
+#bootLoader .boot-sub{font-size:12px!important;line-height:1.8!important;min-height:22px!important;}
+#bootLoader .boot-spinner{width:34px!important;height:34px!important;flex:0 0 34px!important;}
+#bootLoader.hide{display:none!important;}
+body:not(.booting){overflow-x:hidden!important;overflow-y:auto!important;width:100%!important;min-height:100vh!important;}
+.app{width:100%!important;max-width:100%!important;overflow-x:hidden!important;min-height:100vh!important;}
+main{width:100%!important;min-width:0!important;overflow:visible!important;}
+.product-grid{width:100%!important;min-width:0!important;overflow:visible!important;}
+footer{width:100%!important;}
+
+/* Three shopping controls: one stable row below login/actions. */
+.header{position:relative!important;overflow:visible!important;padding-bottom:70px!important;}
+.header-shopping-actions{
+  position:absolute!important;left:16px!important;right:16px!important;bottom:10px!important;top:auto!important;
+  height:48px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;
+  gap:8px!important;z-index:100!important;pointer-events:none!important;
+}
+.header-shopping-actions>button{pointer-events:auto!important;position:relative!important;inset:auto!important;}
 .header-shopping-actions .cart-floating-button{order:1!important;}
 .header-shopping-actions .orders-floating-button{order:2!important;}
-.header-shopping-actions .admin-inbox-floating-button{
-  order:3!important;
-  margin-right:auto!important;
-  width:48px!important;
-  height:48px!important;
-}
+.header-shopping-actions .admin-inbox-floating-button{order:3!important;margin-left:auto!important;}
 @media(max-width:850px){
   .header{padding-bottom:64px!important;}
-  .header-shopping-actions{left:10px!important;right:10px!important;bottom:7px!important;height:46px!important;gap:8px!important;}
-  .header-shopping-actions>button{flex-basis:44px!important;width:44px!important;height:44px!important;}
-  .header-shopping-actions .admin-inbox-floating-button{width:44px!important;height:44px!important;margin-right:auto!important;}
+  .header-shopping-actions{left:10px!important;right:10px!important;bottom:8px!important;height:44px!important;}
+  .header-shopping-actions .cart-floating-button,
+  .header-shopping-actions .orders-floating-button,
+  .header-shopping-actions .admin-inbox-floating-button{width:44px!important;height:44px!important;}
 }
 
-/* 3) Detail gallery: show the entire uploaded image at natural ratio and keep caption visible. */
-.product-detail-gallery{width:100%!important;max-width:100%!important;overflow:visible!important;}
-.product-gallery-grid{display:grid!important;grid-template-columns:1fr!important;gap:16px!important;width:100%!important;}
-.product-gallery-item{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) minmax(190px,260px)!important;
-  width:100%!important;
-  height:auto!important;
-  min-height:0!important;
-  overflow:visible!important;
-  align-items:start!important;
+/* Product details: image and description/caption are fully visible and scroll with the modal. */
+.modal-card{overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;}
+.product-detail{width:100%!important;min-width:0!important;overflow:visible!important;}
+.detail-image{display:block!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:60vh!important;object-fit:contain!important;margin:12px auto 18px!important;}
+.product-detail-gallery{width:100%!important;overflow:visible!important;}
+.product-gallery-grid{grid-template-columns:1fr!important;}
+.product-gallery-item{overflow:visible!important;}
+.product-gallery-item img{width:100%!important;height:auto!important;max-height:70vh!important;object-fit:contain!important;background:#fff!important;}
+.product-gallery-item figcaption{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  padding:12px 14px!important;min-height:24px!important;
+  color:#334155!important;background:#fff!important;font-size:13px!important;line-height:2!important;
+  white-space:pre-wrap!important;overflow-wrap:anywhere!important;
 }
-.product-gallery-item img{
-  display:block!important;
-  width:100%!important;
-  height:auto!important;
-  min-width:0!important;
-  min-height:0!important;
-  max-width:100%!important;
-  max-height:none!important;
-  object-fit:contain!important;
-  object-position:center!important;
+.detail-section p,.detail-section li{white-space:pre-wrap!important;overflow-wrap:anywhere!important;}
+
+/* Recipient picker: reliable visible numbered representative list. */
+.letter-recipient-picker{position:relative!important;z-index:1000!important;flex:1 1 auto!important;min-width:0!important;}
+.letter-recipient-list{
+  position:absolute!important;right:0!important;left:0!important;top:calc(100% + 7px)!important;
+  z-index:5000!important;display:block!important;max-height:300px!important;overflow-y:auto!important;
   background:#fff!important;
 }
-.product-gallery-item figcaption{
-  display:flex!important;
-  align-items:center!important;
-  width:100%!important;
-  min-height:100%!important;
-  height:auto!important;
-  margin:0!important;
-  padding:18px!important;
-  border-right:1px solid #e5e7eb!important;
-  background:#f8fffa!important;
-  color:#374151!important;
-  text-align:right!important;
-  white-space:pre-wrap!important;
-  overflow:visible!important;
-  word-break:break-word!important;
-  line-height:2!important;
-  font-size:13px!important;
+.letter-recipient-list.hidden{display:none!important;}
+.letter-recipient-option{
+  width:100%!important;display:flex!important;align-items:center!important;gap:10px!important;
+  min-height:54px!important;border:0!important;background:#fff!important;
+  border-bottom:1px solid #eef2f0!important;border-radius:10px!important;padding:8px 10px!important;
 }
-@media(max-width:600px){
-  .product-gallery-item{grid-template-columns:1fr!important;}
-  .product-gallery-item figcaption{border-right:0!important;border-top:1px solid #e5e7eb!important;min-height:0!important;}
+.letter-recipient-option:hover,.letter-recipient-option.active{background:#f0fdf4!important;}
+.recipient-option-number{
+  margin-right:auto!important;min-width:30px!important;height:30px!important;border-radius:50%!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  background:#166534!important;color:#fff!important;font-weight:900!important;font-size:12px!important;
 }
+.recipient-option-text{display:flex!important;flex-direction:column!important;align-items:flex-start!important;min-width:0!important;}
+.recipient-option-name{font-weight:900!important;color:#14532d!important;}
+.recipient-option-user{font-size:10px!important;color:#64748b!important;direction:ltr!important;}
+.letter-compose-card{overflow:visible!important;}
+.letter-compose-card .letter-recipient-wrap{position:relative!important;z-index:1000!important;}
 
-/* 4) Custom recipient list is the visible control; native select is only the value source. */
-#letterRecipientWrap{position:relative!important;z-index:5000!important;}
-.letter-recipient-box{position:relative!important;overflow:visible!important;}
-#letterRecipientPicker{display:block!important;position:relative!important;z-index:5002!important;width:100%!important;}
-#letterRecipientSelect.customer-select-hidden{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;overflow:hidden!important;}
-#letterRecipientTrigger{
-  display:flex!important;
-  position:relative!important;
-  z-index:5003!important;
-  width:100%!important;
-  min-height:54px!important;
-  cursor:pointer!important;
-}
-#letterRecipientPicker .letter-recipient-list{
-  position:absolute!important;
-  right:0!important;
-  left:0!important;
-  top:calc(100% + 7px)!important;
-  width:100%!important;
-  max-height:300px!important;
-  margin:0!important;
-  padding:10px!important;
-  overflow-y:auto!important;
-  overflow-x:hidden!important;
-  display:block!important;
-  z-index:5010!important;
-  background:#fff!important;
-  border:1px solid #dbe7df!important;
-  border-radius:17px!important;
-  box-shadow:0 18px 45px rgba(15,23,42,.18)!important;
-}
-#letterRecipientPicker .letter-recipient-list.hidden{display:none!important;}
-#letterRecipientPicker .letter-recipient-option{min-height:58px!important;cursor:pointer!important;}
-#letterRecipientPicker .letter-recipient-option-number{min-width:30px!important;height:30px!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;background:#ecfdf5!important;border:1px solid #bbf7d0!important;}
-@media(max-width:600px){
-  #letterRecipientPicker .letter-recipient-list{max-height:260px!important;}
-}
-
-
-/* =========================================================
-   V1.0.7 STEP 1 — HOME + BOOT + DETAIL IMAGE CAPTION
-   Only the requested areas are changed.
-========================================================= */
-
-/* Boot screen: fixed from the first paint; no scrollbar and no resize/flicker. */
-html,body{
-  width:100%!important;
-  max-width:100%!important;
-}
-html:has(body.booting),
-html:has(body.booting) body,
-body.booting{
-  overflow:hidden!important;
-  width:100%!important;
-  height:100%!important;
-  max-width:100%!important;
-}
-#bootLoader{
-  position:fixed!important;
-  inset:0!important;
-  width:100vw!important;
-  height:100vh!important;
-  min-width:100vw!important;
-  min-height:100vh!important;
-  overflow:hidden!important;
-  box-sizing:border-box!important;
-  opacity:1!important;
-}
-#bootLoader .boot-card{
-  box-sizing:border-box!important;
-  width:310px!important;
-  min-width:310px!important;
-  max-width:310px!important;
-  height:205px!important;
-  min-height:205px!important;
-  max-height:205px!important;
-  flex:0 0 310px!important;
-  font-family:Tahoma,Arial,sans-serif!important;
-}
-#bootLoader .boot-title{
-  font-size:18px!important;
-  line-height:1.6!important;
-  white-space:nowrap!important;
-}
-#bootLoader .boot-sub{
-  font-size:12px!important;
-  line-height:1.7!important;
-  white-space:nowrap!important;
-}
-
-/* Home page: normal page scrolling, with a clear large scrollbar. */
-html:not(:has(body.booting)),
-html:not(:has(body.booting)) body{
-  overflow-y:auto!important;
-  overflow-x:hidden!important;
-}
-body:not(.booting){
-  min-height:100vh!important;
-  height:auto!important;
-}
-body:not(.booting)::-webkit-scrollbar{
-  width:14px!important;
-}
-body:not(.booting)::-webkit-scrollbar-track{
-  background:#e5eee8!important;
-  border-radius:10px!important;
-}
-body:not(.booting)::-webkit-scrollbar-thumb{
-  background:#6b8f78!important;
-  border:3px solid #e5eee8!important;
-  border-radius:10px!important;
-}
-body:not(.booting)::-webkit-scrollbar-thumb:hover{
-  background:#3f6f50!important;
-}
-html:not(:has(body.booting)){
-  scrollbar-width:auto!important;
-}
-
-/* Home action row:
-   visual order from LEFT -> RIGHT = orders, cart, letters.
-   Therefore cart is immediately to the RIGHT of the orders box. */
-.header-shopping-actions{
-  direction:ltr!important;
-  display:flex!important;
-  flex-direction:row!important;
-  justify-content:flex-start!important;
-  align-items:center!important;
-}
-.header-shopping-actions .orders-floating-button{order:1!important;}
-.header-shopping-actions .cart-floating-button{order:2!important;}
-.header-shopping-actions .admin-inbox-floating-button{
-  order:3!important;
-  margin-left:auto!important;
-  margin-right:0!important;
-}
-
-/* Detail uploaded image + its explanation: keep both visible. */
-.product-detail-gallery{
-  width:100%!important;
-  max-width:100%!important;
-  overflow:visible!important;
-}
-.product-gallery-grid{
-  display:grid!important;
-  grid-template-columns:1fr!important;
-  width:100%!important;
-  gap:18px!important;
-}
-.product-gallery-item{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) minmax(210px,300px)!important;
-  width:100%!important;
-  height:auto!important;
-  min-height:0!important;
-  margin:0!important;
-  overflow:visible!important;
-  align-items:stretch!important;
-  box-sizing:border-box!important;
-}
-.product-gallery-item img{
-  display:block!important;
-  width:100%!important;
-  height:auto!important;
-  max-width:100%!important;
-  max-height:none!important;
-  min-width:0!important;
-  object-fit:contain!important;
-  object-position:center!important;
-  box-sizing:border-box!important;
-}
-.product-gallery-item figcaption{
-  display:flex!important;
-  align-items:flex-start!important;
-  justify-content:flex-start!important;
-  box-sizing:border-box!important;
-  width:100%!important;
-  min-height:100%!important;
-  height:auto!important;
-  margin:0!important;
-  padding:20px!important;
-  border-right:1px solid #dce8df!important;
-  background:#f8fffa!important;
-  color:#374151!important;
-  text-align:right!important;
-  white-space:pre-wrap!important;
-  overflow:visible!important;
-  word-break:break-word!important;
-  overflow-wrap:anywhere!important;
-  line-height:2!important;
-  font-size:14px!important;
-}
-@media(max-width:600px){
-  .product-gallery-item{
-    grid-template-columns:1fr!important;
-  }
-  .product-gallery-item figcaption{
-    min-height:0!important;
-    border-right:0!important;
-    border-top:1px solid #dce8df!important;
-  }
-}
-
-/* Admin detail-image editor: make the explanation field clearly visible. */
-.admin-detail-upload{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto!important;
-  gap:10px!important;
-  align-items:center!important;
-}
-.admin-detail-upload input[id^="detail-caption-"],
-.admin-gallery-fields input[id^="detail-cap-"]{
-  min-height:46px!important;
-  box-sizing:border-box!important;
-  width:100%!important;
-  padding:10px 13px!important;
-  line-height:1.8!important;
-  text-align:right!important;
-}
-.admin-gallery-fields{
-  min-width:0!important;
-}
-.admin-gallery-row{
-  align-items:start!important;
-}
-@media(max-width:700px){
-  .admin-detail-upload{
-    grid-template-columns:1fr!important;
-  }
-}
+/* Admin cleanup */
+.admin-cleanup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.admin-cleanup-card{padding:18px;border:1px solid #dbe7df;border-radius:16px;background:#fff;}
+.admin-cleanup-card h4{margin:0 0 8px;color:#14532d;font-size:16px;}
+.admin-cleanup-card p{color:#64748b;font-size:12px;line-height:1.9;margin:0 0 12px;}
+.admin-cleanup-card.danger{border-color:#fecaca;background:#fffafa;}
+.admin-cleanup-stats{padding:10px;border-radius:12px;background:#f8fafc;color:#475569;font-size:12px;margin-bottom:10px;line-height:2;}
+.cleanup-confirm-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#7f1d1d;line-height:1.8;margin:10px 0;}
+.cleanup-confirm-row input{margin-top:5px;}
+.admin-danger-button{width:100%;padding:12px;border:1px solid #fecaca;border-radius:12px;background:#fee2e2;color:#991b1b;font:inherit;font-weight:900;cursor:pointer;}
+.admin-cleanup-card small{display:block;margin-top:10px;color:#64748b;font-size:10px;line-height:1.8;}
+.admin-letter-only{display:block;}
+@media(max-width:700px){.admin-cleanup-grid{grid-template-columns:1fr;}.admin-cleanup-card{padding:14px;}}

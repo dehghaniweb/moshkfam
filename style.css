@@ -3774,7 +3774,7 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
 }
 
 
-/* ===== V1.0.22: final header + cart/order/letter spacing ===== */
+/* ===== V1.0.24: final header + cart/order/letter spacing ===== */
 /* Put the envelope back on the same lower row as the shopping buttons. */
 .header-shopping-actions .admin-inbox-floating-button{
   position:absolute!important;
@@ -3844,7 +3844,7 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
 }
 
 
-/* V1.0.22 — mailbox/header layout */
+/* V1.0.24 — mailbox/header layout */
 .header-shopping-actions{
   left:16px!important;
   right:16px!important;
@@ -3911,4 +3911,155 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
 }
 .letter-item.type-cart .letter-item-subject{
   color:#dc2626!important;
+}
+
+/* V1.0.24 — exact header/mailbox layout requested */
+/* Main page: envelope far left, then cart, then order history. */
+.header-shopping-actions{
+  position:absolute!important;
+  left:10px!important;
+  right:auto!important;
+  bottom:10px!important;
+  width:154px!important;
+  height:52px!important;
+  display:block!important;
+  direction:ltr!important;
+  margin:0!important;
+}
+.header-shopping-actions .admin-inbox-floating-button,
+.header-shopping-actions .cart-floating-button,
+.header-shopping-actions .orders-floating-button{
+  position:absolute!important;
+  top:50%!important;
+  bottom:auto!important;
+  transform:translateY(-50%)!important;
+  margin:0!important;
+}
+.header-shopping-actions .admin-inbox-floating-button{
+  left:0!important;
+  right:auto!important;
+  order:initial!important;
+}
+.header-shopping-actions .cart-floating-button{
+  left:52px!important;
+  right:auto!important;
+  order:initial!important;
+}
+.header-shopping-actions .orders-floating-button{
+  left:104px!important;
+  right:auto!important;
+  order:initial!important;
+}
+
+/* Mailbox: date stays at the far LEFT; title remains centered; new-letter button is RIGHT. */
+#letterInboxModal .letter-inbox-header{
+  position:relative!important;
+  display:block!important;
+  direction:ltr!important;
+  min-height:118px!important;
+}
+#letterInboxModal .letter-account-date{
+  position:absolute!important;
+  left:18px!important;
+  right:auto!important;
+  top:18px!important;
+  width:180px!important;
+  direction:rtl!important;
+  text-align:left!important;
+  z-index:2!important;
+}
+#letterInboxModal .letter-header-main{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-height:118px!important;
+  direction:rtl!important;
+}
+#letterInboxModal .letter-header-title{
+  width:100%!important;
+  justify-content:center!important;
+  text-align:center!important;
+}
+#letterInboxModal .letter-header-title > div{
+  text-align:center!important;
+}
+#letterInboxModal .letter-header-actions{
+  position:absolute!important;
+  right:18px!important;
+  left:auto!important;
+  top:76px!important;
+  padding:0!important;
+  z-index:3!important;
+}
+#letterInboxModal .letter-compose-button{
+  margin:0!important;
+  white-space:nowrap!important;
+}
+
+@media(max-width:700px){
+  .header-shopping-actions{
+    left:8px!important;
+    bottom:8px!important;
+    width:140px!important;
+    height:48px!important;
+  }
+  .header-shopping-actions .admin-inbox-floating-button{left:0!important;}
+  .header-shopping-actions .cart-floating-button{left:48px!important;}
+  .header-shopping-actions .orders-floating-button{left:96px!important;}
+  #letterInboxModal .letter-account-date{
+    left:10px!important;
+    width:150px!important;
+  }
+  #letterInboxModal .letter-header-actions{right:10px!important;top:76px!important;}
+}
+
+
+/* V1.0.25 — main-page actions span the header: envelope at far RIGHT, cart in the middle, orders at far LEFT. */
+.header-shopping-actions{
+  position:absolute!important;
+  right:10px!important;
+  left:10px!important;
+  bottom:10px!important;
+  width:auto!important;
+  height:52px!important;
+  display:block!important;
+  direction:ltr!important;
+}
+.header-shopping-actions .admin-inbox-floating-button,
+.header-shopping-actions .cart-floating-button,
+.header-shopping-actions .orders-floating-button{
+  position:absolute!important;
+  top:50%!important;
+  bottom:auto!important;
+  transform:translateY(-50%)!important;
+  margin:0!important;
+}
+/* Envelope: far RIGHT edge of the page. */
+.header-shopping-actions .admin-inbox-floating-button{
+  right:0!important;
+  left:auto!important;
+}
+/* Shopping cart: between the two, closer to the right side. */
+.header-shopping-actions .cart-floating-button{
+  right:52px!important;
+  left:auto!important;
+}
+/* Order history: far LEFT edge of the page, mirroring the envelope. */
+.header-shopping-actions .orders-floating-button{
+  left:0!important;
+  right:auto!important;
+}
+@media(max-width:700px){
+  .header-shopping-actions{
+    right:8px!important;
+    left:8px!important;
+    bottom:8px!important;
+    width:auto!important;
+    height:48px!important;
+  }
+  .header-shopping-actions .admin-inbox-floating-button{right:0!important;left:auto!important;}
+  .header-shopping-actions .cart-floating-button{right:48px!important;left:auto!important;}
+  .header-shopping-actions .orders-floating-button{left:0!important;right:auto!important;}
 }

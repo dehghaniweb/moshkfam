@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.8";
+const APP_VERSION = "V1.0.9";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-07";
@@ -2092,6 +2092,7 @@ function openLetterInbox(){
   if($('letterDateFrom'))$('letterDateFrom').value='';
   if($('letterDateTo'))$('letterDateTo').value='';
   if($('letterReadFilter'))$('letterReadFilter').value='all';
+  if($('letterDirectionFilter'))$('letterDirectionFilter').value='all';
   if($('letterSenderFilter'))$('letterSenderFilter').value='';
   updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();
 }
@@ -2251,19 +2252,28 @@ async function loadLetterInbox(){
   const list=$("letterList"), thread=$("letterThread"); if(!list||!thread)return;
   list.innerHTML='<div class="message">در حال دریافت نامه‌ها...</div>';
   try{
-    const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:$("letterReadFilter")?.value||"all",direction:$("letterDirectionFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||""};
+    const statusValue=$("letterReadFilter")?.value||"all";
+    const isDirection=statusValue==='incoming'||statusValue==='outgoing';
+    const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:isDirection?'all':statusValue,direction:isDirection?statusValue:'all',sender_id:$("letterSenderFilter")?.value||""};
     const endpoint=canUseAdminLetters()?"/api/admin/letters":"/api/customer/letters";
     const r=await postJson(endpoint,payload); letterThreads=Array.isArray(r?.messages)?r.messages:[];
     letterThreads.sort((a,b)=>new Date(b?.created_at||0)-new Date(a?.created_at||0));
     renderLetterSenderFilter(letterThreads);
     if(!letterThreads.length){list.innerHTML='<div class="message">نامه‌ای با این فیلتر پیدا نشد.</div>';return;}
-    list.innerHTML=letterThreads.map((m,i)=>{
+    const groups=new Map();
+    letterThreads.forEach((m,i)=>{
+      const d=new Date(m.created_at||0);
+      const key=Number.isNaN(d.getTime())?'بدون تاریخ':d.toLocaleDateString('fa-IR',{year:'numeric',month:'2-digit',day:'2-digit'});
+      if(!groups.has(key))groups.set(key,[]);
+      groups.get(key).push({m,i});
+    });
+    list.innerHTML=Array.from(groups.entries()).map(([date,rows])=>`<div class="letter-date-group"><div class="letter-date-group-title">📅 ${escapeHtml(date)}</div>${rows.map(({m,i})=>{
       const unread=!m.read;
       const subjectText=String(m.subject||'');
       const typeClass=subjectText.includes('🛒')?'type-cart':subjectText.includes('📝')?'type-note':subjectText.includes('📦')?'type-order':subjectText.includes('↩️')?'type-reply':'type-letter';
       const sender=m.sender_name||m.sender_username||"کاربر";
-      return `<div class="letter-item ${unread?'unread':''} ${typeClass}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${escapeHtml(m.subject||'بدون عنوان')}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
-    }).join("");
+      return `<button type="button" class="letter-item ${unread?'unread':''} ${typeClass}" onclick="openLetterThread(${i})"><span class="letter-row-title">${escapeHtml(m.subject||'بدون عنوان')}</span><span class="letter-row-name">👤 ${escapeHtml(sender)}</span><span class="letter-row-meta">${unread?'● جدید':'✓ خوانده شده'} ${m.reply_count?` · ↩️ ${formatNumber(m.reply_count)}`:''}</span></button>`;
+    }).join('')}</div>`).join("");
     if(letterCurrentThread!=null){const idx=letterThreads.findIndex(x=>String(x.thread_id||x.id)===String(letterCurrentThread));if(idx>=0)openLetterThread(idx);}
     await loadLetterUnreadCount();
   }catch(e){list.innerHTML=`<div class="message error">دریافت صندوق نامه انجام نشد.<br>${escapeHtml(e.message||'')}</div>`;}

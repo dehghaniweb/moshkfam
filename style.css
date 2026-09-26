@@ -3583,3 +3583,127 @@ main{height:auto!important;min-height:0!important;overflow:visible!important;}
 .admin-reset-card p{color:#6b7280!important;font-size:12px!important;line-height:1.9!important;margin:0 0 14px!important;}
 .admin-danger{border:0!important;border-radius:12px!important;padding:12px 16px!important;background:#dc2626!important;color:#fff!important;font:inherit!important;font-weight:800!important;cursor:pointer!important;width:100%!important;}
 @media(max-width:600px){#bootLoader .boot-card{width:280px!important;min-width:280px!important;max-width:280px!important;padding:24px 24px!important;}#bootLoader .boot-title{font-size:18px!important;}.admin-reset-card{padding:14px!important;}}
+
+/* =========================================================
+   MOSHKFAM V1.0.9 — HEADER / PRODUCT MODAL / LETTERS
+   Targeted fixes requested by owner. Existing healthy logic preserved.
+========================================================= */
+
+/* 1) Home header: cart on the right, orders immediately to its left. */
+.header-shopping-actions .cart-floating-button{
+  right:16px!important; left:auto!important;
+  order:initial!important;
+}
+.header-shopping-actions .orders-floating-button{
+  right:74px!important; left:auto!important;
+  order:initial!important;
+}
+.header-shopping-actions .admin-inbox-floating-button{
+  right:16px!important; left:auto!important;
+}
+
+/* 2) Brand: logo on the far right, company text immediately to its left. */
+.header .brand{
+  direction:rtl!important;
+  flex-direction:row-reverse!important;
+  margin-left:auto!important;
+  margin-right:0!important;
+}
+.header .brand img{order:1!important;flex:0 0 auto!important;}
+.header .brand>div{order:2!important;text-align:right!important;}
+
+/* 3) Account controls: left-to-right visual order = خروج | سارا مدیر سیستم | پنل مدیریت. */
+@media(min-width:901px){
+  .header-actions{
+    display:flex!important;
+    flex-direction:row-reverse!important;
+    align-items:center!important;
+    gap:8px!important;
+    margin-left:0!important;
+    margin-right:auto!important;
+  }
+  .header-actions .admin-button{order:1!important;}
+  .header-actions .logout-button{order:2!important;}
+  .header .account{order:0!important;}
+  .header .account{margin-left:0!important;}
+}
+
+/* 4) Product detail modal: close button and scrollbar are on the right. */
+#modal .modal-card{
+  direction:rtl!important;
+  scrollbar-gutter:stable!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+}
+#modal .modal-card>.close{
+  right:10px!important;
+  left:auto!important;
+  z-index:30!important;
+}
+
+/* 5) Conversation header/close area gets breathing room from the reply box. */
+#letterInboxModal .thread-head{
+  margin-bottom:12px!important;
+  padding-bottom:10px!important;
+  border-bottom:1px solid #e5e7eb!important;
+}
+#letterInboxModal .thread-reply{
+  margin-top:10px!important;
+  padding-top:12px!important;
+  border-top:1px solid #e5e7eb!important;
+}
+#letterInboxModal .thread-head h3{margin-bottom:4px!important;}
+
+/* 6) The single status/type selector is the visible filter. */
+#letterDirectionFilter{display:none!important;}
+#letterReadFilter{min-width:180px!important;}
+
+/* 7) Main inbox: date heading followed by clean one-line title/name rows. */
+.letter-date-group{margin:0 0 12px!important;}
+.letter-date-group-title{
+  position:sticky!important;top:0!important;z-index:3!important;
+  padding:8px 10px!important;margin:0 0 5px!important;
+  border-bottom:1px solid #dbe7df!important;
+  background:#f8fcf9!important;color:#166534!important;
+  font-size:11px!important;font-weight:900!important;
+}
+.letter-item{
+  width:100%!important;display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:"title name" "meta meta";
+  align-items:center!important;text-align:right!important;
+  min-height:52px!important;margin:0 0 6px!important;
+  padding:9px 11px!important;cursor:pointer!important;
+}
+.letter-item .letter-row-title{grid-area:title;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:900!important;color:#1f2937!important;}
+.letter-item .letter-row-name{grid-area:name;margin-right:10px;color:#475569!important;font-size:11px!important;white-space:nowrap;}
+.letter-item .letter-row-meta{grid-area:meta;margin-top:4px;color:#94a3b8!important;font-size:9px!important;}
+
+@media(max-width:850px){
+  .header-shopping-actions .cart-floating-button{right:10px!important;left:auto!important;}
+  .header-shopping-actions .orders-floating-button{right:62px!important;left:auto!important;}
+  .header-shopping-actions .admin-inbox-floating-button{right:10px!important;left:auto!important;}
+  .letter-item{grid-template-columns:minmax(0,1fr) auto!important;}
+  .letter-item .letter-row-name{font-size:10px!important;}
+}
+
+/* V1.0.9: account is inside the same control group so the visual order is
+   exactly: خروج | نام مدیر سیستم | پنل مدیریت. */
+@media(min-width:901px){
+  .header .header-actions{
+    display:flex!important;
+    flex-direction:row-reverse!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    margin-right:auto!important;
+    margin-left:0!important;
+    gap:8px!important;
+  }
+  .header .header-actions #logoutButton{order:3!important;}
+  .header .header-actions #account{order:2!important;}
+  .header .header-actions #adminButton{order:1!important;}
+  .header .header-actions #customerButton{order:1!important;}
+}
+@media(max-width:900px){
+  .header .header-actions #account{width:auto!important;}
+}

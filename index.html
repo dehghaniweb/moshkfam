@@ -104,7 +104,7 @@
       <p>
         محصولات کشاورزی و کودهای تخصصی
       </p>
-      <span id="appVersion" class="app-version">V1.0.8</span>
+      <span id="appVersion" class="app-version">V1.0.9</span>
 
     </div>
 
@@ -125,6 +125,18 @@
       <span id="ordersCount" class="orders-count empty">۰</span>
     </button>
   </div>
+
+  <div class="login-box" id="loginBox">
+    <div class="login-fields">
+      <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username" dir="ltr" inputmode="email">
+      <input id="loginPassword" type="text" placeholder="رمز عبور" autocomplete="current-password" dir="ltr">
+      <button id="loginButton" type="button">🔐 ورود</button>
+    </div>
+    <div id="loginMessage" class="login-message"></div>
+  </div>
+
+  <div class="header-actions">
+
 
   <div
     id="account"
@@ -153,17 +165,6 @@
 
   </div>
 
-
-  <div class="login-box" id="loginBox">
-    <div class="login-fields">
-      <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username" dir="ltr" inputmode="email">
-      <input id="loginPassword" type="text" placeholder="رمز عبور" autocomplete="current-password" dir="ltr">
-      <button id="loginButton" type="button">🔐 ورود</button>
-    </div>
-    <div id="loginMessage" class="login-message"></div>
-  </div>
-
-  <div class="header-actions">
     <button
       id="adminButton"
       class="admin-button hidden"
@@ -358,8 +359,14 @@
     <div class="letter-filters">
       <label>از تاریخ شمسی<input id="letterDateFrom" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off"></label>
       <label>تا تاریخ شمسی<input id="letterDateTo" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off"></label>
-      <label>وضعیت<select id="letterReadFilter"><option value="all">همه نامه‌ها</option><option value="unread">خوانده‌نشده</option></select></label>
-      <label>نوع نامه<select id="letterDirectionFilter"><option value="all">همه نامه‌ها</option><option value="incoming">📥 نامه‌های ورودی</option><option value="outgoing">📤 نامه‌های ارسالی</option></select></label>
+      <label>وضعیت / نوع نامه<select id="letterReadFilter">
+        <option value="all">همه نامه‌ها</option>
+        <option value="incoming">📥 نامه‌های دریافتی</option>
+        <option value="outgoing">📤 نامه‌های ارسالی</option>
+        <option value="read">✅ خوانده شده</option>
+        <option value="unread">🔵 خوانده نشده</option>
+      </select></label>
+      <select id="letterDirectionFilter" hidden aria-hidden="true"><option value="all">همه نامه‌ها</option><option value="incoming">📥 نامه‌های دریافتی</option><option value="outgoing">📤 نامه‌های ارسالی</option></select>
       <label id="letterSenderFilterWrap">فرستنده<select id="letterSenderFilter"><option value="">همه فرستنده‌ها</option></select></label>
       <button type="button" class="letter-filter-button" onclick="loadLetterInbox()">🔎 نمایش</button>
       <button type="button" class="letter-filter-reset" onclick="resetLetterFilters()">↺ امروز</button><button type="button" class="letter-filter-reset" onclick="showAllLetters()">📚 همه تاریخ‌ها</button>

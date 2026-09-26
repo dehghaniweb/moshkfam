@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.45";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.46";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -2096,6 +2096,21 @@ async function deleteAdminUser(id){
 let letterThreads = [];
 let letterCurrentThread = null;
 let letterPollingTimer = null;
+let letterLocalReadIds = new Set();
+function loadLetterLocalReadIds(){
+  try{
+    const key=`moshkfam_letter_reads_${String(currentUser?.id||currentUser?.customer_id||currentUser?.telegram_user_id||'')}`;
+    const raw=localStorage.getItem(key);
+    letterLocalReadIds=new Set(Array.isArray(JSON.parse(raw||'[]'))?JSON.parse(raw||'[]').map(Number).filter(Number.isFinite):[]);
+  }catch{letterLocalReadIds=new Set();}
+}
+function saveLetterLocalReadIds(){
+  try{
+    const key=`moshkfam_letter_reads_${String(currentUser?.id||currentUser?.customer_id||currentUser?.telegram_user_id||'')}`;
+    localStorage.setItem(key,JSON.stringify([...letterLocalReadIds].slice(-500)));
+  }catch{}
+}
+loadLetterLocalReadIds();
 
 function localDateInputValue(d=new Date()){
   const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);
@@ -2174,6 +2189,7 @@ function updateLetterTodayHeader(){
 }
 function openLetterInbox(){
   if(!currentUser)return;
+  loadLetterLocalReadIds();
   const modal=$('letterInboxModal'); if(!modal)return;
   modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
   bindJalaliDateInputs(); bindLetterLiveFilters(); updateLetterTodayHeader();
@@ -2325,9 +2341,15 @@ async function loadLetterUnreadCount(){
   if(!currentUser)return;
   try{
     const endpoint=canUseAdminLetters()?"/api/admin/letters-unread-count":"/api/customer/letters-unread-count";
-    const r=await postJson(endpoint,{}); const n=Number(r?.count||0);
+    const r=await postJson(endpoint,{});
+    const unreadIds=Array.isArray(r?.unread_ids)?r.unread_ids.map(Number).filter(Number.isFinite):[];
+    const serverSet=new Set(unreadIds);
+    // IDs that are no longer unread on the server can be forgotten locally.
+    letterLocalReadIds=new Set([...letterLocalReadIds].filter(id=>serverSet.has(id)));
+    const n=unreadIds.length ? unreadIds.filter(id=>!letterLocalReadIds.has(id)).length : Number(r?.count||0);
     setAdminCount("letterInboxCount",n);
     const b=$("letterInboxCount");if(b)b.classList.toggle("has-unread",n>0);
+    saveLetterLocalReadIds();
   }catch(e){console.warn("Letter unread count",e);}
 }
 function startLetterPolling(){if(letterPollingTimer)clearInterval(letterPollingTimer);if(!currentUser)return;loadLetterUnreadCount();letterPollingTimer=setInterval(loadLetterUnreadCount,15000);}
@@ -2344,7 +2366,7 @@ async function loadLetterInbox(){
     renderLetterSenderFilter(letterThreads);
     if(!letterThreads.length){list.innerHTML='<div class="message">نامه‌ای با این فیلتر پیدا نشد.</div>';return;}
     list.innerHTML=letterThreads.map((m,i)=>{
-      const unread=!m.read;
+      const unread=!m.read && !letterLocalReadIds.has(Number(m.id));
       const subjectText=String(m.subject||'');
       const typeClass=subjectText.includes('🛒')?'type-cart':subjectText.includes('📝')?'type-note':subjectText.includes('📦')?'type-order':subjectText.includes('↩️')?'type-reply':'type-letter';
       const displayTitle=subjectText.includes('🛒')?'سفارش سبد خرید':'نامه';
@@ -2376,6 +2398,12 @@ async function openLetterThread(index){
     const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('زمان دریافت گفتگو بیش از حد طولانی شد.')),8000));
     const r=await Promise.race([request,timeout]);
     const messages=Array.isArray(r?.messages)?r.messages:[];
+    // Every incoming message in the opened thread is considered read immediately.
+    messages.forEach(x=>{
+      const incoming=canUseAdminLetters() ? String(x?.recipient_role||'').toLowerCase()==='admins' : String(x?.recipient_customer_id||'')===String(currentUser?.id||'');
+      if(incoming && Number.isFinite(Number(x?.id))) letterLocalReadIds.add(Number(x.id));
+    });
+    saveLetterLocalReadIds();
     if(!messages.length){
       renderLetterThreadFallback(m,"برای این نامه گفتگوی جداگانه‌ای پیدا نشد.");
       return;
@@ -2384,6 +2412,8 @@ async function openLetterThread(index){
     try{
       const mr=await postJson(canUseAdminLetters()?"/api/admin/letter-mark-read":"/api/customer/letter-mark-read",{thread_id:threadId});
       m.read=true;
+      if(Number.isFinite(Number(m.id))) letterLocalReadIds.add(Number(m.id));
+      saveLetterLocalReadIds();
       renderLetterListAfterRead();
       await loadLetterUnreadCount();
       if(Number(mr?.marked||0)>0){
@@ -2861,6 +2891,7 @@ async function showAdminSection(sectionName) {
     }
     if (sectionName === "cleanup") {
       await loadCleanupCustomers();
+      await refreshAdminTestDataStats();
     }
   } catch (error) {
     console.error("Admin section:", error);
@@ -2877,6 +2908,29 @@ function searchAdminItems(inputId, containerId) {
     const text = (item.textContent || "").toLocaleLowerCase("fa-IR");
     item.style.display = !query || text.includes(query) ? "" : "none";
   });
+}
+
+async function refreshAdminTestDataStats(){
+  const box=$("adminTestDataStats"); if(!box)return;
+  box.innerHTML='<div class="limits-loading">⏳ در حال دریافت آمار داده‌های تست...</div>';
+  try{
+    const r=await postJson('/api/admin/cleanup-stats',{});
+    if(!r?.ok)throw new Error(r?.error||'دریافت آمار انجام نشد.');
+    box.innerHTML=`<div class="cleanup-stat-line"><span>✉️ نامه‌ها و پیام‌ها</span><b>${formatNumber(r.messages||0)}</b></div><div class="cleanup-stat-line"><span>📋 گزارش‌ها / درخواست‌ها</span><b>${formatNumber(r.requests||0)}</b></div><div class="cleanup-stat-line"><span>🛒 سفارش‌های ثبت‌شده</span><b>${formatNumber(r.orders||0)}</b></div><div class="cleanup-stat-line total"><span>📊 مجموع داده‌های قابل پاک‌سازی</span><b>${formatNumber((r.messages||0)+(r.requests||0)+(r.orders||0))}</b></div><small>آمار امروز: ✉️ ${formatNumber(r.messagesToday||0)} نامه · 📋 ${formatNumber(r.requestsToday||0)} گزارش · 🛒 ${formatNumber(r.ordersToday||0)} سفارش</small>`;
+  }catch(e){box.innerHTML=`<div class="message error">دریافت آمار انجام نشد.<br>${escapeHtml(e.message||'')}</div>`;}
+}
+async function cleanupAllTestData(){
+  const s=await postJson('/api/admin/cleanup-stats',{}).catch(()=>null);
+  const total=Number(s?.messages||0)+Number(s?.requests||0)+Number(s?.orders||0);
+  if(!total){appAlert('ℹ️ در حال حاضر نامه، گزارش یا سفارش ثبت‌شده‌ای برای حذف وجود ندارد.');return;}
+  if(!(await appConfirm(`همه نامه‌ها، گزارش‌ها و سفارش‌های ثبت‌شده حذف شوند؟\n\nتعداد فعلی: ${formatNumber(total)} مورد\n\nمحصولات، نمایندگان و حساب‌ها حذف نخواهند شد.`)))return;
+  try{
+    const r=await postJson('/api/admin/cleanup-test-data',{confirm:true});
+    if(!r?.ok)throw new Error(r?.error||'سرور تأیید نکرد.');
+    appAlert(`✅ پاک‌سازی انجام شد.\n✉️ نامه‌ها: ${formatNumber(r.messages||0)}\n📋 گزارش‌ها: ${formatNumber(r.requests||0)}\n🛒 سفارش‌ها: ${formatNumber(r.orders||0)}`);
+    await refreshAdminTestDataStats();
+    loadLetterUnreadCount();
+  }catch(e){appAlert('❌ پاک‌سازی انجام نشد:\n'+(e.message||'خطای نامشخص'));}
 }
 
 async function loadCleanupCustomers(){

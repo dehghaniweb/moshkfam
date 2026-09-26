@@ -4906,3 +4906,80 @@ body[data-account-role="software-admin"] .header-shopping-actions{
 #adminLoadingOverlay .admin-loading-box{display:flex;align-items:center;gap:10px;padding:12px 18px;border:1px solid #bbf7d0;border-radius:14px;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);color:#166534;font-size:13px;font-weight:800;box-shadow:0 8px 24px rgba(22,101,52,.12);direction:rtl;}
 #adminLoadingOverlay .admin-loading-spinner{font-size:18px;line-height:1;}
 @media(max-width:700px){#adminLoadingOverlay .admin-loading-box{font-size:12px;padding:10px 14px;}}
+
+
+/* =========================================================
+   V1.0.46 — stable mobile mailbox position + exact desktop edges
+========================================================= */
+@media(max-width:700px){
+  /* Keep the envelope in the middle gap: below the logo, clearly above the account card. */
+  body[data-account-role="sales"] .header-shopping-actions,
+  body[data-account-role="customer"] .header-shopping-actions{
+    top:205px!important;
+    bottom:auto!important;
+    height:46px!important;
+    min-height:46px!important;
+  }
+  body[data-account-role="sales"] .header-shopping-actions .admin-inbox-floating-button,
+  body[data-account-role="customer"] .header-shopping-actions .admin-inbox-floating-button{
+    width:44px!important;
+    height:44px!important;
+    position:static!important;
+    margin-left:auto!important;
+    margin-right:0!important;
+  }
+}
+
+/* Mailbox header: stretch the three areas to the card edges on desktop and mobile. */
+#letterInboxModal .letter-inbox-header{
+  width:100%!important;
+  box-sizing:border-box!important;
+  padding-left:0!important;
+  padding-right:0!important;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;
+  grid-template-areas:"date title actions"!important;
+}
+#letterInboxModal .letter-account-date{
+  justify-self:start!important;
+  margin-left:0!important;
+  text-align:left!important;
+}
+#letterInboxModal .letter-header-actions{
+  justify-self:end!important;
+  margin-right:0!important;
+  text-align:right!important;
+}
+
+/* Read state must stay white; unread state is the only blue state. */
+#letterInboxModal .letter-item:not(.unread),
+#letterInboxModal .letter-item.type-cart:not(.unread),
+#letterInboxModal .letter-item.type-note:not(.unread),
+#letterInboxModal .letter-item.type-order:not(.unread),
+#letterInboxModal .letter-item.type-letter:not(.unread),
+#letterInboxModal .letter-item.type-reply:not(.unread){
+  background:#fff!important;
+  background-image:none!important;
+  border-color:#e2e8f0!important;
+  box-shadow:none!important;
+  opacity:1!important;
+}
+#letterInboxModal .letter-item.unread,
+#letterInboxModal .letter-item.type-cart.unread,
+#letterInboxModal .letter-item.type-note.unread,
+#letterInboxModal .letter-item.type-order.unread,
+#letterInboxModal .letter-item.type-letter.unread,
+#letterInboxModal .letter-item.type-reply.unread{
+  background:#eff6ff!important;
+  background-image:none!important;
+  border-color:#bfdbfe!important;
+}
+
+/* V1.0.47 — admin test data reports */
+.admin-cleanup-test-card{border:1px solid #fecaca;background:#fffafa;}
+.admin-cleanup-test-card h4{color:#991b1b;}
+.cleanup-stat-line{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #e5e7eb;}
+.cleanup-stat-line:last-of-type{border-bottom:0;}
+.cleanup-stat-line b{font-size:16px;color:#14532d;}
+.cleanup-stat-line.total{margin-top:4px;padding-top:10px;border-top:2px solid #fecaca;}
+.cleanup-stat-line.total b{color:#991b1b;}
+.admin-cleanup-test-card small{display:block;margin-top:8px;color:#64748b;line-height:1.9;}

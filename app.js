@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.19";
+const APP_VERSION = "V1.0.20";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-05";
@@ -618,6 +618,9 @@ function updateAccountUI() {
   }
 
   document.body.classList.remove("login-active");
+
+  if (loginBox) loginBox.classList.add("hidden");
+  if (logoutButton) logoutButton.classList.remove("hidden");
 
   if (account) {
     account.classList.remove("hidden");

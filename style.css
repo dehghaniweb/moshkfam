@@ -3738,3 +3738,37 @@ body:has(#bootLoader:not(.hide)){
   grid-template-columns:repeat(4,minmax(0,1fr))!important;
 }
 @media(max-width:850px){#letterInboxModal .letter-filters{grid-template-columns:1fr 1fr!important;}}
+
+
+/* ===== V1.0.20: logged-in account + right-side modal scrollbars ===== */
+body:not(.login-active) #loginBox{display:none!important;}
+body:not(.login-active) #logoutButton{display:inline-flex!important;}
+
+/* Keep modal scrollbars on the RIGHT while preserving RTL content. */
+#cartModal .cart-modal-card,
+#orderHistoryModal .order-history-modal-card,
+#letterInboxModal .letter-inbox-modal-card{
+  direction:ltr!important;
+  overflow-y:scroll!important;
+  overflow-x:hidden!important;
+  scrollbar-gutter:stable!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+#cartModal .cart-modal-card > *,
+#orderHistoryModal .order-history-modal-card > *,
+#letterInboxModal .letter-inbox-modal-card > *{direction:rtl;}
+#letterInboxModal .letter-inbox-modal-card .letter-inbox-layout,
+#letterInboxModal .letter-inbox-modal-card .letter-filters,
+#letterInboxModal .letter-inbox-modal-card .letter-inbox-header{direction:rtl!important;}
+#cartModal .cart-modal-card > .close,
+#orderHistoryModal .order-history-modal-card > .close,
+#letterInboxModal .letter-inbox-modal-card > .close{
+  left:auto!important;
+  right:14px!important;
+  z-index:100!important;
+}
+@media(max-width:700px){
+  #cartModal .cart-modal-card > .close,
+  #orderHistoryModal .order-history-modal-card > .close,
+  #letterInboxModal .letter-inbox-modal-card > .close{right:10px!important;left:auto!important;}
+}

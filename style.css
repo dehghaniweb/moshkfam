@@ -5549,389 +5549,82 @@ body[data-account-role="software-admin"] .header-shopping-actions{
   #letterInboxModal .letter-compose-button{padding:7px 7px!important;font-size:9px!important;}
 }
 
-/* =========================================================
-   MOSHKFAM V1.0.56 — FINAL HEADER ONLY
-   Scope: ONLY the main page header.
-   No other page/modal/section is modified.
-========================================================= */
 
-/* Common header layout: clean 2-column CSS Grid. */
+/* =========================================================
+   MOSHKFAM — CLEAN MAIN HEADER ONLY
+   This block is the single final layout authority for the
+   main page header. It does not target other page headers.
+========================================================= */
 .header{
   display:grid!important;
-  grid-template-columns:minmax(280px,1fr) minmax(280px,1fr)!important;
-  grid-template-areas:
-    "auth brand"
-    "actions tools"!important;
-  align-items:center!important;
-  gap:12px 24px!important;
-  padding:14px 20px!important;
-  min-height:0!important;
-  position:sticky!important;
-  top:0!important;
-  overflow:visible!important;
-}
-
-.header .brand{
-  grid-area:brand!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-self:end!important;
-  width:auto!important;
-  max-width:100%!important;
-  min-width:0!important;
-  margin:0!important;
-  flex:none!important;
-}
-
-.header .brand img{
-  width:54px!important;
-  height:54px!important;
-  flex:0 0 54px!important;
-}
-
-.header .brand>div{
-  min-width:0!important;
-}
-
-.header .brand h1{
-  margin:0!important;
-  font-size:20px!important;
-  line-height:1.4!important;
-  white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-}
-
-.header .brand p{
-  margin:3px 0 0!important;
-  white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-}
-
-/* Login / account area on the LEFT. */
-.header .login-box,
-.header .account{
-  grid-area:auth!important;
-  justify-self:start!important;
-  align-self:start!important;
-  width:min(300px,100%)!important;
-  max-width:300px!important;
-  min-width:0!important;
-  margin:0!important;
-}
-
-/* Login fields: username, password, then login button. */
-body.login-active .header .login-fields{
-  display:grid!important;
-  grid-template-columns:1fr!important;
-  gap:7px!important;
-  width:100%!important;
-}
-
-body.login-active .header .login-fields input,
-body.login-active .header .login-fields button{
-  width:100%!important;
-  min-width:0!important;
-  height:38px!important;
-  box-sizing:border-box!important;
-}
-
-body.login-active .header .login-fields input{
-  padding:8px 10px!important;
-  font-size:12px!important;
-}
-
-body.login-active .header .login-fields button{
-  padding:8px 10px!important;
-  font-size:12px!important;
-}
-
-/* Logged-in account card. */
-body:not(.login-active) .header .account{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-start!important;
-  gap:10px!important;
-  padding:8px 10px!important;
-  min-height:52px!important;
-  box-sizing:border-box!important;
-}
-
-/* Action buttons: second row, left side. */
-.header .header-actions{
-  grid-area:actions!important;
-  justify-self:start!important;
-  align-self:center!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-start!important;
-  flex-wrap:wrap!important;
-  gap:8px!important;
-  width:auto!important;
-  margin:0!important;
-}
-
-.header .header-actions .admin-button,
-.header .header-actions .logout-button{
-  min-height:38px!important;
-  padding:8px 13px!important;
-  font-size:12px!important;
-  box-sizing:border-box!important;
-}
-
-/* Role-specific tools: second row, right side. */
-.header .header-shopping-actions{
-  grid-area:tools!important;
-  justify-self:end!important;
-  align-self:center!important;
-  position:static!important;
-  inset:auto!important;
-  width:auto!important;
-  height:auto!important;
-  min-height:0!important;
-  margin:0!important;
-  padding:0!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-end!important;
-  flex-direction:row!important;
-  gap:10px!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  grid-template-areas:"auth brand" "actions tools"!important;
   direction:ltr!important;
-  pointer-events:auto!important;
-}
-
-.header .header-shopping-actions>button{
-  position:relative!important;
-  inset:auto!important;
-  transform:none!important;
-  margin:0!important;
-  flex:0 0 auto!important;
-}
-
-/* Representative: envelope + cart + order history. */
-body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions{
-  justify-content:flex-end!important;
-}
-
-body:not(.login-active)[data-account-role="customer"] .header .orders-floating-button,
-body:not(.login-active)[data-account-role="customer"] .header .cart-floating-button,
-body:not(.login-active)[data-account-role="customer"] .header .admin-inbox-floating-button{
-  width:46px!important;
-  height:46px!important;
-  flex:0 0 46px!important;
-}
-
-/* Sales: envelope only in tools; sales panel remains in actions. */
-body:not(.login-active)[data-account-role="sales"] .header .header-shopping-actions{
-  justify-content:flex-end!important;
-}
-
-/* Software admin: no customer/sales tool row. */
-body:not(.login-active)[data-account-role="software-admin"] .header .header-shopping-actions{
-  display:none!important;
-}
-
-/* Never let hidden role controls reserve layout space. */
-.header .hidden{
-  display:none!important;
-}
-
-/* -------------------------
-   MOBILE
-------------------------- */
-@media(max-width:700px){
-  .header{
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
-    grid-template-areas:
-      "auth brand"
-      "actions tools"!important;
-    gap:8px 10px!important;
-    padding:10px 12px!important;
-  }
-
-  .header .brand{
-    justify-self:end!important;
-    max-width:100%!important;
-  }
-
-  .header .brand img{
-    width:48px!important;
-    height:48px!important;
-    flex-basis:48px!important;
-  }
-
-  .header .brand h1{
-    font-size:16px!important;
-  }
-
-  .header .brand p{
-    font-size:9px!important;
-  }
-
-  .header .brand .app-version{
-    font-size:8px!important;
-  }
-
-  .header .login-box,
-  .header .account{
-    width:100%!important;
-    max-width:100%!important;
-  }
-
-  body.login-active .header .login-fields{
-    gap:5px!important;
-  }
-
-  body.login-active .header .login-fields input,
-  body.login-active .header .login-fields button{
-    height:34px!important;
-    font-size:11px!important;
-  }
-
-  .header .header-actions{
-    justify-self:start!important;
-    width:auto!important;
-    max-width:100%!important;
-    gap:5px!important;
-  }
-
-  .header .header-actions .admin-button,
-  .header .header-actions .logout-button{
-    min-height:34px!important;
-    padding:7px 9px!important;
-    font-size:10px!important;
-  }
-
-  .header .header-shopping-actions{
-    justify-self:end!important;
-    width:auto!important;
-    max-width:100%!important;
-    gap:7px!important;
-  }
-
-  body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{
-    width:42px!important;
-    height:42px!important;
-    flex-basis:42px!important;
-  }
-}
-
-@media(max-width:420px){
-  .header{
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
-    gap:7px 8px!important;
-    padding:8px 9px!important;
-  }
-
-  .header .brand img{
-    width:44px!important;
-    height:44px!important;
-    flex-basis:44px!important;
-  }
-
-  .header .brand h1{font-size:14px!important;}
-  .header .brand p{font-size:8px!important;}
-
-  body.login-active .header .login-fields input,
-  body.login-active .header .login-fields button{
-    height:32px!important;
-    font-size:10px!important;
-  }
-
-  .header .header-actions .admin-button,
-  .header .header-actions .logout-button{
-    min-height:32px!important;
-    padding:6px 8px!important;
-    font-size:9px!important;
-  }
-
-  body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{
-    width:39px!important;
-    height:39px!important;
-    flex-basis:39px!important;
-  }
-}
-
-/* Login state: only the authentication block and brand occupy the header. */
-body.login-active .header{
-  grid-template-areas:"auth brand"!important;
-  grid-template-rows:auto!important;
-}
-body.login-active .header .header-actions,
-body.login-active .header .header-shopping-actions{
-  display:none!important;
-}
-
-/* =========================================================
-   MOSHKFAM V1.0.57 — FINAL MAIN HEADER LAYOUT
-   ONLY main-page header. No other page/section/modal is changed.
-========================================================= */
-
-/* Main header: brand always RIGHT, auth/account always LEFT. */
-.header{
-  display:grid!important;
-  grid-template-columns:minmax(300px,1fr) minmax(300px,1fr)!important;
-  grid-template-areas:
-    "auth brand"
-    "actions tools"!important;
   align-items:start!important;
   gap:12px 28px!important;
   padding:14px 20px!important;
   position:sticky!important;
   top:0!important;
+  z-index:50!important;
   overflow:visible!important;
+  min-height:0!important;
 }
-
 .header .brand{
   grid-area:brand!important;
   justify-self:end!important;
   align-self:start!important;
+  direction:rtl!important;
   display:flex!important;
   align-items:center!important;
+  gap:12px!important;
   width:auto!important;
   max-width:100%!important;
   margin:0!important;
+  min-width:0!important;
 }
-
 .header .brand img{
-  width:64px!important;
-  height:64px!important;
-  flex:0 0 64px!important;
+  width:82px!important;
+  height:82px!important;
+  flex:0 0 82px!important;
+  object-fit:contain!important;
+  padding:7px!important;
+  box-sizing:border-box!important;
 }
-
+.header .brand>div{min-width:0!important;}
+.header .brand h1{font-size:21px!important;white-space:nowrap!important;}
+.header .brand p{font-size:12px!important;white-space:nowrap!important;}
 .header .login-box,
 .header .account{
   grid-area:auth!important;
   justify-self:start!important;
   align-self:start!important;
+  direction:rtl!important;
   width:min(300px,100%)!important;
   max-width:300px!important;
+  min-width:0!important;
   margin:0!important;
 }
-
-/* Before login: three fields MUST stay vertically stacked. */
-body.login-active .header .login-fields{
+.header .login-box{display:flex!important;flex-direction:column!important;gap:5px!important;}
+.header .login-fields{
   display:grid!important;
   grid-template-columns:1fr!important;
   grid-template-rows:auto auto auto!important;
   gap:7px!important;
   width:100%!important;
+  align-items:stretch!important;
 }
-
-body.login-active .header .login-fields input,
-body.login-active .header .login-fields button{
+.header .login-fields input,
+.header .login-fields button{
   width:100%!important;
   min-width:0!important;
   height:40px!important;
   box-sizing:border-box!important;
 }
-
-/* Logged-in action row stays LEFT. */
 .header .header-actions{
   grid-area:actions!important;
   justify-self:start!important;
   align-self:start!important;
+  direction:rtl!important;
   display:flex!important;
   align-items:center!important;
   justify-content:flex-start!important;
@@ -5940,12 +5633,11 @@ body.login-active .header .login-fields button{
   width:auto!important;
   margin:0!important;
 }
-
-/* Role tools stay RIGHT. */
 .header .header-shopping-actions{
   grid-area:tools!important;
   justify-self:end!important;
   align-self:start!important;
+  direction:ltr!important;
   position:static!important;
   inset:auto!important;
   width:auto!important;
@@ -5954,13 +5646,11 @@ body.login-active .header .login-fields button{
   margin:0!important;
   padding:0!important;
   display:flex!important;
-  flex-direction:row!important;
   align-items:center!important;
   justify-content:flex-end!important;
   gap:10px!important;
-  direction:ltr!important;
+  pointer-events:auto!important;
 }
-
 .header .header-shopping-actions>button{
   position:relative!important;
   inset:auto!important;
@@ -5968,102 +5658,61 @@ body.login-active .header .login-fields button{
   margin:0!important;
   flex:0 0 auto!important;
 }
+.header .hidden{display:none!important;}
 
-/* Representative:
-   LEFT = cart + order history
-   RIGHT = envelope */
+/* Representative: LEFT = cart + orders, RIGHT = envelope. */
 body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions{
   display:flex!important;
-  justify-content:flex-end!important;
   direction:ltr!important;
+  justify-content:flex-end!important;
 }
-
 body:not(.login-active)[data-account-role="customer"] .header .cart-floating-button{order:1!important;}
 body:not(.login-active)[data-account-role="customer"] .header .orders-floating-button{order:2!important;}
 body:not(.login-active)[data-account-role="customer"] .header .admin-inbox-floating-button{order:3!important;margin-left:0!important;}
-
 body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{
-  width:46px!important;
-  height:46px!important;
-  flex:0 0 46px!important;
+  width:46px!important;height:46px!important;flex:0 0 46px!important;
 }
 
-/* Sales:
-   RIGHT = envelope
-   LEFT = sales panel (in header-actions) */
+/* Sales: envelope RIGHT, sales/admin action LEFT. */
 body:not(.login-active)[data-account-role="sales"] .header .header-shopping-actions{
   display:flex!important;
   justify-content:flex-end!important;
 }
 
-/* Software admin: NO envelope and NO shopping/tools row. */
+/* Software admin: no envelope/tools in the main header. */
 body:not(.login-active)[data-account-role="software-admin"] .header .header-shopping-actions{
   display:none!important;
 }
 
-/* Before login there are no role/action tools. */
+/* Before login: no role/action row; login form remains vertical. */
 body.login-active .header .header-actions,
-body.login-active .header .header-shopping-actions{
-  display:none!important;
-}
-
-.header .hidden{display:none!important;}
+body.login-active .header .header-shopping-actions{display:none!important;}
+body.login-active .header .login-box{display:flex!important;}
 
 @media(max-width:700px){
   .header{
     grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
-    grid-template-areas:
-      "auth brand"
-      "actions tools"!important;
+    grid-template-areas:"auth brand" "actions tools"!important;
     gap:9px 12px!important;
     padding:10px 12px!important;
   }
-
-  .header .brand{justify-self:end!important;max-width:100%!important;}
-  .header .brand img{width:58px!important;height:58px!important;flex-basis:58px!important;}
+  .header .brand{justify-self:end!important;}
+  .header .brand img{width:68px!important;height:68px!important;flex-basis:68px!important;}
   .header .brand h1{font-size:17px!important;}
   .header .brand p{font-size:9px!important;}
-  .header .brand .app-version{font-size:8px!important;}
-
-  .header .login-box,
-  .header .account{width:100%!important;max-width:100%!important;}
-
-  body.login-active .header .login-fields{
-    grid-template-columns:1fr!important;
-    gap:5px!important;
-  }
-
-  body.login-active .header .login-fields input,
-  body.login-active .header .login-fields button{
-    height:36px!important;
-    font-size:11px!important;
-  }
-
+  .header .login-box,.header .account{width:100%!important;max-width:300px!important;}
+  .header .login-fields{grid-template-columns:1fr!important;gap:5px!important;}
+  .header .login-fields input,.header .login-fields button{height:36px!important;font-size:11px!important;}
   .header .header-actions{justify-self:start!important;max-width:100%!important;}
   .header .header-shopping-actions{justify-self:end!important;max-width:100%!important;gap:7px!important;}
-
-  body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{
-    width:43px!important;
-    height:43px!important;
-    flex-basis:43px!important;
-  }
+  body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{width:43px!important;height:43px!important;flex-basis:43px!important;}
 }
-
 @media(max-width:420px){
   .header{gap:7px 8px!important;padding:8px 9px!important;}
-  .header .brand img{width:54px!important;height:54px!important;flex-basis:54px!important;}
+  .header .brand img{width:62px!important;height:62px!important;flex-basis:62px!important;}
   .header .brand h1{font-size:15px!important;}
   .header .brand p{font-size:8px!important;}
-
-  body.login-active .header .login-fields input,
-  body.login-active .header .login-fields button{
-    height:34px!important;
-    font-size:10px!important;
-  }
-
-  body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{
-    width:40px!important;
-    height:40px!important;
-    flex-basis:40px!important;
-  }
+  .header .login-box,.header .account{max-width:270px!important;}
+  .header .login-fields input,.header .login-fields button{height:34px!important;font-size:10px!important;}
+  body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{width:40px!important;height:40px!important;flex-basis:40px!important;}
 }

@@ -16,10 +16,10 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.3";
+const APP_VERSION = "V1.0.4";
 (async function forceClearCacheFromApp() {
   try {
-    const version = "moshkfam-app-20260923-01";
+    const version = "moshkfam-app-20260926-04";
     const flag = "moshkfam_cache_cleared_" + version;
 
     if (sessionStorage.getItem(flag)) return;
@@ -2117,6 +2117,9 @@ async function loadLetterRecipients(){
       return role==='customer'||role==='representative'||role==='rep'||role==='sales';
     });
     sel.innerHTML='<option value="">انتخاب نماینده...</option>';
+    sel.value='';
+    sel.removeAttribute('data-recipient-id');
+    sel.removeAttribute('data-selected-customer-id');
     if(!reps.length){
       sel.innerHTML='<option value="">نماینده‌ای برای انتخاب وجود ندارد</option>';
       sel.disabled=false;
@@ -2141,6 +2144,7 @@ async function loadLetterRecipients(){
     };
     sel.onchange=syncRecipientSelection;
     sel.oninput=syncRecipientSelection;
+    sel.addEventListener('change',syncRecipientSelection,{once:false});
     sel.dataset.recipientId='';
     sel.dataset.selectedCustomerId='';
   }catch(e){
@@ -2267,7 +2271,14 @@ async function sendNewLetter(){
   const subject=String(subjectEl?.value||"").trim();
   const body=String(bodyEl?.value||"").trim();
   const selectedOption=recipientEl?.options?.[recipientEl.selectedIndex];
-  const recipientId=String(selectedOption?.value || selectedOption?.dataset?.customerId || recipientEl?.dataset?.recipientId || recipientEl?.dataset?.selectedCustomerId || "").trim();
+  const recipientId=String(
+    recipientEl?.value ||
+    selectedOption?.dataset?.customerId ||
+    selectedOption?.value ||
+    recipientEl?.dataset?.recipientId ||
+    recipientEl?.dataset?.selectedCustomerId ||
+    ""
+  ).trim();
   if(!subject){subjectEl?.focus();return appAlert("⚠️ عنوان نامه را وارد کنید.");}
   if(!body){bodyEl?.focus();return appAlert("⚠️ متن نامه را وارد کنید.");}
   if(canUseAdminLetters() && !recipientId){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}

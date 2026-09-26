@@ -111,7 +111,7 @@
       <p>
         محصولات کشاورزی و کودهای تخصصی
       </p>
-      <span id="appVersion" class="app-version">V1.0.24</span>
+      <span id="appVersion" class="app-version">V1.0.26</span>
 
     </div>
 
@@ -641,7 +641,28 @@
 -->
 
 <script>
+/* V1.0.26: نامه فقط پس از ورود نمایش داده شود. */
+(function () {
+  function syncLetterVisibility() {
+    const btn = document.getElementById("letterInboxButton");
+    const loginBox = document.getElementById("loginBox");
+    if (!btn || !loginBox) return;
+    const loggedIn = loginBox.classList.contains("hidden");
+    if (loggedIn) btn.classList.remove("hidden");
+    else btn.classList.add("hidden");
+  }
+  document.addEventListener("DOMContentLoaded", syncLetterVisibility);
+  const start = () => {
+    syncLetterVisibility();
+    const loginBox = document.getElementById("loginBox");
+    if (loginBox) new MutationObserver(syncLetterVisibility).observe(loginBox, {attributes:true, attributeFilter:["class"]});
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, {once:true});
+  else start();
+})();
+</script>
 
+<script>
 (function () {
 
   const version = Date.now();

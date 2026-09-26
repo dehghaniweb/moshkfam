@@ -3774,7 +3774,7 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
 }
 
 
-/* ===== V1.0.21: final header + cart/order/letter spacing ===== */
+/* ===== V1.0.22: final header + cart/order/letter spacing ===== */
 /* Put the envelope back on the same lower row as the shopping buttons. */
 .header-shopping-actions .admin-inbox-floating-button{
   position:absolute!important;
@@ -3841,4 +3841,74 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
   .header-shopping-actions .cart-floating-button{left:10px!important;}
   #cartModal .cart-modal-card,
   #orderHistoryModal .order-history-modal-card{padding-top:58px!important;}
+}
+
+
+/* V1.0.22 — mailbox/header layout */
+.header-shopping-actions{
+  left:16px!important;
+  right:16px!important;
+  bottom:10px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  direction:ltr!important;
+}
+.header-shopping-actions .cart-floating-button{order:1!important}
+.header-shopping-actions .orders-floating-button{order:2!important}
+.header-shopping-actions .admin-inbox-floating-button{
+  order:3!important;
+  margin-left:auto!important;
+}
+
+/* Keep the envelope on the right, while cart then order box stay on the left. */
+.letter-inbox-header{
+  direction:ltr!important;
+}
+.letter-account-date{
+  direction:rtl!important;
+  text-align:left!important;
+  order:1!important;
+}
+.letter-header-main{
+  direction:rtl!important;
+  order:2!important;
+  flex:1 1 auto!important;
+  justify-content:center!important;
+  position:relative!important;
+}
+.letter-header-title{
+  justify-content:center!important;
+  text-align:center!important;
+}
+.letter-header-title > div{
+  text-align:center!important;
+}
+.letter-header-actions{
+  position:absolute!important;
+  right:52px!important;
+  top:58px!important;
+  padding-top:0!important;
+}
+.letter-compose-button{
+  white-space:nowrap!important;
+}
+
+/* The lower message/thread pane: scrollbar on the right, Persian content stays RTL. */
+.letter-thread{
+  direction:ltr!important;
+  overflow-y:scroll!important;
+  overflow-x:hidden!important;
+  scrollbar-gutter:stable!important;
+}
+.letter-thread > *{
+  direction:rtl!important;
+}
+
+/* Ordinary letters = blue title; shopping-cart letters = red title. */
+.letter-item.type-letter .letter-item-subject{
+  color:#2563eb!important;
+}
+.letter-item.type-cart .letter-item-subject{
+  color:#dc2626!important;
 }

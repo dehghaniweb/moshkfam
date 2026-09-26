@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.21";
+const APP_VERSION = "V1.0.22";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-05";
@@ -2253,8 +2253,9 @@ async function loadLetterInbox(){
       const unread=!m.read;
       const subjectText=String(m.subject||'');
       const typeClass=subjectText.includes('🛒')?'type-cart':subjectText.includes('📝')?'type-note':subjectText.includes('📦')?'type-order':subjectText.includes('↩️')?'type-reply':'type-letter';
+      const displayTitle=subjectText.includes('🛒')?'سفارش سبد خرید':'نامه';
       const sender=m.sender_name||m.sender_username||"کاربر";
-      return `<div class="letter-item ${unread?'unread':''} ${typeClass}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${escapeHtml(m.subject||'بدون عنوان')}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
+      return `<div class="letter-item ${unread?'unread':''} ${typeClass}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${displayTitle}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
     }).join("");
     if(letterCurrentThread!=null){const idx=letterThreads.findIndex(x=>String(x.thread_id||x.id)===String(letterCurrentThread));if(idx>=0)openLetterThread(idx);}
     await loadLetterUnreadCount();

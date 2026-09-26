@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.49";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.52";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -2368,7 +2368,7 @@ async function loadLetterUnreadCount(){
     saveLetterLocalReadIds();
   }catch(e){console.warn("Letter unread count",e);}
 }
-function startLetterPolling(){if(letterPollingTimer)clearInterval(letterPollingTimer);if(!currentUser)return;loadLetterUnreadCount();letterPollingTimer=setInterval(loadLetterUnreadCount,15000);}
+function startLetterPolling(){if(letterPollingTimer)clearInterval(letterPollingTimer);if(!currentUser)return;loadLetterUnreadCount();letterPollingTimer=setInterval(loadLetterUnreadCount,10000);if(!window.__moshkfamLetterVisibilityBound){window.__moshkfamLetterVisibilityBound=true;document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)loadLetterUnreadCount();});window.addEventListener('focus',()=>{if(currentUser)loadLetterUnreadCount();});}}
 
 async function loadLetterInbox(){
   const list=$("letterList"), thread=$("letterThread"); if(!list||!thread)return;

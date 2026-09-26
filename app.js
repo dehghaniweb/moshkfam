@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.17";
+const APP_VERSION = "V1.0.19";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-05";
@@ -332,7 +332,7 @@ async function submitCartOrder(){
     return `${p.name_fa||p.name_en||"محصول"} × ${formatDecimal(unitValue)} ${unit==="ton"?"تن":"کیلوگرم"} = ${formatNumber(item.quantity)} بسته ${formatDecimal(packageKg)} کیلویی = ${formatNumber(price*(Number(item.quantity)||0))} تومان`;
   }).filter(Boolean);
   const total=entries.reduce((sum,item)=>{const p=products.find(x=>Number(x.id)===Number(item.productId));const price=getEffectivePrice(p);return sum+(Number.isFinite(price)?price*(Number(item.quantity)||0):0)},0);
-  try{await postJson("/api/customer/request",{type:"order",text:"🛒 سفارش سبد خرید\n"+lines.join("\n")+`\nمجموع: ${formatNumber(total)} تومان`});cartItems={};saveCart();renderCart();closeCart();await loadOrderHistoryCount();appAlert("✅ سفارش سبد خرید با موفقیت ثبت شد.");}catch(e){appAlert("❌ ثبت سفارش انجام نشد:\n"+(e.message||"خطای نامشخص"));}
+  try{const cartText="🛒 سفارش سبد خرید\n"+lines.join("\n")+`\nمجموع: ${formatNumber(total)} تومان`; await postJson("/api/customer/request",{type:"order",text:cartText}); try{await postJson("/api/customer/letter",{subject:"🛒 سفارش سبد خرید",body:cartText});}catch(letterError){console.warn("Cart letter registration failed",letterError);} cartItems={};saveCart();renderCart();closeCart();await loadOrderHistoryCount();appAlert("✅ سفارش سبد خرید با موفقیت ثبت شد.");}catch(e){appAlert("❌ ثبت سفارش انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
 
 
@@ -613,8 +613,6 @@ function updateAccountUI() {
     const inboxButton = $("letterInboxButton");
     if (inboxButton) inboxButton.classList.add("hidden");
 
-    const customerButton = $("customerButton");
-    if (customerButton) customerButton.classList.add("hidden");
 
     return;
   }
@@ -653,27 +651,6 @@ function updateAccountUI() {
       isAdmin || currentUser.role === "admin"
         ? "مدیر سیستم"
         : "مشتری";
-  }
-
-  const customerButton = $("customerButton");
-  if (customerButton) { customerButton.textContent = "📝 ثبت یادداشت"; customerButton.setAttribute("aria-label", "ثبت یادداشت"); customerButton.setAttribute("title", "ثبت یادداشت"); }
-  if(loginBox) loginBox.classList.add("hidden");
-  if(logoutButton) logoutButton.classList.remove("hidden");
-
-  if (adminButton) {
-    if (isAdmin) {
-      adminButton.classList.remove("hidden");
-    } else {
-      adminButton.classList.add("hidden");
-    }
-  }
-
-  if (customerButton) {
-    if (isAdmin) {
-      customerButton.classList.add("hidden");
-    } else {
-      customerButton.classList.remove("hidden");
-    }
   }
 
   const cartButton = $("cartButton");
@@ -2089,19 +2066,20 @@ function updateLetterDateSubtext(input){
   const iso=jalaliInputToGregorian(input.value); sub.textContent=iso?`معادل میلادی: ${iso.replace(/-/g,'/')}`:'تاریخ میلادی پس از انتخاب نمایش داده می‌شود';
 }
 function bindJalaliDateInputs(){['letterDateFrom','letterDateTo'].forEach(id=>{const el=$(id);if(!el||el.dataset.jalaliBound)return;el.dataset.jalaliBound='1';el.addEventListener('input',()=>updateLetterDateSubtext(el));el.addEventListener('blur',()=>{const iso=jalaliInputToGregorian(el.value);if(el.value.trim()&&!iso){el.value='';updateLetterDateSubtext(el);appAlert('تاریخ شمسی واردشده معتبر نیست.');}});});}
+function bindLetterLiveFilters(){ const ids=['letterReadFilter','letterSenderFilter']; ids.forEach(id=>{const el=$(id);if(!el||el.dataset.liveBound)return;el.dataset.liveBound='1';el.addEventListener('change',()=>loadLetterInbox());}); ['letterDateFrom','letterDateTo'].forEach(id=>{const el=$(id);if(!el||el.dataset.liveChangeBound)return;el.dataset.liveChangeBound='1';el.addEventListener('change',()=>loadLetterInbox());}); }
 function updateLetterTodayHeader(){
   const now=new Date(),j=gregorianToJalali(now), weekdays=['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
   const name=(currentUser?.first_name||currentUser?.username||currentUser?.name||'کاربر')+(currentUser?.last_name?` ${currentUser.last_name}`:'');
   if($('letterTodayJalali'))$('letterTodayJalali').textContent=`امروز ${faDigits(j.jy)}/${faDigits(String(j.jm).padStart(2,'0'))}/${faDigits(String(j.jd).padStart(2,'0'))}`;
   if($('letterTodayWeekday'))$('letterTodayWeekday').textContent=`روز ${weekdays[now.getDay()]}`;
   if($('letterTodayGregorian'))$('letterTodayGregorian').textContent=`معادل میلادی: ${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
-  if($('letterLoggedInSender'))$('letterLoggedInSender').textContent=`فرستنده این حساب: ${name}`;
+  if($('letterLoggedInSender'))$('letterLoggedInSender').textContent=`فرستنده این حساب: ${name}`; if($('letterAccountSenderButton'))$('letterAccountSenderButton').textContent=`فرستنده این حساب: ${name}`;
 }
 function openLetterInbox(){
   if(!currentUser)return;
   const modal=$('letterInboxModal'); if(!modal)return;
   modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
-  bindJalaliDateInputs(); updateLetterTodayHeader();
+  bindJalaliDateInputs(); bindLetterLiveFilters(); updateLetterTodayHeader();
   // هنگام باز شدن صندوق، همه نامه‌ها به‌صورت پیش‌فرض نمایش داده شوند؛
   // فیلتر «امروز» فقط با دکمه «امروز» فعال می‌شود.
   if($('letterDateFrom'))$('letterDateFrom').value='';
@@ -2261,10 +2239,11 @@ async function loadLetterInbox(){
   const list=$("letterList"), thread=$("letterThread"); if(!list||!thread)return;
   list.innerHTML='<div class="message">در حال دریافت نامه‌ها...</div>';
   try{
-    const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:$("letterReadFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||""};
+    const selectedStatus=$("letterReadFilter")?.value||"all"; const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:(selectedStatus==='incoming'||selectedStatus==='outgoing')?'all':selectedStatus,sender_id:$("letterSenderFilter")?.value||"",direction_filter:(selectedStatus==='incoming'||selectedStatus==='outgoing')?selectedStatus:'all'};
     const endpoint=canUseAdminLetters()?"/api/admin/letters":"/api/customer/letters";
     const r=await postJson(endpoint,payload); letterThreads=Array.isArray(r?.messages)?r.messages:[];
     letterThreads.sort((a,b)=>new Date(b?.created_at||0)-new Date(a?.created_at||0));
+    if(selectedStatus==='incoming'||selectedStatus==='outgoing'){ letterThreads=letterThreads.filter(m=>{ const sid=String(m?.sender_customer_id??m?.sender_user_id??m?.sender_telegram_user_id??''); const myIds=[currentUser?.id,currentUser?.customer_id,currentUser?.telegram_user_id].filter(v=>v!=null).map(String); const adminSender=!!(m?.sender_is_admin||m?.sender_role==='admin'||m?.sender_role==='super_admin'); const outgoing=myIds.includes(sid) || (canUseAdminLetters() && adminSender); return selectedStatus==='outgoing'?outgoing:!outgoing; }); }
     renderLetterSenderFilter(letterThreads);
     if(!letterThreads.length){list.innerHTML='<div class="message">نامه‌ای با این فیلتر پیدا نشد.</div>';return;}
     list.innerHTML=letterThreads.map((m,i)=>{
@@ -2343,53 +2322,8 @@ async function sendNewLetter(){
 
 /* =========================================================
    CUSTOMER ORDER / NOTE
+   Note UI removed: letters are now the only message system.
 ========================================================= */
-
-function openCustomerRequest() {
-  const modal = $("customerRequestModal");
-  if (!modal) return;
-  modal.classList.remove("hidden");
-}
-
-function closeCustomerRequest() {
-  const modal = $("customerRequestModal");
-  if (modal) modal.classList.add("hidden");
-}
-
-async function submitCustomerRequest() {
-  const input = $("customerRequestText");
-  const text = input ? input.value.trim() : "";
-  const type = "note";
-
-  if (!text) {
-    alert("لطفاً متن یادداشت را بنویسید.");
-    return;
-  }
-
-  try {
-    await postJson("/api/customer/request", {
-      type,
-      text
-    });
-
-    if (input) {
-      input.value = "";
-    }
-
-    closeCustomerRequest();
-    // از tg.showPopup استفاده نمی‌کنیم؛ این متد در بعضی WebViewها
-    // باعث خطای WebAppMethod Unsupported می‌شود.
-    alert("✅ یادداشت شما با موفقیت ثبت شد.");
-
-  } catch (error) {
-    console.error("Customer request error:", error);
-
-    alert(
-      "❌ ثبت درخواست انجام نشد:\n" +
-      (error?.message || "خطای نامشخص")
-    );
-  }
-}
 
 async function loadAdminRequests() {
   const container = $("adminRequests");
@@ -2531,11 +2465,6 @@ function setupEvents() {
         "click",
         openAdmin
       );
-    }
-
-    const customerButton = $("customerButton");
-    if (customerButton) {
-      customerButton.addEventListener("click", openCustomerRequest);
     }
 
     const customerSelect =
@@ -2877,8 +2806,5 @@ window.loadCustomerPrices =
 
 window.setCustomerPrice =
   setCustomerPrice;
-window.openCustomerRequest = openCustomerRequest;
-window.closeCustomerRequest = closeCustomerRequest;
-window.submitCustomerRequest = submitCustomerRequest;
 window.updateCustomerRequestStatus = updateCustomerRequestStatus;
 window.createProduct=createProduct;window.deleteProduct=deleteProduct;window.createCustomerUser=createCustomerUser;window.deleteCustomerUser=deleteCustomerUser;window.updateCustomerUser=updateCustomerUser;window.saveSiteSettings=saveSiteSettings;

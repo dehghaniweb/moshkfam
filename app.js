@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.6";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.13";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-05";
@@ -2093,7 +2093,6 @@ function openLetterInbox(){
   if($('letterDateTo'))$('letterDateTo').value='';
   if($('letterReadFilter'))$('letterReadFilter').value='all';
   if($('letterSenderFilter'))$('letterSenderFilter').value='';
-  if($('letterDirectionFilter')){$('letterDirectionFilter').value='all';$('letterDirectionFilterWrap')?.classList.toggle('hidden',!canUseAdminLetters());}
   updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();
 }
 function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
@@ -2247,7 +2246,7 @@ async function loadLetterInbox(){
   const list=$("letterList"), thread=$("letterThread"); if(!list||!thread)return;
   list.innerHTML='<div class="message">در حال دریافت نامه‌ها...</div>';
   try{
-    const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:$("letterReadFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||"",direction:$("letterDirectionFilter")?.value||"all"};
+    const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:$("letterReadFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||""};
     const endpoint=canUseAdminLetters()?"/api/admin/letters":"/api/customer/letters";
     const r=await postJson(endpoint,payload); letterThreads=Array.isArray(r?.messages)?r.messages:[];
     letterThreads.sort((a,b)=>new Date(b?.created_at||0)-new Date(a?.created_at||0));
@@ -2258,8 +2257,7 @@ async function loadLetterInbox(){
       const subjectText=String(m.subject||'');
       const typeClass=subjectText.includes('🛒')?'type-cart':subjectText.includes('📝')?'type-note':subjectText.includes('📦')?'type-order':subjectText.includes('↩️')?'type-reply':'type-letter';
       const sender=m.sender_name||m.sender_username||"کاربر";
-      const directionLabel=(canUseAdminLetters()&&m.direction==='incoming')?'📥 ورودی':(canUseAdminLetters()&&m.direction==='outgoing')?'📤 ارسالی':'';
-      return `<div class="letter-item ${unread?'unread':''} ${typeClass}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${escapeHtml(m.subject||'بدون عنوان')}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${directionLabel} ${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
+      return `<div class="letter-item ${unread?'unread':''} ${typeClass}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${escapeHtml(m.subject||'بدون عنوان')}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
     }).join("");
     if(letterCurrentThread!=null){const idx=letterThreads.findIndex(x=>String(x.thread_id||x.id)===String(letterCurrentThread));if(idx>=0)openLetterThread(idx);}
     await loadLetterUnreadCount();
@@ -2719,30 +2717,6 @@ async function loadServiceLimits(){
   }catch(e){panel.innerHTML=`<div class="message error">دریافت گزارش محدودیت‌ها انجام نشد.<br>${escapeHtml(e.message||'خطای نامشخص')}</div>`;}
 }
 
-
-async function loadAdminCleanupStats(){
-  const box=$("adminLetterCleanupStats"); if(!box)return;
-  box.textContent="در حال دریافت آمار...";
-  try{
-    const r=await postJson("/api/admin/cleanup-stats",{});
-    box.innerHTML=`✉️ نامه‌ها: <b>${formatNumber(Number(r?.messages||0))}</b><br>🛒 سفارش‌ها/درخواست‌ها: <b>${formatNumber(Number(r?.requests||0))}</b>`;
-  }catch(e){box.textContent="دریافت آمار انجام نشد: "+(e.message||"");}
-}
-async function adminCleanupTestData(){
-  const confirmBox=$("adminCleanupConfirm");
-  if(!confirmBox?.checked){return appAlert("⚠️ برای پاک‌سازی، گزینه تأیید را فعال کنید.");}
-  const ok=await appConfirm("⚠️ همه نامه‌ها، پاسخ‌های نامه و سفارش‌ها/درخواست‌های ثبت‌شده حذف می‌شوند. ادامه می‌دهید؟");
-  if(!ok)return;
-  try{
-    const r=await postJson("/api/admin/cleanup-test-data",{confirm:true});
-    if(r?.ok===false)throw new Error(r.error||"پاک‌سازی انجام نشد.");
-    if(confirmBox)confirmBox.checked=false;
-    await loadAdminCleanupStats();
-    await loadLetterUnreadCount();
-    appAlert(`✅ پاک‌سازی انجام شد.\nنامه‌ها: ${formatNumber(Number(r?.messages||0))}\nسفارش‌ها/درخواست‌ها: ${formatNumber(Number(r?.requests||0))}`);
-  }catch(e){appAlert("❌ پاک‌سازی انجام نشد:\n"+(e.message||"خطای نامشخص"));}
-}
-
 function showAdminHome() {
   const home = $("adminHome");
   const sections = document.querySelectorAll("[id^='adminSection-']");
@@ -2752,7 +2726,7 @@ function showAdminHome() {
 }
 
 async function showAdminSection(sectionName) {
-  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",admins:"admins",archives:"products",cleanup:"requests"};
+  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",admins:"admins",archives:"products"};
   const needed=permissionMap[sectionName];
   if(needed && sectionName !== "requests" && !(adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins")){
     appAlert("❌ سطح دسترسی این بخش برای شما فعال نیست.");
@@ -2794,9 +2768,6 @@ async function showAdminSection(sectionName) {
     }
     if (sectionName === "limits") {
       await loadServiceLimits();
-    }
-    if (sectionName === "cleanup") {
-      await loadAdminCleanupStats();
     }
   } catch (error) {
     console.error("Admin section:", error);

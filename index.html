@@ -59,7 +59,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style id="critical-style">
-  html,body{margin:0;overflow:hidden;width:100%;max-width:100%;}min-height:100%;font-family:Tahoma,Arial,sans-serif;background:#f4f7f5;color:#1f2937}
+  html,body{margin:0;min-height:100%;overflow:hidden;width:100%;max-width:100%;font-family:Tahoma,Arial,sans-serif;background:#f4f7f5;color:#1f2937}
   .app{visibility:hidden}
   #bootLoader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ecfdf5,#f0fdf4,#dcfce7);transition:opacity .25s}
   #bootLoader.hide{opacity:0;pointer-events:none}
@@ -104,7 +104,7 @@
       <p>
         محصولات کشاورزی و کودهای تخصصی
       </p>
-      <span id="appVersion" class="app-version">V1.0.7</span>
+      <span id="appVersion" class="app-version">V1.0.8</span>
 
     </div>
 
@@ -359,6 +359,7 @@
       <label>از تاریخ شمسی<input id="letterDateFrom" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off"></label>
       <label>تا تاریخ شمسی<input id="letterDateTo" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off"></label>
       <label>وضعیت<select id="letterReadFilter"><option value="all">همه نامه‌ها</option><option value="unread">خوانده‌نشده</option></select></label>
+      <label>نوع نامه<select id="letterDirectionFilter"><option value="all">همه نامه‌ها</option><option value="incoming">📥 نامه‌های ورودی</option><option value="outgoing">📤 نامه‌های ارسالی</option></select></label>
       <label id="letterSenderFilterWrap">فرستنده<select id="letterSenderFilter"><option value="">همه فرستنده‌ها</option></select></label>
       <button type="button" class="letter-filter-button" onclick="loadLetterInbox()">🔎 نمایش</button>
       <button type="button" class="letter-filter-reset" onclick="resetLetterFilters()">↺ امروز</button><button type="button" class="letter-filter-reset" onclick="showAllLetters()">📚 همه تاریخ‌ها</button>
@@ -478,6 +479,7 @@
         <button class="admin-menu-item" onclick="showAdminSection('prices')"><span>💰</span><b>قیمت اختصاصی مشتری</b><small>تعیین قیمت مخصوص هر نماینده</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('admins')"><span>🛡️</span><b>مدیران سیستم</b><small>اضافه، ویرایش و حذف مدیران پنل</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('limits')"><span>📊</span><b>محدودیت‌ها و مصرف سرویس‌ها</b><small>گزارش مصرف امروز، سقف روزانه و وضعیت سرویس‌ها</small></button>
+        <button class="admin-menu-item" onclick="showAdminSection('message-management')"><span>🧹</span><b>مدیریت نامه‌ها و سبدهای خرید</b><small>پاک‌سازی کامل سوابق برای شروع تست جدید</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('footer')"><span>🏢</span><b>اطلاعات پایین صفحه</b><small>نام شرکت، تلفن و آدرس</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('archives')"><span>🗄️</span><b>بایگانی عکس‌ها</b><small>مشاهده و بازگردانی تصاویر قبلی</small></button>
       </div>
@@ -616,6 +618,19 @@
       <div id="serviceLimitsPanel" class="service-limits-panel">
         <div class="limits-loading">در حال دریافت گزارش مصرف...</div>
       </div>
+    </section>
+
+    <!-- MESSAGE MANAGEMENT -->
+    <section id="adminSection-message-management" class="admin-view admin-inner-view hidden">
+      <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
+      <h3>🧹 مدیریت نامه‌ها و سبدهای خرید</h3>
+      <p class="admin-section-help">برای شروع تست از ابتدا، سوابق نامه‌ها، پاسخ‌ها، سفارش‌ها، اقلام سفارش، یادداشت‌ها و درخواست‌های نمایندگان پاک می‌شوند. محصولات، نماینده‌ها، مدیران و قیمت‌های اختصاصی حذف نمی‌شوند.</p>
+      <div class="admin-reset-card">
+        <strong>⚠️ پاک‌سازی کامل سوابق</strong>
+        <p>این عملیات قابل بازگردانی نیست و فقط داده‌های عملیاتی نامه و سفارش را حذف می‌کند.</p>
+        <button type="button" class="admin-danger" onclick="resetLetterAndCartData(); return false;">🗑️ حذف همه نامه‌ها و سبدهای خرید</button>
+      </div>
+      <div id="adminResetResult" class="message hidden"></div>
     </section>
 
     <!-- FOOTER -->

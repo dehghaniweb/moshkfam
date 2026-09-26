@@ -16,10 +16,10 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.7";
+const APP_VERSION = "V1.0.8";
 (async function forceClearCacheFromApp() {
   try {
-    const version = "moshkfam-app-20260926-06";
+    const version = "moshkfam-app-20260926-07";
     const flag = "moshkfam_cache_cleared_" + version;
 
     if (sessionStorage.getItem(flag)) return;
@@ -692,7 +692,7 @@ function updateAccountUI() {
 
 async function loadProductDetailGallery(productId){
   const box=document.getElementById(`product-detail-gallery-${Number(productId)}`); if(!box)return;
-  try{const r=await get(`/api/product-detail-images?product_id=${encodeURIComponent(productId)}`); const images=Array.isArray(r?.images)?r.images:[]; if(!images.length){box.innerHTML="";return;} box.innerHTML=`<div class="product-gallery-grid">${images.map((im,i)=>`<figure class="product-gallery-item"><img src="${escapeHtml(im.file_url||"")}" alt="${escapeHtml(im.caption||"تصویر محصول")}" loading="lazy"><figcaption>${escapeHtml(im.caption||"")}</figcaption></figure>`).join("")}</div>`;}catch(e){console.warn("Product gallery:",e);box.innerHTML="";}
+  try{const r=await get(`/api/product-detail-images?product_id=${encodeURIComponent(productId)}`); const images=Array.isArray(r?.images)?r.images:[]; if(!images.length){box.innerHTML="";return;} box.innerHTML=`<div class="product-gallery-grid">${images.map((im,i)=>`<figure class="product-gallery-item"><img src="${escapeHtml(im.file_url||"")}" alt="${escapeHtml(im.caption||"تصویر محصول")}" loading="lazy"><figcaption><span class="gallery-caption-label">📝 توضیحات تصویر</span><span>${escapeHtml(im.caption||"توضیحی برای این تصویر ثبت نشده است.")}</span></figcaption></figure>`).join("")}</div>`;}catch(e){console.warn("Product gallery:",e);box.innerHTML="";}
 }
 
 async function loadProducts() {
@@ -2233,8 +2233,8 @@ function openLetterCompose(){
   setTimeout(()=>subject?.focus(),80);
 }
 function closeLetterCompose(){const m=$('letterComposeModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
-function resetLetterFilters(){const t=localDateInputValue();setJalaliInput('letterDateFrom',t);setJalaliInput('letterDateTo',t);$('letterReadFilter').value='all';if($('letterSenderFilter'))$('letterSenderFilter').value='';updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();}
-function showAllLetters(){$('letterDateFrom').value='';$('letterDateTo').value='';$('letterReadFilter').value='all';if($('letterSenderFilter'))$('letterSenderFilter').value='';updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();}
+function resetLetterFilters(){const t=localDateInputValue();setJalaliInput('letterDateFrom',t);setJalaliInput('letterDateTo',t);$('letterReadFilter').value='all';if($('letterDirectionFilter'))$('letterDirectionFilter').value='all';if($('letterSenderFilter'))$('letterSenderFilter').value='';updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();}
+function showAllLetters(){$('letterDateFrom').value='';$('letterDateTo').value='';$('letterReadFilter').value='all';if($('letterDirectionFilter'))$('letterDirectionFilter').value='all';if($('letterSenderFilter'))$('letterSenderFilter').value='';updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();}
 
 async function loadLetterUnreadCount(){
   if(!currentUser)return;
@@ -2251,7 +2251,7 @@ async function loadLetterInbox(){
   const list=$("letterList"), thread=$("letterThread"); if(!list||!thread)return;
   list.innerHTML='<div class="message">در حال دریافت نامه‌ها...</div>';
   try{
-    const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:$("letterReadFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||""};
+    const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:$("letterReadFilter")?.value||"all",direction:$("letterDirectionFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||""};
     const endpoint=canUseAdminLetters()?"/api/admin/letters":"/api/customer/letters";
     const r=await postJson(endpoint,payload); letterThreads=Array.isArray(r?.messages)?r.messages:[];
     letterThreads.sort((a,b)=>new Date(b?.created_at||0)-new Date(a?.created_at||0));
@@ -2731,7 +2731,7 @@ function showAdminHome() {
 }
 
 async function showAdminSection(sectionName) {
-  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",admins:"admins",archives:"products"};
+  const permissionMap={"message-management":"admins",products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",admins:"admins",archives:"products"};
   const needed=permissionMap[sectionName];
   if(needed && sectionName !== "requests" && !(adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins")){
     appAlert("❌ سطح دسترسی این بخش برای شما فعال نیست.");
@@ -2777,6 +2777,21 @@ async function showAdminSection(sectionName) {
   } catch (error) {
     console.error("Admin section:", error);
   }
+}
+
+
+async function resetLetterAndCartData(){
+  if(!isAdmin) return appAlert("❌ فقط مدیر سامانه می‌تواند این بخش را اجرا کند.");
+  const ok=window.confirm("⚠️ همه نامه‌ها، پاسخ‌ها، سفارش‌ها، اقلام سفارش، یادداشت‌ها و درخواست‌های نمایندگان حذف می‌شوند.\n\nمحصولات و حساب‌ها حذف نمی‌شوند.\n\nآیا مطمئن هستید؟");
+  if(!ok)return;
+  const box=$("adminResetResult"); if(box){box.classList.remove("hidden");box.className="message";box.textContent="در حال پاک‌سازی...";}
+  try{
+    const r=await postJson("/api/admin/reset-letter-cart-data",{confirm:true});
+    try{Object.keys(localStorage).filter(k=>k.startsWith("moshkfam_cart_")).forEach(k=>localStorage.removeItem(k));}catch{}
+    cartItems={};updateCartBadge();
+    if(box){box.className="message success";box.textContent="✅ همه سوابق نامه و سفارش پاک شد و سبدهای خرید این دستگاه نیز خالی شدند.";}
+    await loadLetterUnreadCount();
+  }catch(e){if(box){box.className="message error";box.textContent="❌ پاک‌سازی انجام نشد: "+(e.message||"");}else appAlert("❌ پاک‌سازی انجام نشد:\n"+(e.message||""));}
 }
 
 function searchAdminItems(inputId, containerId) {

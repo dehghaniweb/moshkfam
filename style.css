@@ -3551,3 +3551,35 @@ html:has(body.booting),html:has(body.booting) body,body.booting{overflow:hidden!
 @media(max-width:600px){
   #letterRecipientPicker .letter-recipient-list{max-height:260px!important;}
 }
+
+
+/* =========================================================
+   V1.0.8 FINAL FIXES
+========================================================= */
+/* Keep the startup loader visually identical from first paint until it disappears. */
+html,body{overflow-x:hidden!important;}
+#bootLoader{font-family:Tahoma,Arial,sans-serif!important;}
+#bootLoader .boot-card{box-sizing:border-box!important;width:280px!important;min-width:280px!important;max-width:280px!important;min-height:190px!important;padding:26px 30px!important;font-family:Tahoma,Arial,sans-serif!important;}
+#bootLoader .boot-icon{font-size:42px!important;line-height:1.2!important;height:50px!important;margin:0 0 10px!important;}
+#bootLoader .boot-title{font-size:18px!important;line-height:1.8!important;height:33px!important;white-space:nowrap!important;}
+#bootLoader .boot-sub{font-size:12px!important;line-height:1.8!important;min-height:22px!important;margin-top:8px!important;}
+#bootLoader .boot-spinner{width:34px!important;height:34px!important;margin:15px auto 0!important;}
+/* After boot, never leave the page itself locked vertically. */
+html:not(:has(body.booting)),body:not(.booting){overflow-y:auto!important;min-height:100%!important;height:auto!important;}
+.app{min-height:100vh!important;height:auto!important;overflow-x:hidden!important;overflow-y:visible!important;}
+main{height:auto!important;min-height:0!important;overflow:visible!important;}
+/* Home header row: cart sits immediately to the right of the order box. */
+.header-shopping-actions{direction:rtl!important;justify-content:flex-start!important;}
+.header-shopping-actions .cart-floating-button{order:1!important;}
+.header-shopping-actions .orders-floating-button{order:2!important;}
+.header-shopping-actions .admin-inbox-floating-button{order:3!important;margin-right:auto!important;}
+/* Letter direction filter */
+#letterDirectionFilter{font-family:inherit!important;}
+/* Detail-image description must remain visible even when caption text is short/empty. */
+.product-gallery-item figcaption{display:flex!important;visibility:visible!important;opacity:1!important;align-self:stretch!important;justify-content:flex-start!important;align-items:flex-start!important;box-sizing:border-box!important;min-height:100%!important;}
+/* Admin cleanup card */
+.admin-reset-card{padding:18px!important;border:1px solid #fecaca!important;border-radius:16px!important;background:#fff7f7!important;margin-top:14px!important;}
+.admin-reset-card strong{display:block!important;color:#991b1b!important;font-size:15px!important;margin-bottom:7px!important;}
+.admin-reset-card p{color:#6b7280!important;font-size:12px!important;line-height:1.9!important;margin:0 0 14px!important;}
+.admin-danger{border:0!important;border-radius:12px!important;padding:12px 16px!important;background:#dc2626!important;color:#fff!important;font:inherit!important;font-weight:800!important;cursor:pointer!important;width:100%!important;}
+@media(max-width:600px){#bootLoader .boot-card{width:280px!important;min-width:280px!important;max-width:280px!important;padding:24px 24px!important;}#bootLoader .boot-title{font-size:18px!important;}.admin-reset-card{padding:14px!important;}}

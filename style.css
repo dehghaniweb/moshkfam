@@ -4983,3 +4983,70 @@ body[data-account-role="software-admin"] .header-shopping-actions{
 .cleanup-stat-line.total{margin-top:4px;padding-top:10px;border-top:2px solid #fecaca;}
 .cleanup-stat-line.total b{color:#991b1b;}
 .admin-cleanup-test-card small{display:block;margin-top:8px;color:#64748b;line-height:1.9;}
+
+/* V1.0.49 — mobile header tools: keep cart/orders/envelope in their own row
+   between the top controls and the account card. Never overlap the account. */
+@media(max-width:700px){
+  .header{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,auto)!important;
+    grid-template-areas:
+      "brand login"
+      "brand actions"
+      "tools tools"
+      "account account"!important;
+    align-items:start!important;
+    column-gap:10px!important;
+    row-gap:8px!important;
+    padding:8px 10px 10px!important;
+    min-height:0!important;
+    overflow:visible!important;
+  }
+  .header .brand{grid-area:brand!important;justify-self:end!important;align-self:start!important;}
+  .header .login-box{grid-area:login!important;justify-self:start!important;align-self:start!important;}
+  .header .header-actions{grid-area:actions!important;justify-self:start!important;align-self:start!important;}
+  .header .header-shopping-actions{
+    grid-area:tools!important;
+    position:static!important;
+    inset:auto!important;
+    width:100%!important;
+    height:50px!important;
+    min-height:50px!important;
+    margin:0!important;
+    padding:0 8px!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+    direction:ltr!important;
+    pointer-events:none!important;
+    z-index:20!important;
+  }
+  .header .header-shopping-actions>button{
+    position:static!important;
+    inset:auto!important;
+    transform:none!important;
+    margin:0!important;
+    pointer-events:auto!important;
+    flex:0 0 44px!important;
+    width:44px!important;
+    height:44px!important;
+  }
+  .header .header-shopping-actions .cart-floating-button{order:1!important;}
+  .header .header-shopping-actions .orders-floating-button{order:2!important;}
+  .header .header-shopping-actions .admin-inbox-floating-button{order:3!important;margin-left:auto!important;}
+  .header .account{
+    grid-area:account!important;
+    justify-self:stretch!important;
+    align-self:start!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+}
+
+/* V1.0.49 — recipient selection belongs only to sales/admin compose. */
+#letterComposeModal.customer-compose-mode #letterRecipientWrap{display:none!important;}
+

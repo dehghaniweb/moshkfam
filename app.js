@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.48";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.49";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -2215,8 +2215,10 @@ function openLetterInbox(){
 function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
 
 function canUseAdminLetters(){
+  // فقط مدیر نرم‌افزار و کارشناس فروش می‌توانند گیرنده نماینده انتخاب کنند.
+  // نماینده/مشتری همیشه نامه را مستقیم برای کارشناس فروش می‌فرستد.
   const role=String(currentUser?.role||"").toLowerCase();
-  return !!isAdmin || role==="admin" || role==="super_admin" || role==="sales" || (Array.isArray(adminPermissions) && adminPermissions.includes("requests"));
+  return !!currentUser && (isAdmin || role==="admin" || role==="super_admin" || role==="sales");
 }
 
 async function loadLetterRecipients(){
@@ -2337,10 +2339,13 @@ function openLetterCompose(){
   const adminMode=canUseAdminLetters();
   if(adminMode){
     $('letterComposeHelp')?.replaceChildren(document.createTextNode('نامه را برای نماینده موردنظر ارسال کنید.'));
+    $('letterRecipientWrap')?.classList.remove('hidden');
     loadLetterRecipients();
   }else{
-    $('letterComposeHelp')?.replaceChildren(document.createTextNode('پیام خود را برای مشکفام فارس بنویسید.'));
+    // نماینده گیرنده را انتخاب نمی‌کند؛ پیام مستقیم برای کارشناس فروش ارسال می‌شود.
+    $('letterComposeHelp')?.replaceChildren(document.createTextNode('پیام شما مستقیماً برای کارشناس فروش ارسال می‌شود.'));
     $('letterRecipientWrap')?.classList.add('hidden');
+    if($('letterRecipientSelect')){ $('letterRecipientSelect').value=''; $('letterRecipientSelect').removeAttribute('data-recipient-id'); }
   }
   setTimeout(()=>subject?.focus(),80);
 }

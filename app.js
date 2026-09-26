@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.40";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.41";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -691,6 +691,12 @@ function updateAccountUI() {
       cleanup: "cleanup"
     };
     const needed = permissionMap[sectionName];
+    // پنل «تنظیمات» فقط برای مدیر نرم‌افزار است؛ کارشناس از همین پنل
+    // اما فقط بخش‌های مجاز دیگر را می‌بیند.
+    if (sectionName === "settings") {
+      item.classList.add("hidden");
+      return;
+    }
     const allowed = !!needed && needed !== "cleanup" && adminPermissions.includes(needed);
     item.classList.toggle("hidden", !allowed);
   });
@@ -702,13 +708,13 @@ function updateAccountUI() {
   if (role === "sales" && !isAdmin) {
     if (adminModalKicker) adminModalKicker.textContent = "مشکفام فارس";
     if (adminModalTitle) adminModalTitle.textContent = "⚙️ پنل کارشناس فروش";
-    if (adminWelcomeTitle) adminWelcomeTitle.textContent = "پنل کارشناس فروش";
-    if (adminWelcomeText) adminWelcomeText.textContent = "بخش‌های مجاز از پنل مدیر نرم‌افزار برای شما نمایش داده می‌شود.";
+    if (adminWelcomeTitle) adminWelcomeTitle.textContent = "";
+    if (adminWelcomeText) adminWelcomeText.textContent = "";
   } else {
     if (adminModalKicker) adminModalKicker.textContent = "مشکفام فارس";
     if (adminModalTitle) adminModalTitle.textContent = "⚙️ پنل مدیر نرم‌افزار";
-    if (adminWelcomeTitle) adminWelcomeTitle.textContent = "مدیریت مشکفام فارس";
-    if (adminWelcomeText) adminWelcomeText.textContent = "یکی از بخش‌های زیر را انتخاب کنید.";
+    if (adminWelcomeTitle) adminWelcomeTitle.textContent = "";
+    if (adminWelcomeText) adminWelcomeText.textContent = "";
   }
 
   const isSalesRole = role === "sales";
@@ -1392,7 +1398,7 @@ function closeAdmin() {
 async function loadAdminData() {
   const loading = $("adminLoading");
   const error = $("adminError");
-  if (loading) { loading.classList.remove("hidden"); loading.textContent = "در حال دریافت اطلاعات..."; }
+  if (loading) { loading.classList.remove("hidden"); loading.textContent = "⏳  در حال دریافت اطلاعات..."; }
   const accountInfo = $("adminAccountInfo");
   if (accountInfo) accountInfo.classList.add("hidden");
   if (error) { error.classList.add("hidden"); }

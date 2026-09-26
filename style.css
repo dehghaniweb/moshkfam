@@ -4616,3 +4616,117 @@ body.login-active .sales-reports-floating-button{display:none!important;}
 .admin-header h2{font-size:20px!important;line-height:1.35!important;}
 @media(max-width:600px){.admin-header h2{font-size:18px!important;}}
 \n\n/* V1.0.40 — header roles + English admin account info + shared edit labels */\n@media(max-width:700px){\n  /* All logged-in customer/sales tools stay in one clean row below the logo. */\n  body:not(.login-active) .header-shopping-actions{\n    left:10px!important;\n    right:10px!important;\n    bottom:8px!important;\n    top:auto!important;\n    width:auto!important;\n    height:48px!important;\n    display:flex!important;\n    align-items:center!important;\n    justify-content:flex-start!important;\n    gap:8px!important;\n    position:absolute!important;\n    pointer-events:none!important;\n  }\n  body:not(.login-active) .header-shopping-actions > button{\n    position:static!important;\n    inset:auto!important;\n    transform:none!important;\n    pointer-events:auto!important;\n    flex:0 0 42px!important;\n    width:42px!important;\n    height:42px!important;\n    margin:0!important;\n  }\n  body:not(.login-active) .header-shopping-actions .admin-inbox-floating-button{\n    order:3!important;\n    margin-left:auto!important;\n    margin-right:0!important;\n  }\n  body:not(.login-active) .header-shopping-actions .cart-floating-button{order:1!important;}\n  body:not(.login-active) .header-shopping-actions .orders-floating-button{order:2!important;}\n}\n\n/* Software admin has no cart, order box, or mailbox in the main header. */\nbody:not(.login-active) .header-shopping-actions:has(.admin-inbox-floating-button.hidden):has(.cart-floating-button.hidden):has(.orders-floating-button.hidden){\n  display:none!important;\n}\n\n/* Admin/account information is English and left aligned. */\n.admin-account-top,\n.admin-account-top *{\n  direction:ltr!important;\n  text-align:left!important;\n}\n.admin-account-top{\n  font-size:11px!important;\n  line-height:1.65!important;\n}\n.admin-account-top strong{font-weight:800!important;}\n
+
+/* =========================================================
+   V1.0.41 — panel cleanup + mobile header separation
+========================================================= */
+
+/* پنل خوش‌آمدگویی خالی شده؛ فضای اضافه هم نمایش داده نشود. */
+.admin-welcome:has(strong:empty):has(span:empty){
+  display:none!important;
+}
+
+/* وضعیت دریافت اطلاعات در پنل مدیر و کارشناس: باکس جمع‌وجور و خوانا */
+.admin-header-status{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+}
+.admin-loading-inline{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:32px!important;
+  padding:5px 11px!important;
+  border:1px solid #d1fae5!important;
+  border-radius:10px!important;
+  background:linear-gradient(135deg,#f0fdf4,#ecfdf5)!important;
+  color:#166534!important;
+  font-size:11px!important;
+  font-weight:700!important;
+  box-shadow:0 3px 10px rgba(22,101,52,.08)!important;
+  white-space:nowrap!important;
+}
+.admin-loading-inline.hidden{
+  display:none!important;
+}
+
+/* عنوان پنل کارشناس کوچک‌تر */
+#adminModal[data-role="sales"] .admin-header h2,
+.admin-header.sales-panel h2{
+  font-size:17px!important;
+}
+
+/* هدر موبایل: ابزارها همیشه در ردیف مستقل پایین لوگو باشند.
+   هیچ position/top قدیمی نباید آن‌ها را روی لوگو ببرد. */
+@media(max-width:700px){
+  .header{
+    position:relative!important;
+    padding-bottom:88px!important;
+  }
+
+  body:not(.login-active) .header-shopping-actions{
+    position:absolute!important;
+    left:12px!important;
+    right:12px!important;
+    top:auto!important;
+    bottom:10px!important;
+    width:auto!important;
+    height:52px!important;
+    min-height:52px!important;
+    padding:0!important;
+    margin:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:10px!important;
+    z-index:70!important;
+  }
+
+  body:not(.login-active) .header-shopping-actions > button,
+  body:not(.login-active) .header-shopping-actions .admin-inbox-floating-button{
+    position:static!important;
+    top:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    left:auto!important;
+    transform:none!important;
+    flex:0 0 46px!important;
+    width:46px!important;
+    height:46px!important;
+    margin:0!important;
+  }
+
+  /* نامه در همان ردیف سبد/سفارش قرار می‌گیرد، نه روی آرم */
+  body:not(.login-active) .header-shopping-actions .admin-inbox-floating-button{
+    order:3!important;
+    margin-left:auto!important;
+  }
+  body:not(.login-active) .header-shopping-actions .cart-floating-button{order:1!important;}
+  body:not(.login-active) .header-shopping-actions .orders-floating-button{order:2!important;}
+
+  /* اگر فقط پاکت برای کارشناس است، همان ردیف پایین باقی بماند. */
+  body:not(.login-active) .header-shopping-actions:has(.admin-inbox-floating-button:not(.hidden)){
+    display:flex!important;
+  }
+
+  /* مدیر نرم‌افزار: اگر همه ابزارها مخفی‌اند، کل ردیف حذف شود. */
+  body:not(.login-active) .header-shopping-actions:has(.admin-inbox-floating-button.hidden):has(.cart-floating-button.hidden):has(.orders-floating-button.hidden){
+    display:none!important;
+  }
+
+  /* کمی فضای بیشتر بین آرم و ردیف نامه/ابزار */
+  body:not(.login-active) .header .brand{
+    margin-bottom:8px!important;
+  }
+
+  /* اطلاعات حساب داخل پنل همچنان انگلیسی و چپ‌چین */
+  .admin-account-top,
+  .admin-account-top *{
+    direction:ltr!important;
+    text-align:left!important;
+  }
+}
+
+/* متن خوش‌آمد قبلی مدیر/کارشناس دیگر نمایش داده نشود. */
+.admin-welcome:empty{display:none!important;}

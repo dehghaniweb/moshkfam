@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.37";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.38";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";

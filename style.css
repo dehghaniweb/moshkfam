@@ -4610,3 +4610,8 @@ body.login-active .sales-reports-floating-button{display:none!important;}
     bottom:auto!important;
   }
 }
+
+
+/* V1.0.38 — کوچک‌تر شدن عنوان مدیر نرم‌افزار در پنل */
+.admin-header h2{font-size:20px!important;line-height:1.35!important;}
+@media(max-width:600px){.admin-header h2{font-size:18px!important;}}

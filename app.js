@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.38";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.39";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -1989,12 +1989,12 @@ async function createAdminUser(){
       if(el) el.value="";
     });
     await loadAdminUsers();
-    appAlert("✅ مدیر جدید با موفقیت اضافه شد.");
+    appAlert("✅ حساب با موفقیت اضافه شد.");
   }catch(e){
     console.error("Create admin:",e);
-    appAlert("❌ افزودن مدیر انجام نشد:\n"+(e.message||"خطای نامشخص"));
+    appAlert("❌ افزودن حساب انجام نشد:\n"+(e.message||"خطای نامشخص"));
   }finally{
-    if(button){button.disabled=false;button.textContent="🛡️ افزودن مدیر";}
+    if(button){button.disabled=false;button.textContent="🛡️ افزودن حساب";}
   }
 }
 
@@ -2022,18 +2022,18 @@ async function loadAdminUsers(){
       const body=`<div class="admin-edit-grid admin-system-edit-grid">
           <label>نام<input id="afirst-${escapeHtml(key)}" value="${escapeHtml(a.first_name||"")}"></label>
           <label>نام خانوادگی<input id="alast-${escapeHtml(key)}" value="${escapeHtml(a.last_name||"")}"></label>
-          <label>نوع حساب<select id="arole-${escapeHtml(key)}"><option value="admin" ${String(a.role||"").toLowerCase() === "admin" ? "selected" : ""}>مدیر سیستم</option><option value="sales" ${String(a.role||"").toLowerCase() === "sales" ? "selected" : ""}>کارشناس فروش</option></select></label>
+          <label>نوع حساب<select id="arole-${escapeHtml(key)}"><option value="admin" ${String(a.role||"").toLowerCase() === "admin" ? "selected" : ""}>مدیر نرم‌افزار</option><option value="sales" ${String(a.role||"").toLowerCase() === "sales" ? "selected" : ""}>کارشناس فروش</option></select></label>
           <label>Telegram ID<input id="atele-${escapeHtml(key)}" value="${escapeHtml(a.telegram_user_id||"")}" inputmode="numeric"></label>
           <label>نام کاربری وب<input id="auser-${escapeHtml(key)}" value="${escapeHtml(a.username||"")}" autocomplete="off"></label>
           <label class="password-field">رمز جدید<div class="password-input-wrap"><input id="apass-${escapeHtml(key)}" type="password" placeholder="برای تغییر رمز وارد کنید" autocomplete="new-password"><button type="button" class="password-eye" id="eye-apass-${escapeHtml(key)}" onclick="togglePasswordVisibility('apass-${escapeHtml(key)}','eye-apass-${escapeHtml(key)}'); return false;" aria-label="نمایش رمز جدید" title="نمایش رمز جدید">👁️</button></div></label>
           <label>وضعیت<select id="astatus-${escapeHtml(key)}"><option value="active" ${a.status!=="disabled"?'selected':''}>فعال</option><option value="disabled" ${a.status==="disabled"?'selected':''}>غیرفعال</option></select></label>
         </div>
-        <div class="admin-permission-box"><strong>سطح دسترسی مدیر</strong><div class="admin-permission-grid">${ADMIN_PERMISSION_KEYS.map(k=>`<label><input type="checkbox" id="aperm-${escapeHtml(key)}-${k}" ${perms.includes(k)?'checked':''}> ${({products:'محصولات',customers:'نماینده‌ها',prices:'قیمت‌های اختصاصی',requests:'سفارش‌ها و یادداشت‌ها',footer:'اطلاعات شرکت',settings:'پنل تنظیمات'})[k]}</label>`).join('')}</div></div>
+        <div class="admin-permission-box"><strong>سطح دسترسی حساب</strong><div class="admin-permission-grid">${ADMIN_PERMISSION_KEYS.map(k=>`<label><input type="checkbox" id="aperm-${escapeHtml(key)}-${k}" ${perms.includes(k)?'checked':''}> ${({products:'محصولات',customers:'نماینده‌ها',prices:'قیمت‌های اختصاصی',requests:'سفارش‌ها و یادداشت‌ها',footer:'اطلاعات شرکت',settings:'پنل تنظیمات'})[k]}</label>`).join('')}</div></div>
         <div class="admin-system-actions">
           <button type="button" class="admin-save-customer-button" data-update-admin="${escapeHtml(key)}">💾 ذخیره مدیر</button>
           <button type="button" class="admin-danger admin-delete-admin-button" data-delete-admin="${escapeHtml(key)}">🗑️ حذف مدیر</button>
         </div>`;
-      return adminAccordion(`admin-system-edit-${key}`, `<span class="admin-item-number">${formatNumber(index+1)}</span><strong>🛡️ ${escapeHtml(name)}</strong><small>${a.username ? escapeHtml(a.username) : (a.telegram_user_id ? `Telegram: ${escapeHtml(a.telegram_user_id)}` : "مدیر نرم‌افزار")}</small>`, body, "admin-system-accordion");
+      return adminAccordion(`admin-system-edit-${key}`, `<span class="admin-item-number">${formatNumber(index+1)}</span><strong>🛡️ ${escapeHtml(name)}</strong><small>${a.username ? escapeHtml(a.username) : (a.telegram_user_id ? `Telegram: ${escapeHtml(a.telegram_user_id)}` : (String(a.role||"").toLowerCase()==="sales" ? "کارشناس فروش" : "مدیر نرم‌افزار"))}</small>`, body, "admin-system-accordion");
     }).join("");
   }catch(e){container.innerHTML=`<div class="message error">❌ دریافت مدیران انجام نشد.<br>${escapeHtml(e.message||"")}</div>`;}
 }
@@ -2059,7 +2059,7 @@ async function updateAdminUser(key){
     await postJson("/api/admin/update-admin",payload);
     await loadAdminUsers();
     appAlert("✅ اطلاعات مدیر و سطح دسترسی با موفقیت ذخیره شد.");
-  }catch(e){appAlert("❌ ویرایش مدیر انجام نشد:\n"+(e.message||"خطای نامشخص"));}
+  }catch(e){appAlert("❌ ویرایش حساب انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
 
 async function deleteAdminUser(id){
@@ -2070,8 +2070,8 @@ async function deleteAdminUser(id){
     const tgId=row?.querySelector('input[id^="atele-"]')?.value.trim()||"";
     await postJson("/api/admin/delete-admin",{id,telegram_user_id:tgId});
     await loadAdminUsers();
-    appAlert("✅ مدیر نرم‌افزار حذف شد.");
-  }catch(e){appAlert("❌ حذف مدیر انجام نشد:\n"+(e.message||"خطای نامشخص"));}
+    appAlert("✅ حساب حذف شد.");
+  }catch(e){appAlert("❌ حذف حساب انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
 
 /* =========================================================

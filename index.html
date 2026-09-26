@@ -59,15 +59,50 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style id="critical-style">
-  html,body{margin:0;min-height:100%;overflow:hidden;width:100%;max-width:100%;font-family:Tahoma,Arial,sans-serif;background:#f4f7f5;color:#1f2937}
+  html,body{
+    margin:0;
+    min-height:100%;
+    width:100%;
+    max-width:100%;
+    overflow:hidden;
+    font-family:Tahoma,Arial,sans-serif;
+    background:#f4f7f5;
+    color:#1f2937;
+  }
   .app{visibility:hidden}
-  #bootLoader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ecfdf5,#f0fdf4,#dcfce7);transition:opacity .25s}
+  #bootLoader{
+    position:fixed;
+    inset:0;
+    z-index:99999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    box-sizing:border-box;
+    background:linear-gradient(135deg,#ecfdf5,#f0fdf4,#dcfce7);
+  }
   #bootLoader.hide{opacity:0;pointer-events:none}
-  .boot-card{min-width:230px;padding:26px 30px;text-align:center;background:rgba(255,255,255,.94);border:1px solid #bbf7d0;border-radius:24px;box-shadow:0 18px 50px rgba(22,101,52,.16)}
-  .boot-icon{font-size:42px;margin-bottom:10px}
-  .boot-title{font-size:18px;font-weight:800;color:#166534}
-  .boot-sub{margin-top:8px;font-size:12px;color:#6b7280}
-  .boot-spinner{width:34px;height:34px;margin:15px auto 0;border:4px solid #dcfce7;border-top-color:#16a34a;border-radius:50%;animation:bootSpin .8s linear infinite}
+  .boot-card{
+    box-sizing:border-box;
+    width:310px;
+    min-width:310px;
+    height:205px;
+    min-height:205px;
+    padding:26px 30px;
+    flex:0 0 310px;
+    text-align:center;
+    background:rgba(255,255,255,.94);
+    border:1px solid #bbf7d0;
+    border-radius:24px;
+    box-shadow:0 18px 50px rgba(22,101,52,.16);
+    font-family:Tahoma,Arial,sans-serif;
+  }
+  .boot-icon{font-size:42px;line-height:1;margin-bottom:10px}
+  .boot-title{font-size:18px;line-height:1.6;font-weight:800;color:#166534;white-space:nowrap}
+  .boot-sub{margin-top:8px;font-size:12px;line-height:1.7;color:#6b7280;white-space:nowrap}
+  .boot-spinner{width:34px;height:34px;margin:15px auto 0;border:4px solid #dcfce7;border-top-color:#16a34a;border-radius:50%;animation:bootSpin .8s linear infinite;box-sizing:border-box}
   @keyframes bootSpin{to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -104,7 +139,7 @@
       <p>
         محصولات کشاورزی و کودهای تخصصی
       </p>
-      <span id="appVersion" class="app-version">V1.0.9</span>
+      <span id="appVersion" class="app-version">V1.0.7</span>
 
     </div>
 
@@ -125,18 +160,6 @@
       <span id="ordersCount" class="orders-count empty">۰</span>
     </button>
   </div>
-
-  <div class="login-box" id="loginBox">
-    <div class="login-fields">
-      <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username" dir="ltr" inputmode="email">
-      <input id="loginPassword" type="text" placeholder="رمز عبور" autocomplete="current-password" dir="ltr">
-      <button id="loginButton" type="button">🔐 ورود</button>
-    </div>
-    <div id="loginMessage" class="login-message"></div>
-  </div>
-
-  <div class="header-actions">
-
 
   <div
     id="account"
@@ -165,6 +188,17 @@
 
   </div>
 
+
+  <div class="login-box" id="loginBox">
+    <div class="login-fields">
+      <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username" dir="ltr" inputmode="email">
+      <input id="loginPassword" type="text" placeholder="رمز عبور" autocomplete="current-password" dir="ltr">
+      <button id="loginButton" type="button">🔐 ورود</button>
+    </div>
+    <div id="loginMessage" class="login-message"></div>
+  </div>
+
+  <div class="header-actions">
     <button
       id="adminButton"
       class="admin-button hidden"
@@ -359,14 +393,7 @@
     <div class="letter-filters">
       <label>از تاریخ شمسی<input id="letterDateFrom" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off"></label>
       <label>تا تاریخ شمسی<input id="letterDateTo" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off"></label>
-      <label>وضعیت / نوع نامه<select id="letterReadFilter">
-        <option value="all">همه نامه‌ها</option>
-        <option value="incoming">📥 نامه‌های دریافتی</option>
-        <option value="outgoing">📤 نامه‌های ارسالی</option>
-        <option value="read">✅ خوانده شده</option>
-        <option value="unread">🔵 خوانده نشده</option>
-      </select></label>
-      <select id="letterDirectionFilter" hidden aria-hidden="true"><option value="all">همه نامه‌ها</option><option value="incoming">📥 نامه‌های دریافتی</option><option value="outgoing">📤 نامه‌های ارسالی</option></select>
+      <label>وضعیت<select id="letterReadFilter"><option value="all">همه نامه‌ها</option><option value="unread">خوانده‌نشده</option></select></label>
       <label id="letterSenderFilterWrap">فرستنده<select id="letterSenderFilter"><option value="">همه فرستنده‌ها</option></select></label>
       <button type="button" class="letter-filter-button" onclick="loadLetterInbox()">🔎 نمایش</button>
       <button type="button" class="letter-filter-reset" onclick="resetLetterFilters()">↺ امروز</button><button type="button" class="letter-filter-reset" onclick="showAllLetters()">📚 همه تاریخ‌ها</button>
@@ -486,7 +513,6 @@
         <button class="admin-menu-item" onclick="showAdminSection('prices')"><span>💰</span><b>قیمت اختصاصی مشتری</b><small>تعیین قیمت مخصوص هر نماینده</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('admins')"><span>🛡️</span><b>مدیران سیستم</b><small>اضافه، ویرایش و حذف مدیران پنل</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('limits')"><span>📊</span><b>محدودیت‌ها و مصرف سرویس‌ها</b><small>گزارش مصرف امروز، سقف روزانه و وضعیت سرویس‌ها</small></button>
-        <button class="admin-menu-item" onclick="showAdminSection('message-management')"><span>🧹</span><b>مدیریت نامه‌ها و سبدهای خرید</b><small>پاک‌سازی کامل سوابق برای شروع تست جدید</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('footer')"><span>🏢</span><b>اطلاعات پایین صفحه</b><small>نام شرکت، تلفن و آدرس</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('archives')"><span>🗄️</span><b>بایگانی عکس‌ها</b><small>مشاهده و بازگردانی تصاویر قبلی</small></button>
       </div>
@@ -625,19 +651,6 @@
       <div id="serviceLimitsPanel" class="service-limits-panel">
         <div class="limits-loading">در حال دریافت گزارش مصرف...</div>
       </div>
-    </section>
-
-    <!-- MESSAGE MANAGEMENT -->
-    <section id="adminSection-message-management" class="admin-view admin-inner-view hidden">
-      <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3>🧹 مدیریت نامه‌ها و سبدهای خرید</h3>
-      <p class="admin-section-help">برای شروع تست از ابتدا، سوابق نامه‌ها، پاسخ‌ها، سفارش‌ها، اقلام سفارش، یادداشت‌ها و درخواست‌های نمایندگان پاک می‌شوند. محصولات، نماینده‌ها، مدیران و قیمت‌های اختصاصی حذف نمی‌شوند.</p>
-      <div class="admin-reset-card">
-        <strong>⚠️ پاک‌سازی کامل سوابق</strong>
-        <p>این عملیات قابل بازگردانی نیست و فقط داده‌های عملیاتی نامه و سفارش را حذف می‌کند.</p>
-        <button type="button" class="admin-danger" onclick="resetLetterAndCartData(); return false;">🗑️ حذف همه نامه‌ها و سبدهای خرید</button>
-      </div>
-      <div id="adminResetResult" class="message hidden"></div>
     </section>
 
     <!-- FOOTER -->

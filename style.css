@@ -3679,60 +3679,47 @@ body:has(#bootLoader:not(.hide)){
 .letter-compose-card .letter-textarea{font-weight:600!important;color:#1f2937!important;}
 .letter-compose-card .letter-textarea::placeholder{font-weight:500!important;color:#64748b!important;}
 
-
-/* V1.0.15 — customer note button and login-only header actions */
-.header-shopping-actions > .hidden{display:none!important;}
+/* V1.0.17 - final letter layout fixes */
+.header-shopping-actions .admin-inbox-floating-button{
+  right:16px!important;left:auto!important;top:auto!important;bottom:10px!important;
+}
 .header-shopping-actions .customer-note-button{
-  order:3!important;
-  flex:0 0 auto!important;
-  min-width:108px!important;
-  height:38px!important;
-  padding:0 10px!important;
-  border:1px solid #bbf7d0!important;
-  border-radius:12px!important;
-  background:#f0fdf4!important;
-  color:#166534!important;
-  font:inherit!important;
-  font-size:12px!important;
-  font-weight:800!important;
-  cursor:pointer!important;
-  box-shadow:0 5px 14px rgba(22,101,52,.10)!important;
+  position:absolute!important;
+  right:74px!important;left:auto!important;top:50%!important;bottom:auto!important;
+  transform:translateY(-50%)!important;
+  width:auto!important;height:38px!important;padding:0 10px!important;
+  min-width:0!important;font-size:12px!important;border-radius:12px!important;
+  white-space:nowrap!important;z-index:101!important;
 }
-.header-shopping-actions .admin-inbox-floating-button{order:4!important;}
-.header-shopping-actions .cart-floating-button{order:1!important;}
-.header-shopping-actions .orders-floating-button{order:2!important;}
-.customer-request-card .request-type{display:none!important;}
-.customer-request-text{font-weight:700!important;}
-@media(max-width:850px){
-  .header-shopping-actions .customer-note-button{min-width:96px!important;height:36px!important;font-size:11px!important;padding:0 8px!important;}
+@media(max-width:520px){
+  .header-shopping-actions .customer-note-button{right:62px!important;height:36px!important;padding:0 8px!important;font-size:11px!important}
 }
 
+/* Letter compose: close button on the right and clear vertical spacing. */
+#letterComposeModal .letter-compose-card{position:relative!important;padding-top:28px!important}
+#letterComposeModal .letter-compose-card>.close{
+  position:absolute!important;right:12px!important;left:auto!important;top:10px!important;
+  z-index:20!important;
+}
+#letterComposeModal .letter-compose-card h2{margin:8px 0 16px!important}
+#letterComposeModal .letter-compose-card .request-help{margin:0 0 16px!important}
+#letterComposeModal .letter-compose-card .letter-input{margin-top:16px!important}
 
-/* V1.0.16 — note button position/size and new-letter heading spacing */
-.header-shopping-actions .customer-note-button{
-  order:3!important;
-  min-width:88px!important;
-  width:auto!important;
-  height:32px!important;
-  padding:0 8px!important;
-  font-size:10px!important;
-  border-radius:9px!important;
+/* Letter inbox: remove the empty 'select a letter' pane; rows use the full window width. */
+#letterInboxModal .letter-inbox-layout{
+  display:block!important;height:calc(100% - 204px)!important;min-height:260px!important;
 }
-.header-shopping-actions .admin-inbox-floating-button{order:4!important;}
-.letter-compose-card h2{
-  margin:0!important;
-  padding:11px 14px!important;
-  border-radius:12px!important;
-  background:#e0f2fe!important;
-  color:#075985!important;
-  line-height:1.6!important;
+#letterInboxModal .letter-list{
+  width:100%!important;height:100%!important;max-height:none!important;
+  overflow-y:auto!important;padding:3px 0!important;
 }
-.letter-compose-card .letter-textarea{
-  margin-top:16px!important;
-  font-weight:600!important;
-  color:#1f2937!important;
+#letterInboxModal .letter-thread{display:none!important}
+#letterInboxModal .letter-item{
+  width:100%!important;margin:0 0 8px!important;border-radius:12px!important;
 }
-.letter-compose-card .request-help{margin-top:10px!important;margin-bottom:0!important;}
 @media(max-width:850px){
-  .header-shopping-actions .customer-note-button{min-width:82px!important;height:30px!important;font-size:10px!important;padding:0 7px!important;}
+  #letterInboxModal .letter-inbox-layout{height:calc(100% - 300px)!important;min-height:240px!important}
+}
+@media(max-width:520px){
+  #letterInboxModal .letter-inbox-layout{height:calc(100% - 380px)!important;min-height:220px!important}
 }

@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.35";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.37";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -661,7 +661,7 @@ function updateAccountUI() {
   }
 
   const role = String(currentUser?.role || "").toLowerCase();
-  const hasSalesPanel = role === "sales" && adminPermissions.length > 0;
+  const hasSalesPanel = role === "sales";
   if (adminButton) {
     adminButton.classList.toggle("hidden", !(isAdmin || hasSalesPanel));
     adminButton.textContent = isAdmin ? "⚙️ پنل مدیر نرم‌افزار" : "⚙️ پنل کارشناس فروش";
@@ -1360,7 +1360,7 @@ async function openAdmin() {
   }
 
   const role = String(currentUser?.role||"").toLowerCase();
-  const canOpenSalesPanel = role === "sales" && adminPermissions.length > 0;
+  const canOpenSalesPanel = role === "sales";
   const canOpenReports = false;
   if (!isAdmin && !canOpenSalesPanel && !canOpenReports) {
     if (error) {
@@ -1391,37 +1391,33 @@ function closeAdmin() {
 async function loadAdminData() {
   const loading = $("adminLoading");
   const error = $("adminError");
-
-  if (loading) {
-    loading.classList.remove("hidden");
-  }
-
-  if (error) {
-    error.classList.add("hidden");
-  }
+  if (loading) { loading.classList.remove("hidden"); loading.textContent = "در حال دریافت اطلاعات..."; }
+  const accountInfo = $("adminAccountInfo");
+  if (accountInfo) accountInfo.classList.add("hidden");
+  if (error) { error.classList.add("hidden"); }
 
   try {
-    await Promise.all([
-      loadAdminProducts(),
-      loadCustomers(),
-      loadAdminRequests()
-    ]);
+    const role = String(currentUser?.role || "").toLowerCase();
+    const sales = role === "sales" && !isAdmin;
+    const perms = Array.isArray(adminPermissions) ? adminPermissions : [];
+    const tasks = [];
 
+    if (!sales || perms.includes("products")) tasks.push(loadAdminProducts());
+    if (!sales || perms.includes("customers") || perms.includes("prices")) tasks.push(loadCustomers());
+    if (!sales || perms.includes("requests")) tasks.push(loadAdminRequests());
+
+    await Promise.all(tasks);
     renderAdminAccount();
-
   } catch (e) {
     console.error(e);
-
     if (error) {
-      error.textContent =
-        "❌ دریافت اطلاعات مدیریت انجام نشد.";
+      error.textContent = "❌ دریافت اطلاعات مدیریت انجام نشد.";
       error.classList.remove("hidden");
     }
-
   } finally {
-    if (loading) {
-      loading.classList.add("hidden");
-    }
+    if (loading) loading.classList.add("hidden");
+    renderAdminAccount();
+    if (accountInfo) accountInfo.classList.remove("hidden");
   }
 }
 
@@ -1445,27 +1441,15 @@ function renderAdminAccount() {
     currentUser.username ||
     "کاربر";
 
+  const roleKey = String(currentUser.role || "").toLowerCase();
+  const roleLabel = isAdmin || roleKey === "admin" || roleKey === "super_admin"
+    ? "مدیر نرم‌افزار"
+    : roleKey === "sales" ? "کارشناس فروش" : "نماینده";
+
   el.innerHTML = `
-    <div>
-      <strong>Name:</strong>
-      ${escapeHtml(name)}
-    </div>
-
-    ${
-      currentUser.username
-        ? `
-          <div>
-            <strong>Username:</strong>
-            @${escapeHtml(currentUser.username)}
-          </div>
-        `
-        : ""
-    }
-
-    <div>
-      <strong>Role:</strong>
-      ${escapeHtml(isAdmin ? "admin" : (currentUser.role || "customer"))}
-    </div>
+    <div><strong>نام:</strong> ${escapeHtml(name)}</div>
+    ${currentUser.username ? `<div><strong>نام کاربری:</strong> @${escapeHtml(currentUser.username)}</div>` : ""}
+    <div><strong>نقش:</strong> ${escapeHtml(roleLabel)}</div>
   `;
 }
 
@@ -2190,7 +2174,7 @@ function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.add(
 
 function canUseAdminLetters(){
   const role=String(currentUser?.role||"").toLowerCase();
-  return !!isAdmin || role==="admin" || role==="super_admin" || (Array.isArray(adminPermissions) && adminPermissions.includes("requests"));
+  return !!isAdmin || role==="admin" || role==="super_admin" || role==="sales" || (Array.isArray(adminPermissions) && adminPermissions.includes("requests"));
 }
 
 async function loadLetterRecipients(){
@@ -2202,11 +2186,11 @@ async function loadLetterRecipients(){
   sel.disabled=true;
   sel.innerHTML='<option value="">در حال دریافت فهرست نماینده‌ها...</option>';
   try{
-    const r=await postJson('/api/admin/customers',{});
+    const r=await postJson('/api/admin/letter-recipients',{});
     const customers=Array.isArray(r)?r:(Array.isArray(r?.customers)?r.customers:(Array.isArray(r?.data?.customers)?r.data.customers:[]));
     const reps=customers.filter(c=>{
       const role=String(c?.role||'customer').toLowerCase();
-      return role==='customer'||role==='representative'||role==='rep'||role==='sales';
+      return role==='customer'||role==='representative'||role==='rep';
     });
     sel.innerHTML='<option value="">انتخاب نماینده...</option>';
     sel.value='';
@@ -2308,8 +2292,7 @@ function openLetterCompose(){
   const subject=$('letterComposeSubject'), body=$('letterComposeBody');
   if(subject)subject.value=''; if(body)body.value='';
   const role=String(currentUser?.role||'').toLowerCase();
-  const isSalesRole=role==='sales';
-  const adminMode=canUseAdminLetters() && !isSalesRole;
+  const adminMode=canUseAdminLetters();
   if(adminMode){
     $('letterComposeHelp')?.replaceChildren(document.createTextNode('نامه را برای نماینده موردنظر ارسال کنید.'));
     loadLetterRecipients();
@@ -2383,8 +2366,16 @@ async function openLetterThread(index){
       return;
     }
     renderLetterThreadMessages(m,messages,thread);
-    try{await postJson(canUseAdminLetters()?"/api/admin/letter-mark-read":"/api/customer/letter-mark-read",{thread_id:threadId});}catch(markErr){console.warn('Letter mark-read:',markErr);}
-    m.read=true;renderLetterListAfterRead();await loadLetterUnreadCount();
+    try{
+      const mr=await postJson(canUseAdminLetters()?"/api/admin/letter-mark-read":"/api/customer/letter-mark-read",{thread_id:threadId});
+      m.read=true;
+      renderLetterListAfterRead();
+      await loadLetterUnreadCount();
+      if(Number(mr?.marked||0)>0){
+        const badge=$("letterInboxCount");
+        if(badge && Number(enDigits(badge.textContent||0))===0) badge.classList.remove("has-unread");
+      }
+    }catch(markErr){console.warn('Letter mark-read:',markErr);}
   }catch(e){
     console.warn('Letter thread:',e);
     renderLetterThreadFallback(m,e?.message||'دریافت گفتگوی نامه انجام نشد.');
@@ -2427,8 +2418,7 @@ async function sendNewLetter(){
   if(!subject){subjectEl?.focus();return appAlert("⚠️ عنوان نامه را وارد کنید.");}
   if(!body){bodyEl?.focus();return appAlert("⚠️ متن نامه را وارد کنید.");}
   const role=String(currentUser?.role||'').toLowerCase();
-  const isSalesRole=role==='sales';
-  const adminMode=canUseAdminLetters() && !isSalesRole;
+  const adminMode=canUseAdminLetters();
   if(adminMode && !recipientId){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
   if(adminMode && recipientEl && selectedOption && selectedOption.value!==recipientId) recipientEl.value=recipientId;
   const button=document.querySelector('#letterComposeModal .admin-primary');

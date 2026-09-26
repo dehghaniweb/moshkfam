@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.41";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.42";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -719,6 +719,7 @@ function updateAccountUI() {
 
   const isSalesRole = role === "sales";
   const isSoftwareAdmin = !!isAdmin || role === "admin" || role === "super_admin";
+  document.body.dataset.accountRole = isSoftwareAdmin ? "software-admin" : (isSalesRole ? "sales" : "customer");
 
   const cartButton = $("cartButton");
   if (cartButton) cartButton.classList.toggle("hidden", isSalesRole || isSoftwareAdmin);

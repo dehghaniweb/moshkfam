@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.13";
+const APP_VERSION = "V1.0.14";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-05";
@@ -447,7 +447,9 @@ async function loginWithUsernamePassword(){
   if(msg)msg.textContent="در حال ورود...";
   try{const r=await postJson("/api/login",{username,password});setStoredToken(r.token);currentUser=r.user||null;isAdmin=String(r.user?.role||"").toLowerCase()==="admin" || String(r.user?.role||"").toLowerCase()==="super_admin";adminPermissions=[];try{const session=await apiRequest("/api/session",{method:"GET"});if(session?.authenticated&&session.user){currentUser=session.user;isAdmin=!!session.isAdmin || String(session.user.role||"").toLowerCase()==="admin" || String(session.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(session.permissions)?session.permissions:[];}}catch(sessionError){console.warn("Login permission session:",sessionError);}if($("loginPassword"))$("loginPassword").value="";if(msg)msg.textContent="✅ ورود با موفقیت انجام شد.";updateAccountUI();loadCart();await loadProducts();await loadOrderHistoryCount();if(currentUser){await loadLetterUnreadCount();startLetterPolling();}}catch(e){if(msg)msg.textContent=e.message||"ورود انجام نشد.";}
 }
-async function loadWebSession(){const t=getStoredToken();if(!t)return;try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=!!r.isAdmin || String(r.user.role||"").toLowerCase()==="admin" || String(r.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(r.permissions)?r.permissions:[];updateAccountUI();loadCart();await loadOrderHistoryCount();if(currentUser){await loadLetterUnreadCount();startLetterPolling();}}else setStoredToken("");}catch{setStoredToken("");}}
+async function loadWebSession(){const t=getStoredToken();if(!t){updateAccountUI();return;}try{const r=await apiRequest("/api/session",{method:"GET"});if(r?.authenticated&&r.user){currentUser=r.user;isAdmin=!!r.isAdmin || String(r.user.role||"").toLowerCase()==="admin" || String(r.user.role||"").toLowerCase()==="super_admin";adminPermissions=Array.isArray(r.permissions)?r.permissions:[];updateAccountUI();loadCart();await loadOrderHistoryCount();if(currentUser){await loadLetterUnreadCount();startLetterPolling();}}else{currentUser=null;isAdmin=false;adminPermissions=[];setStoredToken("");updateAccountUI();}}catch(error){console.warn("Web session check:",error);/* شبکه/لود موقت نباید تب‌های دیگر را با پاک کردن localStorage خارج کند. */}}
+
+window.addEventListener("storage", function(event){if(event.key!=="moshkfam_session")return;loadWebSession();});
 async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;cartItems={};updateCartBadge();updateAccountUI();await loadProducts();}
 async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
@@ -605,6 +607,15 @@ function updateAccountUI() {
     const ordersButton = $("ordersButton");
     if (ordersButton) ordersButton.classList.add("hidden");
 
+    const cartButton = $("cartButton");
+    if (cartButton) cartButton.classList.add("hidden");
+
+    const inboxButton = $("letterInboxButton");
+    if (inboxButton) inboxButton.classList.add("hidden");
+
+    const customerButton = $("customerButton");
+    if (customerButton) customerButton.classList.add("hidden");
+
     return;
   }
 
@@ -663,6 +674,9 @@ function updateAccountUI() {
       customerButton.classList.remove("hidden");
     }
   }
+
+  const cartButton = $("cartButton");
+  if (cartButton) cartButton.classList.remove("hidden");
 
   const ordersButton = $("ordersButton");
   if (ordersButton) ordersButton.classList.remove("hidden");

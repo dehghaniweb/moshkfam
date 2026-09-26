@@ -3674,12 +3674,7 @@ body:has(#bootLoader:not(.hide)){
 #bootLoader .boot-sub{width:100%;height:22px;min-height:22px;max-height:22px;overflow:hidden}
 #bootLoader .boot-spinner{flex:0 0 34px!important;width:34px!important;height:34px!important}
 
-/* V1.0.12 — Product detail price spacing */
-.product-detail > .price,
-.product-detail > .private-price{
-  display:block!important;
-  margin-top:16px!important;
-  margin-bottom:22px!important;
-  padding-top:0!important;
-  line-height:1.9!important;
-}
+
+/* V1.0.14 - Make new-letter text clearly readable */
+.letter-compose-card .letter-textarea{font-weight:600!important;color:#1f2937!important;}
+.letter-compose-card .letter-textarea::placeholder{font-weight:500!important;color:#64748b!important;}

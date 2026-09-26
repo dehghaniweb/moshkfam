@@ -104,7 +104,7 @@
       <p>
         محصولات کشاورزی و کودهای تخصصی
       </p>
-      <span id="appVersion" class="app-version">V1.0.4</span>
+      <span id="appVersion" class="app-version">V1.0.6</span>
 
     </div>
 
@@ -381,11 +381,26 @@
       <label class="letter-field-label">گیرنده نامه</label>
       <div class="letter-recipient-box">
         <div class="letter-recipient-icon">👤</div>
-        <select id="letterRecipientSelect" class="letter-recipient-select" aria-label="انتخاب گیرنده نامه">
+        <div id="letterRecipientPicker" class="letter-recipient-picker">
+          <button id="letterRecipientTrigger" class="letter-recipient-trigger" type="button" onclick="toggleLetterRecipientPicker(event)" aria-haspopup="listbox" aria-expanded="false">
+            <span class="recipient-trigger-main">
+              <span class="recipient-trigger-text">
+                <span class="recipient-trigger-name">انتخاب نماینده</span>
+                <span class="recipient-trigger-user">فهرست نمایندگان</span>
+              </span>
+            </span>
+            <span class="recipient-chevron">⌄</span>
+          </button>
+          <div class="letter-recipient-list hidden" role="listbox">
+            <input id="letterRecipientSearch" class="letter-recipient-search" type="search" placeholder="جستجوی نام یا نام کاربری..." autocomplete="off" oninput="filterLetterRecipients()">
+            <div id="letterRecipientOptions"></div>
+          </div>
+        </div>
+        <select id="letterRecipientSelect" class="letter-recipient-select customer-select-hidden" aria-label="انتخاب گیرنده نامه" tabindex="-1">
           <option value="">در حال دریافت فهرست نماینده‌ها...</option>
         </select>
       </div>
-      <small class="letter-field-hint">نام یا نام کاربری نماینده را جستجو و انتخاب کنید.</small>
+      <small class="letter-field-hint">برای انتخاب، روی کادر نماینده بزنید و نام یا نام کاربری را جستجو کنید.</small>
     </div>
     <input id="letterComposeSubject" class="letter-input" placeholder="عنوان نامه">
     <textarea id="letterComposeBody" class="letter-textarea" rows="8" placeholder="متن نامه..."></textarea>

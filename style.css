@@ -4495,3 +4495,27 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
 
 /* Sales role: keep report button hidden for every other account. */
 body.login-active .sales-reports-floating-button{display:none!important;}
+
+
+/* =========================================================
+   V1.0.33 - Role header + mobile logo/envelope
+========================================================= */
+@media(max-width:700px){
+  .brand img{
+    width:145px!important;
+    height:64px!important;
+    padding:7px!important;
+    object-fit:contain!important;
+  }
+  .admin-inbox-floating-button{
+    right:12px!important;
+    top:112px!important;
+    width:46px!important;
+    height:46px!important;
+    font-size:22px!important;
+  }
+  .sales-reports-floating-button{display:none!important;}
+}
+.admin-cleanup-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.admin-cleanup-actions .admin-danger-button{flex:1 1 220px}
+@media(max-width:600px){.admin-cleanup-actions{flex-direction:column}.admin-cleanup-actions .admin-danger-button{width:100%}}

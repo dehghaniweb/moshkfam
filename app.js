@@ -16,10 +16,10 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.31";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.33";
 (async function forceClearCacheFromApp() {
   try {
-    const version = "moshkfam-app-20260926-05";
+    const version = "moshkfam-app-20260926-06";
     const flag = "moshkfam_cache_cleared_" + version;
 
     if (sessionStorage.getItem(flag)) return;
@@ -654,7 +654,7 @@ function updateAccountUI() {
     const accountRole = String(currentUser?.role || "").toLowerCase();
     $("accountInfo").textContent =
       isAdmin || accountRole === "admin" || accountRole === "super_admin"
-        ? "مدیر سیستم"
+        ? "مدیر نرم‌افزار"
         : accountRole === "sales"
           ? "کارشناس فروش"
           : "مشتری";
@@ -664,7 +664,7 @@ function updateAccountUI() {
   const hasSettingsPanel = role === "sales" && adminPermissions.includes("settings");
   if (adminButton) {
     adminButton.classList.toggle("hidden", !(isAdmin || hasSettingsPanel));
-    adminButton.textContent = "⚙️ پنل تنظیمات";
+    adminButton.textContent = isAdmin ? "⚙️ پنل مدیر نرم‌افزار" : "⚙️ پنل تنظیمات";
   }
 
   const isSalesRole = role === "sales";
@@ -676,7 +676,7 @@ function updateAccountUI() {
   if (ordersButton) ordersButton.classList.toggle("hidden", isSalesRole);
 
   const salesReportsButton = $("salesReportsButton");
-  if (salesReportsButton) salesReportsButton.classList.toggle("hidden", !isSalesRole);
+  if (salesReportsButton) salesReportsButton.classList.add("hidden");
 
   const inboxButton = $("letterInboxButton");
   if (inboxButton) {
@@ -689,7 +689,7 @@ function updateAccountUI() {
       <span class="mobile-account-avatar">👤</span>
       <span class="mobile-account-text">
         <strong>${escapeHtml(name)}</strong>
-        <small>${username ? escapeHtml(username) + " · " : ""}${isAdmin ? "مدیر سیستم" : (role === "sales" ? "کارشناس فروش" : "نماینده")}</small>
+        <small>${username ? escapeHtml(username) + " · " : ""}${isAdmin ? "مدیر نرم‌افزار" : (role === "sales" ? "کارشناس فروش" : "نماینده")}</small>
       </span>`;
     mobileAccount.classList.remove("hidden");
   }
@@ -1317,7 +1317,7 @@ async function openAdmin() {
 
   const role = String(currentUser?.role||"").toLowerCase();
   const canOpenSettings = role === "sales" && adminPermissions.includes("settings");
-  const canOpenReports = role === "sales";
+  const canOpenReports = false;
   if (!isAdmin && !canOpenSettings && !canOpenReports) {
     if (error) {
       error.textContent =
@@ -1327,9 +1327,7 @@ async function openAdmin() {
     return;
   }
 
-  if (!isAdmin && canOpenReports && !canOpenSettings) {
-    showAdminSection("requests");
-  } else if (canOpenSettings && !isAdmin) {
+  if (canOpenSettings && !isAdmin) {
     showAdminSection("settings");
   } else {
     await loadAdminData();
@@ -2005,7 +2003,7 @@ async function loadAdminUsers(){
           <button type="button" class="admin-save-customer-button" data-update-admin="${escapeHtml(key)}">💾 ذخیره مدیر</button>
           <button type="button" class="admin-danger admin-delete-admin-button" data-delete-admin="${escapeHtml(key)}">🗑️ حذف مدیر</button>
         </div>`;
-      return adminAccordion(`admin-system-edit-${key}`, `<span class="admin-item-number">${formatNumber(index+1)}</span><strong>🛡️ ${escapeHtml(name)}</strong><small>${a.username ? escapeHtml(a.username) : (a.telegram_user_id ? `Telegram: ${escapeHtml(a.telegram_user_id)}` : "مدیر سیستم")}</small>`, body, "admin-system-accordion");
+      return adminAccordion(`admin-system-edit-${key}`, `<span class="admin-item-number">${formatNumber(index+1)}</span><strong>🛡️ ${escapeHtml(name)}</strong><small>${a.username ? escapeHtml(a.username) : (a.telegram_user_id ? `Telegram: ${escapeHtml(a.telegram_user_id)}` : "مدیر نرم‌افزار")}</small>`, body, "admin-system-accordion");
     }).join("");
   }catch(e){container.innerHTML=`<div class="message error">❌ دریافت مدیران انجام نشد.<br>${escapeHtml(e.message||"")}</div>`;}
 }
@@ -2036,13 +2034,13 @@ async function updateAdminUser(key){
 
 async function deleteAdminUser(id){
   if(!id)return;
-  if(!(await appConfirm("آیا این مدیر سیستم حذف شود؟")))return;
+  if(!(await appConfirm("آیا این مدیر نرم‌افزار حذف شود؟")))return;
   try{
     const row=document.querySelector(`[data-delete-admin="${CSS.escape(String(id))}"]`)?.closest('.admin-system-edit-row');
     const tgId=row?.querySelector('input[id^="atele-"]')?.value.trim()||"";
     await postJson("/api/admin/delete-admin",{id,telegram_user_id:tgId});
     await loadAdminUsers();
-    appAlert("✅ مدیر سیستم حذف شد.");
+    appAlert("✅ مدیر نرم‌افزار حذف شد.");
   }catch(e){appAlert("❌ حذف مدیر انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
 
@@ -2761,7 +2759,13 @@ function showAdminHome() {
 async function showAdminSection(sectionName) {
   const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",settings:"settings",admins:"admins",archives:"products"};
   const needed=permissionMap[sectionName];
-  const salesCanViewReports = String(currentUser?.role||"").toLowerCase()==="sales" && sectionName==="requests";
+  const roleNow=String(currentUser?.role||"").toLowerCase();
+  const isSoftwareAdmin=roleNow==="super_admin" || isAdmin && roleNow==="admin";
+  const salesCanViewReports = false;
+  if(sectionName==="cleanup" && roleNow!=="super_admin"){
+    appAlert("❌ این بخش فقط برای مدیر نرم‌افزار است.");
+    return;
+  }
   if(needed && !(salesCanViewReports || adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins" || isAdmin)){
     appAlert("❌ سطح دسترسی این بخش برای شما فعال نیست.");
     return;
@@ -2807,6 +2811,9 @@ async function showAdminSection(sectionName) {
     if (sectionName === "limits") {
       await loadServiceLimits();
     }
+    if (sectionName === "cleanup") {
+      await loadCleanupCustomers();
+    }
   } catch (error) {
     console.error("Admin section:", error);
   }
@@ -2822,6 +2829,40 @@ function searchAdminItems(inputId, containerId) {
     const text = (item.textContent || "").toLocaleLowerCase("fa-IR");
     item.style.display = !query || text.includes(query) ? "" : "none";
   });
+}
+
+async function loadCleanupCustomers(){
+  const select=$("cleanupCustomerSelect");
+  if(!select)return;
+  select.innerHTML='<option value="">در حال دریافت نماینده‌ها...</option>';
+  try{
+    const r=await postJson("/api/admin/customers",{});
+    const customers=Array.isArray(r?.customers)?r.customers:[];
+    const reps=customers.filter(c=>["customer","representative","rep"].includes(String(c?.role||"customer").toLowerCase()));
+    select.innerHTML='<option value="">انتخاب نماینده</option>'+reps.map(c=>{
+      const name=[c.first_name,c.last_name].filter(Boolean).join(" ")||c.username||"نماینده";
+      return `<option value="${escapeHtml(c.id)}">${escapeHtml(name)}${c.username?` (@${escapeHtml(c.username)})`:""}</option>`;
+    }).join("");
+    select.onchange=()=>{
+      const c=reps.find(x=>String(x.id)===String(select.value));
+      const info=$("cleanupCustomerInfo");
+      if(!info)return;
+      if(!c){info.classList.add("hidden");info.innerHTML="";return;}
+      info.classList.remove("hidden");
+      info.innerHTML=`<strong>نماینده:</strong> ${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||c.username||"-")} ${c.username?` · @${escapeHtml(c.username)}`:""}`;
+    };
+  }catch(e){select.innerHTML='<option value="">خطا در دریافت نماینده‌ها</option>';appAlert("❌ دریافت نماینده‌ها انجام نشد:\n"+(e.message||""));}
+}
+function getCleanupCustomerId(){const id=$("cleanupCustomerSelect")?.value||"";if(!id)appAlert("⚠️ ابتدا یک نماینده را انتخاب کنید.");return id;}
+async function deleteSelectedCustomerOrders(){
+  const id=getCleanupCustomerId(); if(!id)return;
+  if(!(await appConfirm("آیا همه سفارش‌های ثبت‌شده این نماینده حذف شود؟")))return;
+  try{const r=await postJson("/api/admin/delete-customer-orders",{customer_id:id});if(!r?.ok)throw new Error(r?.error||"سرور تأیید نکرد.");appAlert(`✅ ${formatNumber(r.deleted||0)} سفارش ثبت‌شده حذف شد.`);}catch(e){appAlert("❌ حذف سفارش‌ها انجام نشد:\n"+(e.message||"خطای نامشخص"));}
+}
+async function deleteSelectedCustomerLetters(){
+  const id=getCleanupCustomerId(); if(!id)return;
+  if(!(await appConfirm("آیا همه نامه‌ها و مکاتبات این نماینده حذف شود؟")))return;
+  try{const r=await postJson("/api/admin/delete-customer-letters",{customer_id:id});if(!r?.ok)throw new Error(r?.error||"سرور تأیید نکرد.");appAlert(`✅ ${formatNumber(r.deleted||0)} پیام و مکاتبه حذف شد.`);}catch(e){appAlert("❌ حذف نامه‌ها انجام نشد:\n"+(e.message||"خطای نامشخص"));}
 }
 
 // حذف نماینده با event delegation؛ مستقل از onclick های HTML و مقاوم در برابر رندر مجدد
@@ -2867,6 +2908,9 @@ window.createAdminUser = createAdminUser;
 window.deleteAdminUser = deleteAdminUser;
 window.updateAdminUser = updateAdminUser;
 window.loadAdminUsers = loadAdminUsers;
+window.loadCleanupCustomers = loadCleanupCustomers;
+window.deleteSelectedCustomerOrders = deleteSelectedCustomerOrders;
+window.deleteSelectedCustomerLetters = deleteSelectedCustomerLetters;
 
 window.openAdmin =
   openAdmin;

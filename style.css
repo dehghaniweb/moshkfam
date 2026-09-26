@@ -4360,6 +4360,38 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
     direction:rtl!important;
   }
   #letterInboxModal .letter-compose-button{font-size:10px!important;padding:7px 8px!important;white-space:nowrap!important;}
-  #letterInboxModal .letter-inbox-modal-card>.close{right:8px!important;left:auto!important;top:7px!important;}
+  #letterInboxModal .letter-inbox-modal-card>.close{right:10px!important;left:auto!important;top:18px!important;}
   #letterInboxModal .letter-filters{grid-template-columns:1fr 1fr!important;gap:6px!important;}
+}
+
+
+/* V1.0.29 — mobile header, mailbox spacing, and sales settings */
+@media(max-width:700px){
+  /* Login: username, password, login stacked and attached to the LEFT side. */
+  body.login-active .login-box{
+    position:absolute!important;left:10px!important;right:auto!important;top:8px!important;
+    flex:0 0 auto!important;width:148px!important;max-width:148px!important;margin:0!important;
+  }
+  body.login-active .login-fields{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:4px!important;}
+  body.login-active .login-fields input,
+  body.login-active .login-fields button{width:100%!important;min-width:0!important;max-width:none!important;height:30px!important;}
+  body.login-active .login-fields button{align-self:stretch!important;}
+
+  /* After login: keep envelope slightly lower; cart immediately to its LEFT, not centered. */
+  .header-shopping-actions .admin-inbox-floating-button{right:10px!important;left:auto!important;bottom:0!important;top:auto!important;}
+  .header-shopping-actions .cart-floating-button{right:62px!important;left:auto!important;bottom:0!important;top:auto!important;transform:none!important;}
+  .header-shopping-actions .orders-floating-button{left:10px!important;right:auto!important;bottom:0!important;top:auto!important;}
+
+  /* Mailbox card must not touch the mobile viewport ceiling. */
+  #letterInboxModal .letter-inbox-modal-card{padding-top:20px!important;}
+  #letterInboxModal .letter-inbox-header{padding-top:10px!important;}
+
+  /* Inbox header: date left, new-letter right. */
+  #letterInboxModal .letter-account-date{justify-self:start!important;text-align:left!important;}
+  #letterInboxModal .letter-header-actions{justify-self:end!important;margin-top:30px!important;}
+
+  /* Opened thread: leave breathing room above and below. */
+  #letterInboxModal .thread-head{padding-top:12px!important;margin-top:8px!important;}
+  #letterInboxModal .thread-reply{padding-bottom:14px!important;margin-bottom:4px!important;}
+  #letterInboxModal .thread-reply .admin-primary{margin-bottom:4px!important;}
 }

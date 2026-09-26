@@ -37,7 +37,7 @@
 
 <script>
   // مرجع واحد شماره نسخه برای تمام بخش‌های برنامه
-  window.MOSHKFAM_VERSION = "V1.0.28";
+  window.MOSHKFAM_VERSION = "V1.0.29";
 </script>
 
 <!--
@@ -111,7 +111,7 @@
       <p>
         محصولات کشاورزی و کودهای تخصصی
       </p>
-      <span id="appVersion" class="app-version">V1.0.28</span>
+      <span id="appVersion" class="app-version">V1.0.29</span>
 
     </div>
 
@@ -456,8 +456,9 @@
         <button class="admin-menu-item" onclick="showAdminSection('customers')"><span>👥</span><b>اضافه و حذف نماینده‌ها</b><small>ساخت حساب نماینده یا حذف آن</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('edit-customers')"><span>✏️</span><b>ویرایش نماینده‌ها</b><small>ویرایش مشخصات، نام کاربری و رمز</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('prices')"><span>💰</span><b>قیمت اختصاصی مشتری</b><small>تعیین قیمت مخصوص هر نماینده</small></button>
-        <button class="admin-menu-item" onclick="showAdminSection('admins')"><span>🛡️</span><b>مدیران سیستم</b><small>اضافه، ویرایش و حذف مدیران پنل</small></button>
+        <button class="admin-menu-item" onclick="showAdminSection('admins')"><span>🛡️</span><b>مدیران و کارشناسان فروش</b><small>مدیریت مدیران سیستم و کارشناسان فروش</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('limits')"><span>📊</span><b>محدودیت‌ها و مصرف سرویس‌ها</b><small>گزارش مصرف امروز، سقف روزانه و وضعیت سرویس‌ها</small></button>
+        <button class="admin-menu-item" onclick="showAdminSection('settings')"><span>⚙️</span><b>پنل تنظیمات</b><small>تنظیمات قابل دسترسی کارشناس فروش</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('footer')"><span>🏢</span><b>اطلاعات پایین صفحه</b><small>نام شرکت، تلفن و آدرس</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('archives')"><span>🗄️</span><b>بایگانی عکس‌ها</b><small>مشاهده و بازگردانی تصاویر قبلی</small></button>
         <button class="admin-menu-item" onclick="showAdminSection('cleanup')"><span>🧹</span><b>مدیریت نامه‌ها و سبدهای خرید</b><small>گزارش نامه‌ها و پاک‌سازی کامل داده‌های آزمایشی</small></button>
@@ -559,7 +560,7 @@
     <!-- ADMINS -->
     <section id="adminSection-admins" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
-      <h3 class="admin-section-title">🛡️ مدیران سیستم<span id="adminManagerCount" class="admin-count-badge managers">۰</span></h3>
+      <h3 class="admin-section-title">🛡️ مدیران و کارشناسان فروش<span id="adminManagerCount" class="admin-count-badge managers">۰</span></h3>
       <p class="admin-section-help">مدیر جدید می‌تواند از طریق تلگرام با شناسه تلگرام یا از طریق وب با نام کاربری و رمز عبور وارد شود. مدیر اصلی قابل حذف نیست.</p>
       <div class="admin-admin-create admin-accordion admin-static-accordion" id="admin-create-admin-box">
         <button type="button" class="admin-accordion-title" aria-expanded="false" onclick="toggleAdminAccordion('admin-create-admin-box'); return false;">
@@ -569,6 +570,7 @@
           <div class="admin-edit-grid">
             <label>نام<input id="newAdminFirstName"></label>
             <label>نام خانوادگی<input id="newAdminLastName"></label>
+            <label>نوع حساب<select id="newAdminRole"><option value="admin" selected>مدیر سیستم</option><option value="sales">کارشناس فروش</option></select></label>
             <label>Telegram ID<input id="newAdminTelegramId" inputmode="numeric" placeholder="مثلاً 123456789"></label>
             <label>نام کاربری وب<input id="newAdminUsername" autocomplete="off" placeholder="اختیاری"></label>
             <label class="password-field">رمز عبور وب<div class="password-input-wrap"><input id="newAdminPassword" type="password" autocomplete="new-password" placeholder="اختیاری"><button type="button" class="password-eye" id="eye-newAdminPassword" onclick="togglePasswordVisibility('newAdminPassword','eye-newAdminPassword'); return false;" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">👁️</button></div></label>
@@ -579,6 +581,7 @@
             <label><input type="checkbox" id="newAdminPerm-prices" checked> 💰 قیمت‌های اختصاصی</label>
             <label><input type="checkbox" id="newAdminPerm-requests" checked> 📨 سفارش‌ها و یادداشت‌ها</label>
             <label><input type="checkbox" id="newAdminPerm-footer" checked> 🏢 اطلاعات شرکت</label>
+            <label><input type="checkbox" id="newAdminPerm-settings"> ⚙️ پنل تنظیمات</label>
           </div></div>
           <button type="button" class="admin-primary admin-add-user-button" onclick="createAdminUser(); return false;">🛡️ افزودن مدیر</button>
         </div>
@@ -621,6 +624,19 @@
     </section>
 
     <!-- FOOTER -->
+    <section id="adminSection-settings" class="admin-view admin-inner-view hidden">
+      <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
+      <h3 class="admin-section-title">⚙️ پنل تنظیمات</h3>
+      <p class="admin-section-help">این بخش برای کارشناس فروش فعال می‌شود و فقط با مجوز مدیر اصلی قابل استفاده است.</p>
+      <div class="admin-edit-grid">
+        <label>نام شرکت<input id="salesSettingCompanyName"></label>
+        <label>تلفن<input id="salesSettingPhone"></label>
+        <label class="admin-edit-grid-wide-label">متن زیر نام شرکت<textarea id="salesSettingFooterText"></textarea></label>
+        <label class="admin-edit-grid-wide-label">آدرس<textarea id="salesSettingAddress"></textarea></label>
+      </div>
+      <button class="admin-primary" onclick="saveSalesSettings()">💾 ذخیره تنظیمات</button>
+    </section>
+
     <section id="adminSection-footer" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3>🏢 اطلاعات پایین صفحه</h3>

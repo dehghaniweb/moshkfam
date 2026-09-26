@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.28";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.29";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-05";
@@ -63,7 +63,7 @@ let isAdmin = false;
 let selectedCustomer = null;
 let cartItems = {};
 let adminPermissions = [];
-const ADMIN_PERMISSION_KEYS = ["products","customers","prices","requests","footer"];
+const ADMIN_PERMISSION_KEYS = ["products","customers","prices","requests","footer","settings"];
 
 
 
@@ -451,7 +451,8 @@ async function loadWebSession(){const t=getStoredToken();if(!t){updateAccountUI(
 
 window.addEventListener("storage", function(event){if(event.key!=="moshkfam_session")return;loadWebSession();});
 async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;cartItems={};updateCartBadge();updateAccountUI();await loadProducts();}
-async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
+async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";if($("salesSettingCompanyName"))$("salesSettingCompanyName").value=st.company_name||"مشکفام فارس";if($("salesSettingFooterText"))$("salesSettingFooterText").value=st.footer_text||"";if($("salesSettingPhone"))$("salesSettingPhone").value=st.phone||"";if($("salesSettingAddress"))$("salesSettingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
+async function saveSalesSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("salesSettingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("salesSettingFooterText")?.value||"",phone:$("salesSettingPhone")?.value.trim()||"",address:$("salesSettingAddress")?.value||""});await loadSiteSettings();appAlert("✅ تنظیمات با موفقیت ذخیره شد.");}catch(e){appAlert("❌ ذخیره تنظیمات انجام نشد:\n"+(e.message||"خطای نامشخص"));}}
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
 async function createProduct(){
   const fa = $("newProductNameFa")?.value.trim() || "";
@@ -650,10 +651,20 @@ function updateAccountUI() {
   }
 
   if ($("accountInfo")) {
+    const accountRole = String(currentUser?.role || "").toLowerCase();
     $("accountInfo").textContent =
-      isAdmin || currentUser.role === "admin"
+      isAdmin || accountRole === "admin" || accountRole === "super_admin"
         ? "مدیر سیستم"
-        : "مشتری";
+        : accountRole === "sales"
+          ? "کارشناس فروش"
+          : "مشتری";
+  }
+
+  const role = String(currentUser?.role || "").toLowerCase();
+  const hasSettingsPanel = role === "sales" && adminPermissions.includes("settings");
+  if (adminButton) {
+    adminButton.classList.toggle("hidden", !(isAdmin || hasSettingsPanel));
+    adminButton.textContent = hasSettingsPanel && !isAdmin ? "⚙️ پنل تنظیمات" : "⚙️ پنل مدیریت";
   }
 
   const cartButton = $("cartButton");
@@ -673,7 +684,7 @@ function updateAccountUI() {
       <span class="mobile-account-avatar">👤</span>
       <span class="mobile-account-text">
         <strong>${escapeHtml(name)}</strong>
-        <small>${username ? escapeHtml(username) + " · " : ""}${isAdmin ? "مدیر سیستم" : "نماینده"}</small>
+        <small>${username ? escapeHtml(username) + " · " : ""}${isAdmin ? "مدیر سیستم" : (role === "sales" ? "کارشناس فروش" : "نماینده")}</small>
       </span>`;
     mobileAccount.classList.remove("hidden");
   }
@@ -1293,7 +1304,8 @@ async function openAdmin() {
     console.warn("Admin authentication refresh:", e);
   }
 
-  if (!isAdmin) {
+  const canOpenSettings = String(currentUser?.role||"").toLowerCase()==="sales" && adminPermissions.includes("settings");
+  if (!isAdmin && !canOpenSettings) {
     if (error) {
       error.textContent =
         "❌ این حساب به پنل مدیریت دسترسی ندارد. لطفاً سامانه را از داخل ربات تلگرام و با حساب مدیر باز کنید.";
@@ -1302,7 +1314,11 @@ async function openAdmin() {
     return;
   }
 
-  await loadAdminData();
+  if (canOpenSettings && !isAdmin) {
+    showAdminSection("settings");
+  } else {
+    await loadAdminData();
+  }
 }
 
 function closeAdmin() {
@@ -1898,6 +1914,7 @@ async function createAdminUser(){
   const username=$("newAdminUsername")?.value.trim()||"";
   const password=$("newAdminPassword")?.value||"";
   const permissions=ADMIN_PERMISSION_KEYS.filter(key=>$("newAdminPerm-"+key)?.checked);
+  const role=$("newAdminRole")?.value||"admin";
 
   if(!telegram_user_id && !(username && password)){
     appAlert("⚠️ حداقل Telegram ID یا هر دو مورد نام کاربری و رمز عبور وب را وارد کنید.");
@@ -1920,7 +1937,7 @@ async function createAdminUser(){
   if(button){button.disabled=true;button.textContent="⏳ در حال افزودن...";}
   try{
     const r=await postJson("/api/admin/create-admin",{
-      first_name,last_name,telegram_user_id,username,password,permissions
+      first_name,last_name,telegram_user_id,username,password,permissions,role
     });
     if(!r?.ok) throw new Error(r?.error||"سرور مدیر را ایجاد نکرد.");
 
@@ -1962,12 +1979,13 @@ async function loadAdminUsers(){
       const body=`<div class="admin-edit-grid admin-system-edit-grid">
           <label>نام<input id="afirst-${escapeHtml(key)}" value="${escapeHtml(a.first_name||"")}"></label>
           <label>نام خانوادگی<input id="alast-${escapeHtml(key)}" value="${escapeHtml(a.last_name||"")}"></label>
+          <label>نوع حساب<select id="arole-${escapeHtml(key)}"><option value="admin" ${String(a.role||"").toLowerCase() === "admin" ? "selected" : ""}>مدیر سیستم</option><option value="sales" ${String(a.role||"").toLowerCase() === "sales" ? "selected" : ""}>کارشناس فروش</option></select></label>
           <label>Telegram ID<input id="atele-${escapeHtml(key)}" value="${escapeHtml(a.telegram_user_id||"")}" inputmode="numeric"></label>
           <label>نام کاربری وب<input id="auser-${escapeHtml(key)}" value="${escapeHtml(a.username||"")}" autocomplete="off"></label>
           <label class="password-field">رمز جدید<div class="password-input-wrap"><input id="apass-${escapeHtml(key)}" type="password" placeholder="برای تغییر رمز وارد کنید" autocomplete="new-password"><button type="button" class="password-eye" id="eye-apass-${escapeHtml(key)}" onclick="togglePasswordVisibility('apass-${escapeHtml(key)}','eye-apass-${escapeHtml(key)}'); return false;" aria-label="نمایش رمز جدید" title="نمایش رمز جدید">👁️</button></div></label>
           <label>وضعیت<select id="astatus-${escapeHtml(key)}"><option value="active" ${a.status!=="disabled"?'selected':''}>فعال</option><option value="disabled" ${a.status==="disabled"?'selected':''}>غیرفعال</option></select></label>
         </div>
-        <div class="admin-permission-box"><strong>سطح دسترسی مدیر</strong><div class="admin-permission-grid">${ADMIN_PERMISSION_KEYS.map(k=>`<label><input type="checkbox" id="aperm-${escapeHtml(key)}-${k}" ${perms.includes(k)?'checked':''}> ${({products:'محصولات',customers:'نماینده‌ها',prices:'قیمت‌های اختصاصی',requests:'سفارش‌ها و یادداشت‌ها',footer:'اطلاعات شرکت'})[k]}</label>`).join('')}</div></div>
+        <div class="admin-permission-box"><strong>سطح دسترسی مدیر</strong><div class="admin-permission-grid">${ADMIN_PERMISSION_KEYS.map(k=>`<label><input type="checkbox" id="aperm-${escapeHtml(key)}-${k}" ${perms.includes(k)?'checked':''}> ${({products:'محصولات',customers:'نماینده‌ها',prices:'قیمت‌های اختصاصی',requests:'سفارش‌ها و یادداشت‌ها',footer:'اطلاعات شرکت',settings:'پنل تنظیمات'})[k]}</label>`).join('')}</div></div>
         <div class="admin-system-actions">
           <button type="button" class="admin-save-customer-button" data-update-admin="${escapeHtml(key)}">💾 ذخیره مدیر</button>
           <button type="button" class="admin-danger admin-delete-admin-button" data-delete-admin="${escapeHtml(key)}">🗑️ حذف مدیر</button>
@@ -1984,6 +2002,7 @@ async function updateAdminUser(key){
     id:key,
     first_name:$("afirst-"+key)?.value.trim()||"",
     last_name:$("alast-"+key)?.value.trim()||"",
+    role:$("arole-"+key)?.value||"admin",
     telegram_user_id:$("atele-"+key)?.value.trim()||"",
     username:$("auser-"+key)?.value.trim()||"",
     password:$("apass-"+key)?.value||"",
@@ -2095,7 +2114,7 @@ function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.add(
 
 function canUseAdminLetters(){
   const role=String(currentUser?.role||"").toLowerCase();
-  return !!isAdmin || role==="admin" || role==="super_admin" || (Array.isArray(adminPermissions) && adminPermissions.length>0);
+  return !!isAdmin || role==="admin" || role==="super_admin" || (Array.isArray(adminPermissions) && adminPermissions.includes("requests"));
 }
 
 async function loadLetterRecipients(){
@@ -2703,9 +2722,9 @@ function showAdminHome() {
 }
 
 async function showAdminSection(sectionName) {
-  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",admins:"admins",archives:"products"};
+  const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",settings:"settings",admins:"admins",archives:"products"};
   const needed=permissionMap[sectionName];
-  if(needed && sectionName !== "requests" && !(adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins")){
+  if(needed && !(adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins" || isAdmin)){
     appAlert("❌ سطح دسترسی این بخش برای شما فعال نیست.");
     return;
   }
@@ -2731,6 +2750,10 @@ async function showAdminSection(sectionName) {
     if (sectionName === "requests") {
       await loadAdminRequests();
       await loadAdminInboxCount();
+    }
+
+    if (sectionName === "settings") {
+      await loadSiteSettings();
     }
 
     if (sectionName === "admins") {
@@ -2838,4 +2861,4 @@ window.loadCustomerPrices =
 window.setCustomerPrice =
   setCustomerPrice;
 window.updateCustomerRequestStatus = updateCustomerRequestStatus;
-window.createProduct=createProduct;window.deleteProduct=deleteProduct;window.createCustomerUser=createCustomerUser;window.deleteCustomerUser=deleteCustomerUser;window.updateCustomerUser=updateCustomerUser;window.saveSiteSettings=saveSiteSettings;
+window.createProduct=createProduct;window.deleteProduct=deleteProduct;window.createCustomerUser=createCustomerUser;window.deleteCustomerUser=deleteCustomerUser;window.updateCustomerUser=updateCustomerUser;window.saveSiteSettings=saveSiteSettings;window.saveSalesSettings=saveSalesSettings;

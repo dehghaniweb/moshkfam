@@ -3772,3 +3772,73 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
   #orderHistoryModal .order-history-modal-card > .close,
   #letterInboxModal .letter-inbox-modal-card > .close{right:10px!important;left:auto!important;}
 }
+
+
+/* ===== V1.0.21: final header + cart/order/letter spacing ===== */
+/* Put the envelope back on the same lower row as the shopping buttons. */
+.header-shopping-actions .admin-inbox-floating-button{
+  position:absolute!important;
+  left:132px!important;
+  right:auto!important;
+  top:50%!important;
+  bottom:auto!important;
+  transform:translateY(-50%)!important;
+  margin:0!important;
+  width:48px!important;
+  height:48px!important;
+}
+.header-shopping-actions .cart-floating-button{
+  left:16px!important;
+  right:auto!important;
+  top:50%!important;
+  bottom:auto!important;
+  transform:translateY(-50%)!important;
+}
+.header-shopping-actions .orders-floating-button{
+  left:74px!important;
+  right:auto!important;
+  top:50%!important;
+  bottom:auto!important;
+  transform:translateY(-50%)!important;
+}
+
+/* Give the close button its own vertical space above the cart/order title and image. */
+#cartModal .cart-modal-card,
+#orderHistoryModal .order-history-modal-card{
+  padding-top:62px!important;
+}
+#cartModal .cart-modal-card > h2,
+#orderHistoryModal .order-history-modal-card > h2{
+  margin-top:0!important;
+  margin-bottom:20px!important;
+  line-height:1.6!important;
+}
+#cartModal .cart-modal-card > .close,
+#orderHistoryModal .order-history-modal-card > .close{
+  top:12px!important;
+  right:14px!important;
+  left:auto!important;
+}
+
+/* The letter list itself is a scroll container: force its scrollbar to the RIGHT. */
+#letterInboxModal .letter-inbox-modal-card .letter-list{
+  direction:ltr!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  scrollbar-gutter:stable!important;
+}
+#letterInboxModal .letter-inbox-modal-card .letter-list > *{
+  direction:rtl!important;
+}
+
+@media(max-width:700px){
+  .header-shopping-actions .admin-inbox-floating-button{
+    left:114px!important;
+    width:44px!important;
+    height:44px!important;
+  }
+  .header-shopping-actions .orders-floating-button{left:62px!important;}
+  .header-shopping-actions .cart-floating-button{left:10px!important;}
+  #cartModal .cart-modal-card,
+  #orderHistoryModal .order-history-modal-card{padding-top:58px!important;}
+}

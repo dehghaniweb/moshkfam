@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.29";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.31";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-05";
@@ -664,14 +664,19 @@ function updateAccountUI() {
   const hasSettingsPanel = role === "sales" && adminPermissions.includes("settings");
   if (adminButton) {
     adminButton.classList.toggle("hidden", !(isAdmin || hasSettingsPanel));
-    adminButton.textContent = hasSettingsPanel && !isAdmin ? "⚙️ پنل تنظیمات" : "⚙️ پنل مدیریت";
+    adminButton.textContent = "⚙️ پنل تنظیمات";
   }
 
+  const isSalesRole = role === "sales";
+
   const cartButton = $("cartButton");
-  if (cartButton) cartButton.classList.remove("hidden");
+  if (cartButton) cartButton.classList.toggle("hidden", isSalesRole);
 
   const ordersButton = $("ordersButton");
-  if (ordersButton) ordersButton.classList.remove("hidden");
+  if (ordersButton) ordersButton.classList.toggle("hidden", isSalesRole);
+
+  const salesReportsButton = $("salesReportsButton");
+  if (salesReportsButton) salesReportsButton.classList.toggle("hidden", !isSalesRole);
 
   const inboxButton = $("letterInboxButton");
   if (inboxButton) {
@@ -1284,6 +1289,12 @@ function closeModal() {
    ADMIN
 ========================================================= */
 
+function openSalesReports(){
+  const role = String(currentUser?.role||"").toLowerCase();
+  if(role !== "sales") return appAlert("⚠️ این بخش فقط برای کارشناس فروش است.");
+  openAdmin();
+}
+
 async function openAdmin() {
   const modal = $("adminModal");
   const error = $("adminError");
@@ -1304,8 +1315,10 @@ async function openAdmin() {
     console.warn("Admin authentication refresh:", e);
   }
 
-  const canOpenSettings = String(currentUser?.role||"").toLowerCase()==="sales" && adminPermissions.includes("settings");
-  if (!isAdmin && !canOpenSettings) {
+  const role = String(currentUser?.role||"").toLowerCase();
+  const canOpenSettings = role === "sales" && adminPermissions.includes("settings");
+  const canOpenReports = role === "sales";
+  if (!isAdmin && !canOpenSettings && !canOpenReports) {
     if (error) {
       error.textContent =
         "❌ این حساب به پنل مدیریت دسترسی ندارد. لطفاً سامانه را از داخل ربات تلگرام و با حساب مدیر باز کنید.";
@@ -1314,7 +1327,9 @@ async function openAdmin() {
     return;
   }
 
-  if (canOpenSettings && !isAdmin) {
+  if (!isAdmin && canOpenReports && !canOpenSettings) {
+    showAdminSection("requests");
+  } else if (canOpenSettings && !isAdmin) {
     showAdminSection("settings");
   } else {
     await loadAdminData();
@@ -2687,6 +2702,7 @@ function finishBootLoader() {
 
 window.openProduct =
   openProduct;
+window.openSalesReports=openSalesReports;
 window.openCart=openCart;
 window.closeCart=closeCart;
 window.openOrderHistory=openOrderHistory;
@@ -2745,7 +2761,8 @@ function showAdminHome() {
 async function showAdminSection(sectionName) {
   const permissionMap={products:"products","edit-products":"products",customers:"customers","edit-customers":"customers",prices:"prices",requests:"requests",footer:"footer",settings:"settings",admins:"admins",archives:"products"};
   const needed=permissionMap[sectionName];
-  if(needed && !(adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins" || isAdmin)){
+  const salesCanViewReports = String(currentUser?.role||"").toLowerCase()==="sales" && sectionName==="requests";
+  if(needed && !(salesCanViewReports || adminPermissions.includes(needed) || adminPermissions.includes("admins") && needed==="admins" || isAdmin)){
     appAlert("❌ سطح دسترسی این بخش برای شما فعال نیست.");
     return;
   }

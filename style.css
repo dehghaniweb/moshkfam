@@ -4456,3 +4456,42 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
   outline:2px solid rgba(23,108,73,.25)!important;
   border-color:#176c49!important;
 }
+
+
+/* =========================================================
+   MOSHKFAM V1.0.31 — sales role mobile header
+========================================================= */
+.sales-reports-floating-button{
+  border:1px solid #b9e4cc!important;
+  background:#f7fffa!important;
+  color:#176c49!important;
+  box-shadow:0 6px 16px rgba(23,108,73,.10)!important;
+  border-radius:18px!important;
+  min-width:54px!important;
+  height:48px!important;
+  font-weight:800!important;
+  font-size:11px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:0!important;
+}
+.sales-reports-floating-button.hidden{display:none!important;}
+@media(max-width:700px){
+  /* Sales: only mailbox on the RIGHT; reports on the LEFT. Cart/order buttons are hidden by JS. */
+  body:not(.login-active) .header-shopping-actions{
+    left:10px!important;right:10px!important;width:auto!important;height:52px!important;
+    display:block!important;bottom:0!important;
+  }
+  body:not(.login-active) .header-shopping-actions .admin-inbox-floating-button{
+    right:10px!important;left:auto!important;bottom:4px!important;top:auto!important;
+  }
+  body:not(.login-active) .header-shopping-actions .sales-reports-floating-button{
+    left:10px!important;right:auto!important;bottom:4px!important;top:auto!important;
+    position:absolute!important;
+  }
+}
+
+/* Sales role: keep report button hidden for every other account. */
+body.login-active .sales-reports-floating-button{display:none!important;}

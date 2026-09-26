@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.52";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.53";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -323,16 +323,23 @@ function renderCart(){
   const total=Object.values(cartItems).reduce((sum,item)=>{const p=products.find(x=>Number(x.id)===Number(item.productId));const price=getEffectivePrice(p);return sum+(Number.isFinite(price)?price*(Number(item.quantity)||0):0)},0);
   if(totalEl)totalEl.textContent=formatNumber(total)+" تومان";
 }
+let cartOrderSubmitting=false;
 async function submitCartOrder(){
+  if(cartOrderSubmitting)return;
   if(!currentUser){appAlert("⚠️ ابتدا وارد حساب کاربری شوید.");return;}
   const entries=Object.values(cartItems).filter(x=>(Number(x.quantity)||0)>0); if(!entries.length){appAlert("⚠️ سبد خرید خالی است.");return;}
+  cartOrderSubmitting=true;
+  const submitButton=document.querySelector('#cartModal .cart-submit');
+  const originalText=submitButton?.textContent||'📨 ثبت سفارش سبد خرید';
+  if(submitButton){submitButton.disabled=true;submitButton.dataset.originalText=originalText;submitButton.textContent='⏳ لطفاً منتظر بمانید...';submitButton.classList.add('is-submitting');$('cartModal')?.classList.add('is-submitting');}
   const lines=entries.map(item=>{
     const p=products.find(x=>Number(x.id)===Number(item.productId)); if(!p)return "";
     const price=getEffectivePrice(p),packageKg=getProductPackageKg(p),amountKg=getCartAmountKg(item,p),unit=item.unit==="ton"?"ton":"kg",unitValue=getCartUnitValue(item,p);
     return `${p.name_fa||p.name_en||"محصول"} × ${formatDecimal(unitValue)} ${unit==="ton"?"تن":"کیلوگرم"} = ${formatNumber(item.quantity)} بسته ${formatDecimal(packageKg)} کیلویی = ${formatNumber(price*(Number(item.quantity)||0))} تومان`;
   }).filter(Boolean);
   const total=entries.reduce((sum,item)=>{const p=products.find(x=>Number(x.id)===Number(item.productId));const price=getEffectivePrice(p);return sum+(Number.isFinite(price)?price*(Number(item.quantity)||0):0)},0);
-  try{const cartText="🛒 سفارش سبد خرید\n"+lines.join("\n")+`\nمجموع: ${formatNumber(total)} تومان`; await postJson("/api/customer/request",{type:"order",text:cartText}); try{await postJson("/api/customer/letter",{subject:"🛒 سفارش سبد خرید",body:cartText});}catch(letterError){console.warn("Cart letter registration failed",letterError);} cartItems={};saveCart();renderCart();closeCart();await loadOrderHistoryCount();appAlert("✅ سفارش سبد خرید با موفقیت ثبت شد.");}catch(e){appAlert("❌ ثبت سفارش انجام نشد:\n"+(e.message||"خطای نامشخص"));}
+  try{const cartText="🛒 سفارش سبد خرید\n"+lines.join("\n")+`\nمجموع: ${formatNumber(total)} تومان`; await postJson("/api/customer/request",{type:"order",text:cartText}); cartItems={};saveCart();renderCart();closeCart();await loadOrderHistoryCount();appAlert("✅ سفارش سبد خرید با موفقیت ثبت شد.");}catch(e){appAlert("❌ ثبت سفارش انجام نشد:\n"+(e.message||"خطای نامشخص"));}
+  finally{cartOrderSubmitting=false;if(submitButton){submitButton.disabled=false;submitButton.textContent=submitButton.dataset.originalText||originalText;submitButton.classList.remove('is-submitting');}$('cartModal')?.classList.remove('is-submitting');}
 }
 
 

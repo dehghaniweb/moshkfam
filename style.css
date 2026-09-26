@@ -3329,7 +3329,7 @@ body.login-active .login-box{
 .thread-message.mine{background:#ecfdf5!important;border-color:#86efac!important;}
 .thread-message.type-reply.mine{background:#f5f3ff!important;border-color:#c4b5fd!important;}
 
-/* V1.0.52 — نامه خوانده‌شده/نشده: رنگ کاملاً مشخص */
+/* V1.0.53 — نامه خوانده‌شده/نشده: رنگ کاملاً مشخص */
 .letter-item{background:#ffffff!important;border-color:#e5e7eb!important;opacity:1!important;}
 .letter-item.unread{background:#e0f2fe!important;border-color:#7dd3fc!important;box-shadow:0 7px 18px rgba(14,165,233,.12)!important;}
 .letter-item.unread:before{background:#0284c7!important;}
@@ -5104,7 +5104,7 @@ body[data-account-role="software-admin"] .header-shopping-actions{
   body:not(.login-active) .header .header-shopping-actions .admin-inbox-floating-button{order:3!important;margin-left:auto!important;}
 }
 
-/* V1.0.52 FINAL — خوانده نشده آبی روشن، خوانده شده سفید */
+/* V1.0.53 FINAL — خوانده نشده آبی روشن، خوانده شده سفید */
 .letter-item,
 .letter-item.type-cart,
 .letter-item.type-note,
@@ -5129,3 +5129,143 @@ body[data-account-role="software-admin"] .header-shopping-actions{
 .letter-item.unread .letter-item-head:first-child span:first-child{color:#0369a1!important;font-weight:900!important;}
 .letter-item:not(.unread) .letter-item-head:first-child span:first-child{color:#64748b!important;}
 .letter-item.type-cart .letter-item-subject{color:#c2410c!important;}
+
+/* V1.0.53 FINAL — header layout is shared by desktop and mobile. */
+@media(max-width:700px){
+  .header{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    column-gap:10px!important;
+    row-gap:8px!important;
+    padding:10px 12px 70px!important;
+    min-height:150px!important;
+    overflow:visible!important;
+    position:sticky!important;
+  }
+  .header .brand{
+    order:1!important;
+    flex:1 1 52%!important;
+    min-width:0!important;
+    max-width:60%!important;
+    margin:0!important;
+    justify-self:auto!important;
+  }
+  .header .brand img{width:48px!important;height:48px!important;flex:0 0 48px!important;}
+  .header .brand h1{font-size:18px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  .header .brand p{font-size:10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  .header .account{
+    order:2!important;
+    flex:0 1 40%!important;
+    width:auto!important;
+    max-width:42%!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  .header .login-box{
+    order:3!important;
+    flex:1 1 100%!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+  }
+  .header .header-actions{
+    order:4!important;
+    width:auto!important;
+    margin:0 0 0 auto!important;
+    justify-content:flex-end!important;
+  }
+  .header .header-shopping-actions{
+    order:5!important;
+    position:absolute!important;
+    left:10px!important;
+    right:10px!important;
+    bottom:10px!important;
+    top:auto!important;
+    width:auto!important;
+    height:48px!important;
+    min-height:48px!important;
+    margin:0!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+    direction:ltr!important;
+    pointer-events:none!important;
+  }
+  .header .header-shopping-actions>button{
+    position:static!important;
+    inset:auto!important;
+    transform:none!important;
+    margin:0!important;
+    width:44px!important;
+    height:44px!important;
+    flex:0 0 44px!important;
+    pointer-events:auto!important;
+  }
+  .header .header-shopping-actions .cart-floating-button{order:1!important;}
+  .header .header-shopping-actions .orders-floating-button{order:2!important;}
+  .header .header-shopping-actions .admin-inbox-floating-button{order:3!important;margin-left:auto!important;}
+  .header .header-shopping-actions .sales-reports-floating-button{order:2!important;}
+}
+
+/* V1.0.53 — inbox header is identical on desktop and phone:
+   date at left, title in the center, new-letter at right. */
+#letterInboxModal .letter-inbox-header{
+  position:relative!important;
+  display:block!important;
+  direction:ltr!important;
+  min-height:78px!important;
+  height:78px!important;
+  padding:8px 110px!important;
+  border-bottom:1px solid #e2e8f0!important;
+}
+#letterInboxModal .letter-account-date{
+  position:absolute!important;
+  left:16px!important;
+  right:auto!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  width:92px!important;
+  padding:0!important;
+  margin:0!important;
+  direction:rtl!important;
+  text-align:left!important;
+  z-index:2!important;
+}
+#letterInboxModal .letter-header-main{
+  position:static!important;
+  width:100%!important;
+  min-height:0!important;
+  height:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  direction:rtl!important;
+}
+#letterInboxModal .letter-header-title{
+  width:auto!important;
+  display:block!important;
+  text-align:center!important;
+}
+#letterInboxModal .letter-header-title>div{text-align:center!important;}
+#letterInboxModal .letter-inbox-header h2{margin:0!important;font-size:20px!important;line-height:1.35!important;}
+#letterInboxModal .letter-inbox-header p{margin:3px 0 0!important;font-size:10px!important;line-height:1.4!important;}
+#letterInboxModal .letter-header-actions{
+  position:absolute!important;
+  right:16px!important;
+  left:auto!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  margin:0!important;
+  padding:0!important;
+  z-index:3!important;
+}
+#letterInboxModal .letter-compose-button{margin:0!important;padding:9px 12px!important;font-size:12px!important;white-space:nowrap!important;}
+
+/* Cart submission: prevent a second click while the first request is being saved. */
+#cartModal.is-submitting .cart-submit{opacity:.72!important;cursor:wait!important;pointer-events:none!important;}
+#cartModal.is-submitting .cart-modal-card>.close{pointer-events:none!important;opacity:.45!important;}
+.cart-submit.is-submitting{cursor:wait!important;}

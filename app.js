@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.39";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.40";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-06";
@@ -712,19 +712,20 @@ function updateAccountUI() {
   }
 
   const isSalesRole = role === "sales";
+  const isSoftwareAdmin = !!isAdmin || role === "admin" || role === "super_admin";
 
   const cartButton = $("cartButton");
-  if (cartButton) cartButton.classList.toggle("hidden", isSalesRole);
+  if (cartButton) cartButton.classList.toggle("hidden", isSalesRole || isSoftwareAdmin);
 
   const ordersButton = $("ordersButton");
-  if (ordersButton) ordersButton.classList.toggle("hidden", isSalesRole);
+  if (ordersButton) ordersButton.classList.toggle("hidden", isSalesRole || isSoftwareAdmin);
 
   const salesReportsButton = $("salesReportsButton");
   if (salesReportsButton) salesReportsButton.classList.add("hidden");
 
   const inboxButton = $("letterInboxButton");
   if (inboxButton) {
-    inboxButton.classList.toggle("hidden", !currentUser);
+    inboxButton.classList.toggle("hidden", !currentUser || isSoftwareAdmin);
   }
 
   const mobileAccount = $("mobileAccountInfo");
@@ -1447,9 +1448,9 @@ function renderAdminAccount() {
     : roleKey === "sales" ? "کارشناس فروش" : "نماینده";
 
   el.innerHTML = `
-    <div><strong>نام:</strong> ${escapeHtml(name)}</div>
-    ${currentUser.username ? `<div><strong>نام کاربری:</strong> @${escapeHtml(currentUser.username)}</div>` : ""}
-    <div><strong>نقش:</strong> ${escapeHtml(roleLabel)}</div>
+    <div><strong>Name:</strong> ${escapeHtml(name)}</div>
+    ${currentUser.username ? `<div><strong>Username:</strong> @${escapeHtml(currentUser.username)}</div>` : ""}
+    <div><strong>Role:</strong> ${escapeHtml(roleLabel)}</div>
   `;
 }
 

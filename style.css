@@ -5440,6 +5440,7 @@ body[data-account-role="software-admin"] .header-shopping-actions{
 
 @media(max-width:700px){
   .header{
+    min-height:158px!important;
     grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
     grid-template-areas:
       "auth brand"
@@ -5662,13 +5663,18 @@ body[data-account-role="software-admin"] .header-shopping-actions{
 
 /* Representative: LEFT = cart + orders, RIGHT = envelope. */
 body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions{
-  display:flex!important;
+  display:grid!important;
+  grid-template-columns:auto auto 1fr!important;
+  grid-template-areas:"cart orders inbox"!important;
   direction:ltr!important;
-  justify-content:flex-end!important;
+  justify-content:stretch!important;
+  align-items:center!important;
+  width:100%!important;
+  grid-column:1 / -1!important;
 }
-body:not(.login-active)[data-account-role="customer"] .header .cart-floating-button{order:1!important;}
-body:not(.login-active)[data-account-role="customer"] .header .orders-floating-button{order:2!important;}
-body:not(.login-active)[data-account-role="customer"] .header .admin-inbox-floating-button{order:3!important;margin-left:0!important;}
+body:not(.login-active)[data-account-role="customer"] .header .cart-floating-button{grid-area:cart!important;}
+body:not(.login-active)[data-account-role="customer"] .header .orders-floating-button{grid-area:orders!important;}
+body:not(.login-active)[data-account-role="customer"] .header .admin-inbox-floating-button{grid-area:inbox!important;justify-self:end!important;}
 body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{
   width:46px!important;height:46px!important;flex:0 0 46px!important;
 }
@@ -5691,13 +5697,14 @@ body.login-active .header .login-box{display:flex!important;}
 
 @media(max-width:700px){
   .header{
+    min-height:158px!important;
     grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
     grid-template-areas:"auth brand" "actions tools"!important;
     gap:9px 12px!important;
     padding:10px 12px!important;
   }
   .header .brand{justify-self:end!important;}
-  .header .brand img{width:68px!important;height:68px!important;flex-basis:68px!important;}
+  .header .brand img{width:84px!important;height:84px!important;flex-basis:84px!important;}
   .header .brand h1{font-size:17px!important;}
   .header .brand p{font-size:9px!important;}
   .header .login-box,.header .account{width:100%!important;max-width:300px!important;}
@@ -5708,8 +5715,8 @@ body.login-active .header .login-box{display:flex!important;}
   body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{width:43px!important;height:43px!important;flex-basis:43px!important;}
 }
 @media(max-width:420px){
-  .header{gap:7px 8px!important;padding:8px 9px!important;}
-  .header .brand img{width:62px!important;height:62px!important;flex-basis:62px!important;}
+  .header{min-height:170px!important;gap:7px 8px!important;padding:10px 9px!important;}
+  .header .brand img{width:82px!important;height:82px!important;flex-basis:82px!important;}
   .header .brand h1{font-size:15px!important;}
   .header .brand p{font-size:8px!important;}
   .header .login-box,.header .account{max-width:270px!important;}

@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.14";
+const APP_VERSION = "V1.0.15";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-05";
@@ -2357,13 +2357,11 @@ function closeCustomerRequest() {
 
 async function submitCustomerRequest() {
   const input = $("customerRequestText");
-  const typeInput = $("customerRequestType");
-
   const text = input ? input.value.trim() : "";
-  const type = typeInput?.value === "note" ? "note" : "order";
+  const type = "note";
 
   if (!text) {
-    alert("لطفاً متن سفارش یا یادداشت را بنویسید.");
+    alert("لطفاً متن یادداشت را بنویسید.");
     return;
   }
 
@@ -2378,15 +2376,9 @@ async function submitCustomerRequest() {
     }
 
     closeCustomerRequest();
-    if(type==="order") await loadOrderHistoryCount();
-
     // از tg.showPopup استفاده نمی‌کنیم؛ این متد در بعضی WebViewها
     // باعث خطای WebAppMethod Unsupported می‌شود.
-    alert(
-      type === "note"
-        ? "✅ یادداشت شما با موفقیت ثبت شد."
-        : "✅ سفارش شما با موفقیت ثبت شد."
-    );
+    alert("✅ یادداشت شما با موفقیت ثبت شد.");
 
   } catch (error) {
     console.error("Customer request error:", error);

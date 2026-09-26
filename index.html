@@ -111,7 +111,7 @@
       <p>
         محصولات کشاورزی و کودهای تخصصی
       </p>
-      <span id="appVersion" class="app-version">V1.0.13</span>
+      <span id="appVersion" class="app-version">V1.0.15</span>
 
     </div>
 
@@ -119,6 +119,9 @@
 
 
   <div class="header-shopping-actions">
+    <button id="customerButton" class="customer-note-button hidden" type="button" onclick="openCustomerRequest()" aria-label="ثبت یادداشت" title="ثبت یادداشت">
+      📝 ثبت یادداشت
+    </button>
     <button id="letterInboxButton" class="admin-inbox-floating-button hidden" type="button" onclick="openLetterInbox()" aria-label="نامه‌ها" title="نامه‌ها">
       ✉️
       <span id="letterInboxCount" class="admin-inbox-badge">۰</span>
@@ -177,14 +180,6 @@
       type="button"
     >
       ⚙️ پنل مدیریت
-    </button>
-
-    <button
-      id="customerButton"
-      class="customer-button hidden"
-      type="button"
-    >
-      📝 ثبت سفارش / یادداشت
     </button>
 
     <button id="logoutButton" class="logout-button hidden" type="button">خروج</button>
@@ -444,12 +439,8 @@
   <div class="modal-backdrop" onclick="closeCustomerRequest()"></div>
   <div class="modal-card customer-request-card">
     <button class="close" onclick="closeCustomerRequest()">×</button>
-    <h2>📝 ثبت سفارش / یادداشت</h2>
-    <p class="request-help">درخواست، سفارش یا توضیح خود را برای مشکفام فارس بنویسید.</p>
-    <select id="customerRequestType" class="request-type">
-      <option value="order">🛒 سفارش</option>
-      <option value="note">📝 یادداشت</option>
-    </select>
+    <h2>📝 ثبت یادداشت</h2>
+    <p class="request-help">یادداشت یا توضیح خود را برای مشکفام فارس بنویسید.</p>
     <textarea id="customerRequestText" class="customer-request-text" placeholder="مثلاً: ۱۰ کیلو هیومیک می‌خواهم..." rows="7"></textarea>
     <button class="admin-primary request-submit" onclick="submitCustomerRequest()">📨 آماده ارسال</button>
   </div>

@@ -16,6 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
+const APP_VERSION = "V1.0.3";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260923-01";
@@ -277,6 +278,11 @@ function updateCartAmountLive(productId,value){
   });
   const totalEl=$("cartTotal");
   if(totalEl) totalEl.textContent=formatNumber(Math.round(grand))+" تومان";
+  // Live update: keep the package count synchronized with the entered amount.
+  const totalNode=document.getElementById(`cart-line-total-${Number(productId)}`);
+  const row=totalNode?.closest('.cart-row-weight');
+  const qtyEl=row?.querySelector('.cart-qty b');
+  if(qtyEl) qtyEl.textContent=formatDecimal(packages)+" بسته";
 }
 function setCartAmount(productId,value){
   const key=String(productId); if(!cartItems[key])return;
@@ -577,6 +583,8 @@ async function loadCurrentUser() {
 ========================================================= */
 
 function updateAccountUI() {
+  const versionEl = $("appVersion");
+  if(versionEl) versionEl.textContent = APP_VERSION;
   const account = $("account");
   const adminButton = $("adminButton");
   const loginBox = $("loginBox");
@@ -2078,33 +2086,107 @@ function openLetterInbox(){
   const modal=$('letterInboxModal'); if(!modal)return;
   modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
   bindJalaliDateInputs(); updateLetterTodayHeader();
-  const today=localDateInputValue();
-  if(!$('letterDateFrom').value)setJalaliInput('letterDateFrom',today);
-  if(!$('letterDateTo').value)setJalaliInput('letterDateTo',today);
+  // هنگام باز شدن صندوق، همه نامه‌ها به‌صورت پیش‌فرض نمایش داده شوند؛
+  // فیلتر «امروز» فقط با دکمه «امروز» فعال می‌شود.
+  if($('letterDateFrom'))$('letterDateFrom').value='';
+  if($('letterDateTo'))$('letterDateTo').value='';
+  if($('letterReadFilter'))$('letterReadFilter').value='all';
+  if($('letterSenderFilter'))$('letterSenderFilter').value='';
   updateLetterDateSubtext($('letterDateFrom'));updateLetterDateSubtext($('letterDateTo'));loadLetterInbox();
 }
 function closeLetterInbox(){const m=$('letterInboxModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}}
 
+function canUseAdminLetters(){
+  const role=String(currentUser?.role||"").toLowerCase();
+  return !!isAdmin || role==="admin" || role==="super_admin" || (Array.isArray(adminPermissions) && adminPermissions.length>0);
+}
+
 async function loadLetterRecipients(){
-  const wrap=$('letterRecipientWrap'), sel=$('letterRecipientSelect');
+  const wrap=$('letterRecipientWrap');
+  const sel=$('letterRecipientSelect');
   if(!wrap||!sel)return;
-  if(!isAdmin){wrap.classList.add('hidden');return;}
+  if(!canUseAdminLetters()){wrap.classList.add('hidden');return;}
   wrap.classList.remove('hidden');
+  sel.disabled=true;
   sel.innerHTML='<option value="">در حال دریافت فهرست نماینده‌ها...</option>';
   try{
     const r=await postJson('/api/admin/customers',{});
-    const customers=Array.isArray(r?.customers)?r.customers:[];
-    if(!customers.length){sel.innerHTML='<option value="">نماینده‌ای برای انتخاب وجود ندارد</option>';return;}
-    sel.innerHTML='<option value="">انتخاب نماینده...</option>'+customers.map((c,index)=>{
-      const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||c.username||'نماینده';
-      const user=c.username?`@${c.username}`:'';
-      const number=faDigits(index+1);
-      return `<option value="${escapeHtml(String(c.id))}">${escapeHtml(number)}. ${escapeHtml(name)}${user?` — ${escapeHtml(user)}`:''}</option>`;
-    }).join('');
+    const customers=Array.isArray(r)?r:(Array.isArray(r?.customers)?r.customers:(Array.isArray(r?.data?.customers)?r.data.customers:[]));
+    const reps=customers.filter(c=>{
+      const role=String(c?.role||'customer').toLowerCase();
+      return role==='customer'||role==='representative'||role==='rep'||role==='sales';
+    });
+    sel.innerHTML='<option value="">انتخاب نماینده...</option>';
+    if(!reps.length){
+      sel.innerHTML='<option value="">نماینده‌ای برای انتخاب وجود ندارد</option>';
+      sel.disabled=false;
+      return;
+    }
+    reps.forEach(c=>{
+      const id=String(c.id ?? c.customer_id ?? '').trim();
+      if(!id)return;
+      const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||c.name||c.username||'نماینده';
+      const user=c.username?`@${String(c.username).replace(/^@/,'')}`:'بدون نام کاربری';
+      const opt=document.createElement('option');
+      opt.value=id; opt.dataset.customerId=id; opt.dataset.name=name; opt.dataset.user=user; opt.textContent=`${name} — ${user}`;
+      sel.appendChild(opt);
+    });
+    sel.disabled=false;
+    sel.style.pointerEvents='auto';
+    const syncRecipientSelection=()=>{
+      const selected=sel.options[sel.selectedIndex];
+      const value=String(selected?.value || selected?.dataset?.customerId || '').trim();
+      sel.dataset.recipientId=value;
+      sel.dataset.selectedCustomerId=value;
+    };
+    sel.onchange=syncRecipientSelection;
+    sel.oninput=syncRecipientSelection;
+    sel.dataset.recipientId='';
+    sel.dataset.selectedCustomerId='';
   }catch(e){
-    sel.innerHTML='<option value="">خطا در دریافت نماینده‌ها</option>';
-    appAlert('❌ فهرست نماینده‌ها دریافت نشد:\n'+(e.message||''));
+    console.error('Letter recipients:',e);
+    sel.innerHTML=`<option value="">خطا در دریافت فهرست نماینده‌ها</option>`;
+    sel.disabled=false;
+    sel.title=e.message||'خطا در دریافت فهرست نماینده‌ها';
   }
+}
+
+function renderLetterRecipientPicker(){}
+function toggleLetterRecipientPicker(event){
+  if(event){event.preventDefault();event.stopPropagation();}
+  const picker=$('letterRecipientPicker');
+  const list=picker?.querySelector('.letter-recipient-list');
+  if(!list)return;
+  const opening=list.classList.contains('hidden');
+  list.classList.toggle('hidden',!opening);
+  if(opening){
+    list.style.display='block';
+    setTimeout(()=>{const input=$('letterRecipientSearch');input?.focus();input?.select();},30);
+  }else{
+    list.style.display='none';
+  }
+}
+function filterLetterRecipients(){
+  const q=String($('letterRecipientSearch')?.value||'').trim().toLocaleLowerCase('fa-IR');
+  document.querySelectorAll('#letterRecipientOptions .letter-recipient-option').forEach(btn=>{
+    const hay=String(btn.dataset.search||'');
+    btn.style.display=!q||hay.includes(q)?'':'none';
+  });
+}
+function selectLetterRecipient(value){
+  const sel=$('letterRecipientSelect');
+  if(!sel)return;
+  sel.value=String(value||'');
+  const list=$('letterRecipientPicker')?.querySelector('.letter-recipient-list');
+  if(list){list.classList.add('hidden');list.style.display='none';}
+  const options=[...sel.options];
+  const opt=options.find(o=>o.value===sel.value);
+  const picker=$('letterRecipientPicker');
+  const nameEl=picker?.querySelector('.recipient-trigger-name');
+  const userEl=picker?.querySelector('.recipient-trigger-user');
+  if(nameEl)nameEl.textContent=opt?.dataset?.name||'انتخاب نماینده';
+  if(userEl)userEl.textContent=opt?.dataset?.user||'فهرست نمایندگان';
+  picker?.querySelectorAll('.letter-recipient-option').forEach(btn=>btn.classList.toggle('active',btn.dataset.id===sel.value));
 }
 
 function openLetterCompose(){
@@ -2113,7 +2195,9 @@ function openLetterCompose(){
   modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
   const subject=$('letterComposeSubject'), body=$('letterComposeBody');
   if(subject)subject.value=''; if(body)body.value='';
-  if(isAdmin){
+  const role=String(currentUser?.role||'').toLowerCase();
+  const adminMode=canUseAdminLetters();
+  if(adminMode){
     $('letterComposeHelp')?.replaceChildren(document.createTextNode('نامه را برای نماینده موردنظر ارسال کنید.'));
     loadLetterRecipients();
   }else{
@@ -2129,7 +2213,7 @@ function showAllLetters(){$('letterDateFrom').value='';$('letterDateTo').value='
 async function loadLetterUnreadCount(){
   if(!currentUser)return;
   try{
-    const endpoint=isAdmin?"/api/admin/letters-unread-count":"/api/customer/letters-unread-count";
+    const endpoint=canUseAdminLetters()?"/api/admin/letters-unread-count":"/api/customer/letters-unread-count";
     const r=await postJson(endpoint,{}); const n=Number(r?.count||0);
     setAdminCount("letterInboxCount",n);
     const b=$("letterInboxCount");if(b)b.classList.toggle("has-unread",n>0);
@@ -2142,14 +2226,17 @@ async function loadLetterInbox(){
   list.innerHTML='<div class="message">در حال دریافت نامه‌ها...</div>';
   try{
     const payload={from:jalaliInputToGregorian($("letterDateFrom")?.value)||"",to:jalaliInputToGregorian($("letterDateTo")?.value)||"",read_filter:$("letterReadFilter")?.value||"all",sender_id:$("letterSenderFilter")?.value||""};
-    const endpoint=isAdmin?"/api/admin/letters":"/api/customer/letters";
+    const endpoint=canUseAdminLetters()?"/api/admin/letters":"/api/customer/letters";
     const r=await postJson(endpoint,payload); letterThreads=Array.isArray(r?.messages)?r.messages:[];
+    letterThreads.sort((a,b)=>new Date(b?.created_at||0)-new Date(a?.created_at||0));
     renderLetterSenderFilter(letterThreads);
     if(!letterThreads.length){list.innerHTML='<div class="message">نامه‌ای با این فیلتر پیدا نشد.</div>';return;}
     list.innerHTML=letterThreads.map((m,i)=>{
       const unread=!m.read;
+      const subjectText=String(m.subject||'');
+      const typeClass=subjectText.includes('🛒')?'type-cart':subjectText.includes('📝')?'type-note':subjectText.includes('↩️')?'type-reply':'type-letter';
       const sender=m.sender_name||m.sender_username||"کاربر";
-      return `<div class="letter-item ${unread?'unread':''}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${escapeHtml(m.subject||'بدون عنوان')}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
+      return `<div class="letter-item ${unread?'unread':''} ${typeClass}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${escapeHtml(m.subject||'بدون عنوان')}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
     }).join("");
     if(letterCurrentThread!=null){const idx=letterThreads.findIndex(x=>String(x.thread_id||x.id)===String(letterCurrentThread));if(idx>=0)openLetterThread(idx);}
     await loadLetterUnreadCount();
@@ -2165,31 +2252,33 @@ async function openLetterThread(index){
   const m=letterThreads[index];if(!m)return;letterCurrentThread=String(m.thread_id||m.id);
   const thread=$("letterThread");if(!thread)return;thread.innerHTML='<div class="message">در حال دریافت گفتگو...</div>';
   try{
-    const endpoint=isAdmin?"/api/admin/letter-thread":"/api/customer/letter-thread";
+    const endpoint=canUseAdminLetters()?"/api/admin/letter-thread":"/api/customer/letter-thread";
     const r=await postJson(endpoint,{thread_id:m.thread_id||m.id}); const messages=Array.isArray(r?.messages)?r.messages:[];
     const subject=m.subject||messages[0]?.subject||"بدون عنوان";
-    thread.innerHTML=`<div class="thread-head"><h3>✉️ ${escapeHtml(subject)}</h3><small>گفتگوی کامل نامه و پاسخ‌ها</small></div><div class="thread-messages">${messages.map(x=>{const mine=String(x.sender_customer_id||'')===String(currentUser?.id||'');return `<div class="thread-message ${mine?'mine':''}"><div class="tm-head"><strong>${escapeHtml(x.sender_name||x.sender_username||'کاربر')}</strong><span>${escapeHtml(formatLetterDate(x.created_at))}</span></div><div class="tm-body">${escapeHtml(x.body||'')}</div></div>`}).join('')}</div><div class="thread-reply"><textarea id="letterReplyBody" class="letter-textarea" rows="4" placeholder="پاسخ خود را بنویسید..."></textarea><button class="admin-primary" type="button" onclick="sendLetterReply(${Number(m.thread_id||m.id)})">📨 ارسال پاسخ</button></div>`;
-    await postJson(isAdmin?"/api/admin/letter-mark-read":"/api/customer/letter-mark-read",{thread_id:m.thread_id||m.id});
+    thread.innerHTML=`<div class="thread-head"><h3>✉️ ${escapeHtml(subject)}</h3><small>گفتگوی کامل نامه و پاسخ‌ها</small></div><div class="thread-messages">${messages.map((x,idx)=>{const mine=String(x.sender_customer_id||'')===String(currentUser?.id||'');const subjectValue=String(x.subject||subject||'');const kind=subjectValue.includes('🛒')?'type-cart':subjectValue.includes('📝')?'type-note':idx>0?'type-reply':'type-letter';return `<div class="thread-message ${mine?'mine':''} ${kind}"><div class="tm-head"><strong>${escapeHtml(x.sender_name||x.sender_username||'کاربر')}</strong><span>${escapeHtml(formatLetterDate(x.created_at))}</span></div><div class="tm-body">${escapeHtml(x.body||'')}</div></div>`}).join('')}</div><div class="thread-reply"><textarea id="letterReplyBody" class="letter-textarea" rows="4" placeholder="پاسخ خود را بنویسید..."></textarea><button class="admin-primary" type="button" onclick="sendLetterReply(${Number(m.thread_id||m.id)})">📨 ارسال پاسخ</button></div>`;
+    await postJson(canUseAdminLetters()?"/api/admin/letter-mark-read":"/api/customer/letter-mark-read",{thread_id:m.thread_id||m.id});
     m.read=true;renderLetterListAfterRead();await loadLetterUnreadCount();
   }catch(e){thread.innerHTML=`<div class="message error">دریافت گفتگو انجام نشد.<br>${escapeHtml(e.message||'')}</div>`;}
 }
 function renderLetterListAfterRead(){document.querySelectorAll('.letter-item').forEach(el=>el.classList.remove('unread'));}
-async function sendLetterReply(threadId){const body=$("letterReplyBody")?.value.trim();if(!body)return appAlert("لطفاً متن پاسخ را بنویسید.");try{await postJson(isAdmin?"/api/admin/letter-reply":"/api/customer/letter-reply",{thread_id:Number(threadId),body});appAlert("✅ پاسخ با موفقیت ارسال شد.");await loadLetterInbox();}catch(e){appAlert("❌ ارسال پاسخ انجام نشد:\n"+(e.message||''));}}
+async function sendLetterReply(threadId){const body=$("letterReplyBody")?.value.trim();if(!body)return appAlert("لطفاً متن پاسخ را بنویسید.");try{await postJson(canUseAdminLetters()?"/api/admin/letter-reply":"/api/customer/letter-reply",{thread_id:Number(threadId),body});appAlert("✅ پاسخ با موفقیت ارسال شد.");await loadLetterInbox();}catch(e){appAlert("❌ ارسال پاسخ انجام نشد:\n"+(e.message||''));}}
 async function sendNewLetter(){
   const subjectEl=$("letterComposeSubject"), bodyEl=$("letterComposeBody"), recipientEl=$("letterRecipientSelect");
   const subject=String(subjectEl?.value||"").trim();
   const body=String(bodyEl?.value||"").trim();
-  const recipientId=String(recipientEl?.value||"").trim();
+  const selectedOption=recipientEl?.options?.[recipientEl.selectedIndex];
+  const recipientId=String(selectedOption?.value || selectedOption?.dataset?.customerId || recipientEl?.dataset?.recipientId || recipientEl?.dataset?.selectedCustomerId || "").trim();
   if(!subject){subjectEl?.focus();return appAlert("⚠️ عنوان نامه را وارد کنید.");}
   if(!body){bodyEl?.focus();return appAlert("⚠️ متن نامه را وارد کنید.");}
-  if(isAdmin && !recipientId){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
+  if(canUseAdminLetters() && !recipientId){recipientEl?.focus();return appAlert("⚠️ ابتدا یک نماینده را از فهرست گیرنده‌ها انتخاب کنید.");}
+  if(canUseAdminLetters() && recipientEl && selectedOption && selectedOption.value!==recipientId) recipientEl.value=recipientId;
   const button=document.querySelector('#letterComposeModal .admin-primary');
   if(button){button.disabled=true;button.textContent="⏳ در حال ارسال...";}
   try{
-    const payload=isAdmin
+    const payload=canUseAdminLetters()
       ? {recipient_customer_id:recipientId,subject:subject,body:body}
       : {subject:subject,body:body};
-    const result=await postJson(isAdmin?'/api/admin/letter':'/api/customer/letter',payload);
+    const result=await postJson(canUseAdminLetters()?'/api/admin/letter':'/api/customer/letter',payload);
     if(result?.ok===false) throw new Error(result.error||'سرور نامه را ثبت نکرد.');
     closeLetterCompose();
     appAlert("✅ نامه با موفقیت ارسال شد.");
@@ -2550,7 +2639,7 @@ window.openCart=openCart;
 window.closeCart=closeCart;
 window.openOrderHistory=openOrderHistory;
 window.closeOrderHistory=closeOrderHistory;
-window.openLetterInbox=openLetterInbox;window.closeLetterInbox=closeLetterInbox;window.openLetterCompose=openLetterCompose;window.closeLetterCompose=closeLetterCompose;window.loadLetterInbox=loadLetterInbox;window.openLetterThread=openLetterThread;window.sendLetterReply=sendLetterReply;window.sendNewLetter=sendNewLetter;window.resetLetterFilters=resetLetterFilters;window.showAllLetters=showAllLetters;
+window.openLetterInbox=openLetterInbox;window.closeLetterInbox=closeLetterInbox;window.openLetterCompose=openLetterCompose;window.closeLetterCompose=closeLetterCompose;window.loadLetterInbox=loadLetterInbox;window.openLetterThread=openLetterThread;window.sendLetterReply=sendLetterReply;window.sendNewLetter=sendNewLetter;window.resetLetterFilters=resetLetterFilters;window.showAllLetters=showAllLetters;window.toggleLetterRecipientPicker=toggleLetterRecipientPicker;window.selectLetterRecipient=selectLetterRecipient;window.filterLetterRecipients=filterLetterRecipients;
 window.toggleCustomerPicker=toggleCustomerPicker;
 window.selectCustomerPicker=selectCustomerPicker;
 window.searchCustomerPriceCustomer=searchCustomerPriceCustomer;

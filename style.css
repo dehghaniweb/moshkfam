@@ -4134,3 +4134,43 @@ body:not(.login-active) #logoutButton{display:inline-flex!important;}
   .header-shopping-actions .cart-floating-button{left:62px!important;}
   .header-shopping-actions .admin-inbox-floating-button{right:10px!important;}
 }
+
+
+/* V1.0.27 — mobile header only: keep brand and account/login areas separated and readable. */
+@media(max-width:700px){
+  .header{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,auto)!important;
+    grid-template-areas:"login brand" "account actions" "tools tools"!important;
+    align-items:start!important;
+    gap:10px 12px!important;
+    padding:10px 12px 70px!important;
+    min-height:0!important;
+    overflow:visible!important;
+  }
+  .brand{grid-area:brand!important;justify-self:end!important;align-self:start!important;max-width:58vw!important;margin:0!important;gap:7px!important;}
+  .brand img{width:48px!important;height:48px!important;}
+  .brand h1{font-size:15px!important;line-height:1.35!important;white-space:nowrap!important;}
+  .brand p{font-size:9px!important;line-height:1.4!important;white-space:nowrap!important;}
+  .brand .app-version{font-size:8px!important;}
+  .login-box{grid-area:login!important;justify-self:start!important;align-self:start!important;width:min(100%,300px)!important;max-width:300px!important;margin:0!important;}
+  .login-fields{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto!important;gap:5px!important;width:100%!important;}
+  .login-fields input{width:100%!important;min-width:0!important;padding:8px 7px!important;font-size:10px!important;}
+  .login-fields button{padding:8px 9px!important;font-size:10px!important;}
+  .account{grid-area:account!important;justify-self:start!important;margin:0!important;max-width:52vw!important;}
+  .header-actions{grid-area:actions!important;justify-self:start!important;justify-content:flex-start!important;margin:0!important;}
+  .logout-button{padding:6px 9px!important;font-size:10px!important;border-radius:8px!important;}
+  .admin-button{padding:7px 9px!important;font-size:10px!important;}
+  .header-shopping-actions{grid-area:tools!important;position:static!important;display:flex!important;justify-content:space-between!important;align-items:center!important;width:100%!important;margin:0!important;}
+  .admin-inbox-floating-button,.cart-floating-button,.orders-floating-button{position:static!important;transform:none!important;}
+}
+@media(max-width:420px){
+  .brand{max-width:54vw!important;}
+  .brand h1{font-size:14px!important;}
+  .login-box{width:min(100%,280px)!important;max-width:280px!important;}
+  .login-fields{grid-template-columns:1fr 1fr!important;}
+  .login-fields button{grid-column:1/-1!important;justify-self:start!important;width:auto!important;}
+}
+
+/* V1.0.27 — remove the duplicate sender line under the date. */
+.letter-logged-in-sender{display:none!important;}

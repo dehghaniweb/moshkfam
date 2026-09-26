@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = "V1.0.22";
+const APP_VERSION = "V1.0.27";
 (async function forceClearCacheFromApp() {
   try {
     const version = "moshkfam-app-20260926-05";
@@ -2076,7 +2076,7 @@ function updateLetterTodayHeader(){
   if($('letterTodayJalali'))$('letterTodayJalali').textContent=`امروز ${faDigits(j.jy)}/${faDigits(String(j.jm).padStart(2,'0'))}/${faDigits(String(j.jd).padStart(2,'0'))}`;
   if($('letterTodayWeekday'))$('letterTodayWeekday').textContent=`روز ${weekdays[now.getDay()]}`;
   if($('letterTodayGregorian'))$('letterTodayGregorian').textContent=`معادل میلادی: ${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
-  if($('letterLoggedInSender'))$('letterLoggedInSender').textContent=`فرستنده این حساب: ${name}`; if($('letterAccountSenderButton'))$('letterAccountSenderButton').textContent=`فرستنده این حساب: ${name}`;
+  if($('letterAccountSenderButton'))$('letterAccountSenderButton').textContent=`فرستنده این حساب: ${name}`;
 }
 function openLetterInbox(){
   if(!currentUser)return;
@@ -2268,18 +2268,45 @@ function renderLetterSenderFilter(messages){
 }
 function formatLetterDate(v){try{return new Date(v).toLocaleString('fa-IR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return v||'';}}
 async function openLetterThread(index){
-  const m=letterThreads[index];if(!m)return;letterCurrentThread=String(m.thread_id||m.id);
+  const m=letterThreads[index];if(!m)return;
+  const threadId=m.thread_id||m.id;
+  if(threadId==null||threadId===""){
+    renderLetterThreadFallback(m,"شناسه نامه برای باز کردن گفتگو موجود نیست.");
+    return;
+  }
+  letterCurrentThread=String(threadId);
   const thread=$("letterThread");if(!thread)return;thread.innerHTML='<div class="message">در حال دریافت گفتگو...</div>';
   try{
     const endpoint=canUseAdminLetters()?"/api/admin/letter-thread":"/api/customer/letter-thread";
-    const r=await postJson(endpoint,{thread_id:m.thread_id||m.id}); const messages=Array.isArray(r?.messages)?r.messages:[];
-    const subject=m.subject||messages[0]?.subject||"بدون عنوان";
-    const inboxCard=document.querySelector('#letterInboxModal .letter-inbox-modal-card');
-    inboxCard?.classList.add('thread-open');
-    thread.innerHTML=`<div class="thread-head"><button type="button" class="letter-thread-back" onclick="showLetterList()">← بازگشت به نامه‌ها</button><div><h3>✉️ ${escapeHtml(subject)}</h3><small>گفتگوی کامل نامه و پاسخ‌ها</small></div></div><div class="thread-messages">${messages.map((x,idx)=>{const mine=String(x.sender_customer_id||'')===String(currentUser?.id||'');const subjectValue=String(x.subject||subject||'');const kind=idx>0?'type-reply':subjectValue.includes('🛒')?'type-cart':subjectValue.includes('📝')?'type-note':subjectValue.includes('📦')?'type-order':'type-letter';return `<div class="thread-message ${mine?'mine':''} ${kind}"><div class="tm-head"><strong>${escapeHtml(x.sender_name||x.sender_username||'کاربر')}</strong><span>${escapeHtml(formatLetterDate(x.created_at))}</span></div><div class="tm-body">${escapeHtml(x.body||'')}</div></div>`}).join('')}</div><div class="thread-reply"><textarea id="letterReplyBody" class="letter-textarea" rows="4" placeholder="پاسخ خود را بنویسید..."></textarea><button class="admin-primary" type="button" onclick="sendLetterReply(${Number(m.thread_id||m.id)})">📨 ارسال پاسخ</button></div>`;
-    await postJson(canUseAdminLetters()?"/api/admin/letter-mark-read":"/api/customer/letter-mark-read",{thread_id:m.thread_id||m.id});
+    const request=postJson(endpoint,{thread_id:threadId});
+    const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('زمان دریافت گفتگو بیش از حد طولانی شد.')),8000));
+    const r=await Promise.race([request,timeout]);
+    const messages=Array.isArray(r?.messages)?r.messages:[];
+    if(!messages.length){
+      renderLetterThreadFallback(m,"برای این نامه گفتگوی جداگانه‌ای پیدا نشد.");
+      return;
+    }
+    renderLetterThreadMessages(m,messages,thread);
+    try{await postJson(canUseAdminLetters()?"/api/admin/letter-mark-read":"/api/customer/letter-mark-read",{thread_id:threadId});}catch(markErr){console.warn('Letter mark-read:',markErr);}
     m.read=true;renderLetterListAfterRead();await loadLetterUnreadCount();
-  }catch(e){thread.innerHTML=`<div class="message error">دریافت گفتگو انجام نشد.<br>${escapeHtml(e.message||'')}</div>`;}
+  }catch(e){
+    console.warn('Letter thread:',e);
+    renderLetterThreadFallback(m,e?.message||'دریافت گفتگوی نامه انجام نشد.');
+  }
+}
+function renderLetterThreadMessages(m,messages,thread){
+  const subject=m.subject||messages[0]?.subject||"بدون عنوان";
+  const inboxCard=document.querySelector('#letterInboxModal .letter-inbox-modal-card');
+  inboxCard?.classList.add('thread-open');
+  thread.innerHTML=`<div class="thread-head"><button type="button" class="letter-thread-back" onclick="showLetterList()">← بازگشت به نامه‌ها</button><div><h3>✉️ ${escapeHtml(subject)}</h3><small>گفتگوی کامل نامه و پاسخ‌ها</small></div></div><div class="thread-messages">${messages.map((x,idx)=>{const mine=String(x.sender_customer_id||'')===String(currentUser?.id||'');const subjectValue=String(x.subject||subject||'');const kind=idx>0?'type-reply':subjectValue.includes('🛒')?'type-cart':subjectValue.includes('📝')?'type-note':subjectValue.includes('📦')?'type-order':'type-letter';return `<div class="thread-message ${mine?'mine':''} ${kind}"><div class="tm-head"><strong>${escapeHtml(x.sender_name||x.sender_username||'کاربر')}</strong><span>${escapeHtml(formatLetterDate(x.created_at))}</span></div><div class="tm-body">${escapeHtml(x.body||'')}</div></div>`}).join('')}</div><div class="thread-reply"><textarea id="letterReplyBody" class="letter-textarea" rows="4" placeholder="پاسخ خود را بنویسید..."></textarea><button class="admin-primary" type="button" onclick="sendLetterReply(${Number(m.thread_id||m.id)})">📨 ارسال پاسخ</button></div>`;
+}
+function renderLetterThreadFallback(m,reason){
+  const thread=$("letterThread");if(!thread)return;
+  const inboxCard=document.querySelector('#letterInboxModal .letter-inbox-modal-card');
+  inboxCard?.classList.add('thread-open');
+  const subject=m.subject||'نامه';
+  const sender=m.sender_name||m.sender_username||'کاربر';
+  thread.innerHTML=`<div class="thread-head"><button type="button" class="letter-thread-back" onclick="showLetterList()">← بازگشت به نامه‌ها</button><div><h3>✉️ ${escapeHtml(subject)}</h3><small>${escapeHtml(reason||'نمایش مستقیم نامه')}</small></div></div><div class="thread-messages"><div class="thread-message type-letter"><div class="tm-head"><strong>${escapeHtml(sender)}</strong><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="tm-body">${escapeHtml(m.body||'')}</div></div></div>`;
 }
 function showLetterList(){
   const card=document.querySelector('#letterInboxModal .letter-inbox-modal-card');

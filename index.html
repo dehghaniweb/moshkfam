@@ -598,35 +598,29 @@
 
     <!-- LETTERS / SHOPPING CLEANUP -->
     <section id="adminSection-cleanup" class="admin-view admin-inner-view hidden">
-      <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیر نرم‌افزار</button>
-      <h3 class="admin-section-title">🧹 مدیریت نامه‌ها و سبدهای خرید</h3>
-      <p class="admin-section-help">این بخش فقط برای مدیر نرم‌افزار است. می‌توانید اطلاعات ثبت‌شده یک نماینده مشخص را مدیریت کنید.</p>
-      <div class="admin-cleanup-grid">
-        <div class="admin-cleanup-card admin-cleanup-test-card">
-          <h4>🧪 گزارش و پاک‌سازی داده‌های تست</h4>
-          <p>این بخش فقط داده‌های نامه‌ها، گزارش‌ها و سفارش‌های ثبت‌شده را پاک می‌کند و به محصولات، نمایندگان و حساب‌های کاربری دست نمی‌زند.</p>
-          <div id="adminTestDataStats" class="admin-cleanup-stats">در حال دریافت آمار...</div>
-          <div class="admin-cleanup-actions">
-            <button class="admin-danger-button" type="button" onclick="refreshAdminTestDataStats()">↻ به‌روزرسانی آمار</button>
-            <button class="admin-danger-button" type="button" onclick="cleanupAllTestData()">🗑️ حذف همه نامه‌ها، گزارش‌ها و سفارش‌ها</button>
+      <div class="admin-cleanup-card admin-cleanup-test-card">
+        <h4>🧪 گزارش و پاک‌سازی داده‌های تست</h4>
+        <p>این بخش فقط داده‌های نامه‌ها، گزارش‌ها و سفارش‌های ثبت‌شده را پاک می‌کند و به محصولات، نمایندگان و حساب‌های کاربری دست نمی‌زند.</p>
+
+        <div id="adminTestDataStats" class="admin-cleanup-stats">در حال دریافت آمار...</div>
+
+        <div class="admin-cleanup-categories">
+          <div class="admin-cleanup-category">
+            <strong>✉️ پیام‌ها</strong>
+            <b id="cleanupMessagesCount">۰</b>
+          </div>
+          <div class="admin-cleanup-category">
+            <strong>🛒 سفارش‌های خرید</strong>
+            <b id="cleanupOrdersCount">۰</b>
+          </div>
+          <div class="admin-cleanup-category unavailable">
+            <strong>🧺 سبدهای خرید</strong>
+            <b>دسترسی نداریم</b>
+            <small>سبد بازِ ثبت‌نشده فقط روی مرورگر همان نماینده ذخیره می‌شود و از پنل مدیر قابل حذف نیست.</small>
           </div>
         </div>
-        <div class="admin-cleanup-card">
-          <h4>👤 حذف اطلاعات یک نماینده</h4>
-          <label class="admin-select-label">انتخاب نماینده<select id="cleanupCustomerSelect"><option value="">در حال دریافت نماینده‌ها...</option></select></label>
-          <div id="cleanupCustomerInfo" class="customer-info hidden"></div>
-          <div class="admin-cleanup-actions">
-            <button class="admin-danger-button" type="button" onclick="deleteSelectedCustomerOrders()">🛒 حذف سفارش‌ها / سبدهای ثبت‌شده</button>
-            <button class="admin-danger-button" type="button" onclick="deleteSelectedCustomerLetters()">✉️ حذف نامه‌ها و مکاتبات</button>
-          </div>
-          <small>سبد بازِ فعلی که هنوز سفارش نشده، فقط روی مرورگر همان نماینده ذخیره است و از پنل مدیر قابل حذف از راه دور نیست.</small>
-        </div>
-        <div class="admin-cleanup-card">
-          <h4>✉️ گزارش نامه‌ها</h4>
-          <p>مشاهده و بررسی گفت‌وگوها و پاسخ‌های نمایندگان.</p>
-          <div class="admin-cleanup-stats" id="adminLetterCleanupStats">در حال دریافت آمار...</div>
-          <button class="admin-primary" type="button" onclick="openLetterInbox();return false;">📬 باز کردن صندوق نامه</button>
-        </div>
+
+        <button class="admin-danger-button admin-cleanup-reset-button" type="button" onclick="cleanupAllTestData()">🗑️ ریست و حذف داده‌ها</button>
       </div>
     </section>
 

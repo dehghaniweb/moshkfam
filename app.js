@@ -2424,7 +2424,7 @@ function startLetterHold(index,el){
     const m=letterThreads[index];
     if(!m)return;
     if(m.read && !letterLocalReadIds.has(Number(m.id)))return;
-    const ok=window.confirm('این نامه به عنوان «خوانده شده» علامت‌گذاری شود؟');
+    const ok=await appConfirm('این نامه به عنوان «خوانده شده» علامت‌گذاری شود؟');
     if(!ok)return;
     try{
       const threadId=m.thread_id||m.id;
@@ -2985,6 +2985,8 @@ async function refreshAdminTestDataStats(){
     const r=await postJson('/api/admin/cleanup-stats',{});
     if(!r?.ok)throw new Error(r?.error||'دریافت آمار انجام نشد.');
     box.innerHTML=`<div class="cleanup-stat-line"><span>✉️ نامه‌ها و پیام‌ها</span><b>${formatNumber(r.messages||0)}</b></div><div class="cleanup-stat-line"><span>📋 گزارش‌ها / درخواست‌ها</span><b>${formatNumber(r.requests||0)}</b></div><div class="cleanup-stat-line"><span>🛒 سفارش‌های ثبت‌شده</span><b>${formatNumber(r.orders||0)}</b></div><div class="cleanup-stat-line total"><span>📊 مجموع داده‌های قابل پاک‌سازی</span><b>${formatNumber((r.messages||0)+(r.requests||0)+(r.orders||0))}</b></div><small>آمار امروز: ✉️ ${formatNumber(r.messagesToday||0)} نامه · 📋 ${formatNumber(r.requestsToday||0)} گزارش · 🛒 ${formatNumber(r.ordersToday||0)} سفارش</small>`;
+    const messagesCount=$("cleanupMessagesCount"); if(messagesCount) messagesCount.textContent=formatNumber(r.messages||0);
+    const ordersCount=$("cleanupOrdersCount"); if(ordersCount) ordersCount.textContent=formatNumber(r.orders||0);
   }catch(e){box.innerHTML=`<div class="message error">دریافت آمار انجام نشد.<br>${escapeHtml(e.message||'')}</div>`;}
 }
 async function cleanupAllTestData(){

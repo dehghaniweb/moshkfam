@@ -5766,3 +5766,63 @@ body:not(.login-active) .header .admin-inbox-floating-button .admin-inbox-badge{
 
 /* Each letter keeps its own read/unread state. */
 .letter-item{touch-action:manipulation;user-select:none;}
+
+
+/* ===== V1.0.63 — Header logout, in-page hold dialog, admin cleanup ===== */
+@media(min-width:851px){
+  body.login-active .header .header-actions{
+    transform:translateY(-28px)!important;
+    position:relative!important;
+    z-index:70!important;
+  }
+}
+
+/* Long-press confirmation must stay inside the app dialog, never the browser prompt. */
+#appDialog{
+  position:fixed!important;
+  inset:0!important;
+  z-index:5000!important;
+}
+#appDialog .modal-backdrop{
+  position:absolute!important;
+  inset:0!important;
+}
+#appDialog .app-dialog-card{
+  position:relative!important;
+  z-index:2!important;
+}
+
+/* Admin cleanup: three clear data categories and one reset action. */
+.admin-cleanup-test-card{
+  width:100%;
+  box-sizing:border-box;
+}
+.admin-cleanup-categories{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:14px 0;
+}
+.admin-cleanup-category{
+  min-height:88px;
+  padding:12px;
+  border:1px solid #dbe7df;
+  border-radius:14px;
+  background:#f8fafc;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  text-align:center;
+}
+.admin-cleanup-category strong{font-size:13px;color:#14532d}
+.admin-cleanup-category b{font-size:18px;color:#166534}
+.admin-cleanup-category.unavailable{background:#fff7ed;border-color:#fed7aa}
+.admin-cleanup-category.unavailable b{font-size:12px;color:#b45309}
+.admin-cleanup-category small{font-size:10px;line-height:1.7;color:#64748b}
+.admin-cleanup-reset-button{margin-top:4px!important;width:100%!important;min-height:50px!important;font-size:14px!important}
+@media(max-width:700px){
+  .admin-cleanup-categories{grid-template-columns:1fr}
+  .admin-cleanup-category{min-height:70px}
+}

@@ -5826,3 +5826,29 @@ body:not(.login-active) .header .admin-inbox-floating-button .admin-inbox-badge{
   .admin-cleanup-categories{grid-template-columns:1fr}
   .admin-cleanup-category{min-height:70px}
 }
+
+
+/* V1.0.64 — final requested fixes */
+@media(max-width:700px){
+  /* Move representative logout higher, into the free upper area. */
+  body.login-active .header .header-actions{
+    transform:translateY(-34px)!important;
+    position:relative!important;
+    z-index:80!important;
+  }
+}
+
+/* The admin/sales loading mask must cover the entire viewport, including while the modal content scrolls. */
+#adminLoadingOverlay.admin-loading-overlay{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100vh!important;
+  min-height:100vh!important;
+  z-index:99999!important;
+  box-sizing:border-box!important;
+  background:rgba(255,255,255,.82)!important;
+  backdrop-filter:blur(4px)!important;
+  -webkit-backdrop-filter:blur(4px)!important;
+}
+#adminLoadingOverlay.admin-loading-overlay.hidden{display:none!important;}

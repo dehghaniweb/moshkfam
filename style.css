@@ -5910,3 +5910,52 @@ body:not(.login-active) .header .admin-inbox-floating-button .admin-inbox-badge{
     right:-6px!important;
   }
 }
+
+/* V1.0.67 — mobile badge anchor + larger logout text */
+@media(max-width:850px){
+  body:not(.login-active) .header .header-shopping-actions > .cart-floating-button,
+  body:not(.login-active) .header .header-shopping-actions > .orders-floating-button,
+  body:not(.login-active) .header .header-shopping-actions > .admin-inbox-floating-button{
+    position:relative!important;
+    overflow:visible!important;
+  }
+
+  body:not(.login-active) .header .header-shopping-actions > .cart-floating-button .cart-count,
+  body:not(.login-active) .header .header-shopping-actions > .orders-floating-button .orders-count,
+  body:not(.login-active) .header .header-shopping-actions > .admin-inbox-floating-button .admin-inbox-badge{
+    position:absolute!important;
+    top:-6px!important;
+    right:-6px!important;
+    left:auto!important;
+    bottom:auto!important;
+    transform:none!important;
+  }
+}
+
+@media(max-width:700px){
+  body:not(.login-active) .header .logout-button{
+    font-size:14px!important;
+    font-weight:800!important;
+    padding:7px 12px!important;
+    min-height:34px!important;
+  }
+}
+
+/* V1.0.68 — force cart badge to stay attached to the cart button on mobile */
+@media(max-width:850px){
+  body:not(.login-active) .header .header-shopping-actions > .cart-floating-button{
+    position:relative!important;
+    overflow:visible!important;
+    isolation:isolate!important;
+  }
+  body:not(.login-active) .header .header-shopping-actions > .cart-floating-button > .cart-count{
+    position:absolute!important;
+    top:-6px!important;
+    right:-6px!important;
+    left:auto!important;
+    bottom:auto!important;
+    margin:0!important;
+    transform:none!important;
+    z-index:9999!important;
+  }
+}

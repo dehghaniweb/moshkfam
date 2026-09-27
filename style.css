@@ -5723,3 +5723,46 @@ body.login-active .header .login-box{display:flex!important;}
   .header .login-fields input,.header .login-fields button{height:34px!important;font-size:10px!important;}
   body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions>button{width:40px!important;height:40px!important;flex-basis:40px!important;}
 }
+
+
+/* V1.0.62 — final header/read-state fixes */
+@media(min-width:701px){
+  body:not(.login-active)[data-account-role="customer"] .header{
+    grid-template-areas:"auth brand" "actions actions" "tools tools"!important;
+    row-gap:8px!important;
+  }
+  body:not(.login-active)[data-account-role="customer"] .header .header-actions{
+    grid-area:actions!important;
+    justify-self:start!important;
+    position:static!important;
+    z-index:30!important;
+  }
+  body:not(.login-active)[data-account-role="customer"] .header .header-shopping-actions{
+    grid-area:tools!important;
+    grid-column:1 / -1!important;
+    justify-self:stretch!important;
+    width:100%!important;
+    padding:0!important;
+    z-index:20!important;
+  }
+}
+
+/* The unread counter must stay attached to the envelope itself on phones. */
+body:not(.login-active)[data-account-role="customer"] .header .admin-inbox-floating-button,
+body:not(.login-active)[data-account-role="sales"] .header .admin-inbox-floating-button{
+  position:relative!important;
+  overflow:visible!important;
+}
+body:not(.login-active) .header .admin-inbox-floating-button .admin-inbox-badge{
+  position:absolute!important;
+  top:-5px!important;
+  right:-5px!important;
+  left:auto!important;
+  bottom:auto!important;
+  margin:0!important;
+  transform:none!important;
+  z-index:100!important;
+}
+
+/* Each letter keeps its own read/unread state. */
+.letter-item{touch-action:manipulation;user-select:none;}

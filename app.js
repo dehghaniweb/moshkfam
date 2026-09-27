@@ -2115,6 +2115,8 @@ let letterThreads = [];
 let letterCurrentThread = null;
 let letterPollingTimer = null;
 let letterLocalReadIds = new Set();
+let letterHoldTimer = null;
+let letterHoldTriggered = false;
 function loadLetterLocalReadIds(){
   try{
     const key=`moshkfam_letter_reads_${String(currentUser?.id||currentUser?.customer_id||currentUser?.telegram_user_id||'')}`;
@@ -2394,7 +2396,7 @@ async function loadLetterInbox(){
       const typeClass=subjectText.includes('🛒')?'type-cart':subjectText.includes('📝')?'type-note':subjectText.includes('📦')?'type-order':subjectText.includes('↩️')?'type-reply':'type-letter';
       const displayTitle=subjectText.includes('🛒')?'سفارش سبد خرید':'نامه';
       const sender=m.sender_name||m.sender_username||"کاربر";
-      return `<div class="letter-item ${unread?'unread':''} ${typeClass}" onclick="openLetterThread(${i})"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${displayTitle}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
+      return `<div class="letter-item ${unread?'unread':''} ${typeClass}" data-letter-index="${i}" onclick="if(!this.dataset.skipClick)openLetterThread(${i})" onpointerdown="startLetterHold(${i},this)" onpointerup="cancelLetterHold(this)" onpointercancel="cancelLetterHold(this)" onpointerleave="cancelLetterHold(this)" oncontextmenu="return false;"><div class="letter-item-head"><span>${unread?'● جدید':'✓ خوانده شده'}</span><span>${escapeHtml(formatLetterDate(m.created_at))}</span></div><div class="letter-item-subject">${displayTitle}</div><div class="letter-item-preview">${escapeHtml(m.body||'')}</div><div class="letter-item-head"><span>👤 ${escapeHtml(sender)}</span><span>${m.reply_count?`↩️ ${formatNumber(m.reply_count)}`:''}</span></div></div>`;
     }).join("");
     if(letterCurrentThread!=null){const idx=letterThreads.findIndex(x=>String(x.thread_id||x.id)===String(letterCurrentThread));if(idx>=0)openLetterThread(idx);}
     await loadLetterUnreadCount();
@@ -2406,6 +2408,43 @@ function renderLetterSenderFilter(messages){
   sel.innerHTML='<option value="">همه فرستنده‌ها</option>'+Array.from(seen.entries()).map(([id,name])=>`<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`).join("");if(current)sel.value=current;
 }
 function formatLetterDate(v){try{return new Date(v).toLocaleString('fa-IR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return v||'';}}
+function cancelLetterHold(el){
+  if(letterHoldTimer){clearTimeout(letterHoldTimer);letterHoldTimer=null;}
+  if(letterHoldTriggered){
+    letterHoldTriggered=false;
+    if(el){el.dataset.skipClick='1';setTimeout(()=>{try{delete el.dataset.skipClick;}catch{}},80);}
+  }
+}
+function startLetterHold(index,el){
+  if(letterHoldTimer)clearTimeout(letterHoldTimer);
+  letterHoldTriggered=false;
+  letterHoldTimer=setTimeout(async()=>{
+    letterHoldTimer=null;
+    letterHoldTriggered=true;
+    const m=letterThreads[index];
+    if(!m)return;
+    if(m.read && !letterLocalReadIds.has(Number(m.id)))return;
+    const ok=window.confirm('این نامه به عنوان «خوانده شده» علامت‌گذاری شود؟');
+    if(!ok)return;
+    try{
+      const threadId=m.thread_id||m.id;
+      const r=await postJson(canUseAdminLetters()?"/api/admin/letter-mark-read":"/api/customer/letter-mark-read",{thread_id:threadId});
+      m.read=true;
+      if(Number.isFinite(Number(m.id)))letterLocalReadIds.add(Number(m.id));
+      saveLetterLocalReadIds();
+      if(el){
+        el.classList.remove('unread');
+        const first=el.querySelector('.letter-item-head:first-child span:first-child');
+        if(first)first.textContent='✓ خوانده شده';
+      }
+      await loadLetterUnreadCount();
+    }catch(e){
+      console.warn('Letter hold mark-read:',e);
+      appAlert('❌ خوانده‌شدن نامه ثبت نشد:\n'+(e.message||''));
+    }
+  },700);
+}
+
 async function openLetterThread(index){
   const m=letterThreads[index];if(!m)return;
   const threadId=m.thread_id||m.id;
@@ -2437,7 +2476,7 @@ async function openLetterThread(index){
       m.read=true;
       if(Number.isFinite(Number(m.id))) letterLocalReadIds.add(Number(m.id));
       saveLetterLocalReadIds();
-      renderLetterListAfterRead();
+      renderLetterListAfterRead(index);
       await loadLetterUnreadCount();
       if(Number(mr?.marked||0)>0){
         const badge=$("letterInboxCount");
@@ -2468,7 +2507,13 @@ function showLetterList(){
   card?.classList.remove('thread-open');
   letterCurrentThread=null;
 }
-function renderLetterListAfterRead(){document.querySelectorAll('.letter-item').forEach(el=>el.classList.remove('unread'));}
+function renderLetterListAfterRead(index){
+  const el=document.querySelector(`.letter-item[data-letter-index="${Number(index)}"]`);
+  if(!el)return;
+  el.classList.remove('unread');
+  const first=el.querySelector('.letter-item-head:first-child span:first-child');
+  if(first)first.textContent='✓ خوانده شده';
+}
 async function sendLetterReply(threadId){const body=$("letterReplyBody")?.value.trim();if(!body)return appAlert("لطفاً متن پاسخ را بنویسید.");try{await postJson(canUseAdminLetters()?"/api/admin/letter-reply":"/api/customer/letter-reply",{thread_id:Number(threadId),body});appAlert("✅ پاسخ با موفقیت ارسال شد.");await loadLetterInbox();}catch(e){appAlert("❌ ارسال پاسخ انجام نشد:\n"+(e.message||''));}}
 async function sendNewLetter(){
   const subjectEl=$("letterComposeSubject"), bodyEl=$("letterComposeBody"), recipientEl=$("letterRecipientSelect");

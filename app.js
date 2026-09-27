@@ -1399,6 +1399,9 @@ async function openAdmin() {
     showAdminHome();
   } else {
     await loadAdminData();
+    // هر بار پنل مدیر نرم‌افزار باز می‌شود، از صفحه اصلی منو شروع شود
+    // و آخرین بخش بازشده (مثلاً پاک‌سازی) به صورت خودکار باز نماند.
+    showAdminHome();
   }
 }
 

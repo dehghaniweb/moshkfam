@@ -5852,3 +5852,22 @@ body:not(.login-active) .header .admin-inbox-floating-button .admin-inbox-badge{
   -webkit-backdrop-filter:blur(4px)!important;
 }
 #adminLoadingOverlay.admin-loading-overlay.hidden{display:none!important;}
+
+
+/* V1.0.65 — representative logout position + soft orange action */
+@media(max-width:700px){
+  body:not(.login-active)[data-account-role="customer"] .header .header-actions{
+    transform:translateY(-58px)!important;
+    position:relative!important;
+    z-index:90!important;
+  }
+  body:not(.login-active)[data-account-role="customer"] .header .logout-button{
+    background:#fff3e0!important;
+    border:1px solid #fdba74!important;
+    color:#c2410c!important;
+    box-shadow:0 3px 10px rgba(194,65,12,.10)!important;
+  }
+  body:not(.login-active)[data-account-role="customer"] .header .logout-button:active{
+    background:#ffedd5!important;
+  }
+}

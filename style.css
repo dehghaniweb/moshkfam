@@ -5871,3 +5871,42 @@ body:not(.login-active) .header .admin-inbox-floating-button .admin-inbox-badge{
     background:#ffedd5!important;
   }
 }
+
+/* V1.0.66 — mobile badges: keep all counters attached to their own buttons */
+@media(max-width:850px){
+  body:not(.login-active) .header .header-shopping-actions,
+  body:not(.login-active) .header .header-shopping-actions > button{
+    overflow:visible!important;
+  }
+
+  body:not(.login-active) .header .cart-floating-button .cart-count,
+  body:not(.login-active) .header .orders-floating-button .orders-count,
+  body:not(.login-active) .header .admin-inbox-floating-button .admin-inbox-badge{
+    position:absolute!important;
+    top:-6px!important;
+    right:-6px!important;
+    left:auto!important;
+    bottom:auto!important;
+    z-index:999!important;
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    transform:none!important;
+    margin:0!important;
+    pointer-events:none!important;
+    min-width:21px!important;
+    height:21px!important;
+    padding:0 5px!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border:2px solid #fff!important;
+    border-radius:999px!important;
+    line-height:1!important;
+    box-sizing:border-box!important;
+  }
+
+  body:not(.login-active) .header .admin-inbox-floating-button .admin-inbox-badge{
+    top:-6px!important;
+    right:-6px!important;
+  }
+}

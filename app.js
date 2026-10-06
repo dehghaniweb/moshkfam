@@ -44,12 +44,10 @@ const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.55";
 
 const WORKER_URL =
   "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
-
-// Backup API (Google Cloud Run).
-// بعد از Deploy سرویس Google Cloud Run، URL آن را اینجا قرار بده.
 const BACKUP_API_URL =
   window.MOSHKFAM_BACKUP_API_URL ||
-  "https://moshkfam-backup-api.onrender.com";
+  "https://script.google.com/macros/s/AKfycbxZE93G7lfthNctLEQGfLSva6vrdkqAKNmO4XuEs5Gn8hsd4mWUUkEh-x6620fkM-5AvA/exec";
+
 
 const tg =
   window.Telegram && window.Telegram.WebApp
@@ -353,14 +351,10 @@ async function submitCartOrder(){
    API - AUTOMATIC NO CACHE
 ========================================================= */
 
-function normalizeApiBase(url) {
-  return String(url || "").trim().replace(/\/+$/, "");
-}
-
-function buildApiUrl(path, baseUrl = WORKER_URL) {
+function buildApiUrl(path) {
   const separator = path.includes("?") ? "&" : "?";
   return (
-    normalizeApiBase(baseUrl) +
+    WORKER_URL +
     path +
     separator +
     "_nocache=" +
@@ -368,129 +362,50 @@ function buildApiUrl(path, baseUrl = WORKER_URL) {
   );
 }
 
-function isReadOnlyMethod(method) {
-  return ["GET", "HEAD", "OPTIONS"].includes(
-    String(method || "GET").toUpperCase()
-  );
-}
-
-function isNetworkFailure(error) {
-  return error?.name === "AbortError" || error?.name === "TypeError";
-}
-
-async function fetchApi(url, options, timeoutMs) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, {
-      ...options,
-      cache: "no-store",
-      signal: controller.signal
-    });
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-async function readApiResponse(response) {
-  const text = await response.text();
-  let data = null;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    data = text;
-  }
-  return data;
-}
-
-function apiErrorFromResponse(response, data) {
-  const message =
-    data && typeof data === "object" && data.error
-      ? data.error
-      : `HTTP ${response.status}`;
-  const details =
-    data && typeof data === "object" && data.details
-      ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}`
-      : "";
-  return new Error(message + details);
-}
-
 async function apiRequest(path, options = {}) {
-  const headers = {
-    ...(options.headers || {})
-  };
-
-  // Telegram WebApp authentication header
-  if (tg && tg.initData) {
-    headers["X-Telegram-Init-Data"] = tg.initData;
-  }
-
+  const headers = { ...(options.headers || {}) };
+  if (tg && tg.initData) headers["X-Telegram-Init-Data"] = tg.initData;
   const sessionToken = getStoredToken();
   if (sessionToken) headers["Authorization"] = "Bearer " + sessionToken;
-
-  const method = String(options.method || "GET").toUpperCase();
-  const backupUrl = normalizeApiBase(BACKUP_API_URL);
   let primaryError = null;
-
-  // 1) مسیر اصلی: Cloudflare Worker
   try {
-    const response = await fetchApi(
-      buildApiUrl(path, WORKER_URL),
-      { ...options, headers },
-      9000
-    );
-    const data = await readApiResponse(response);
-
-    if (response.ok) return data;
-
-    // برای درخواست‌های خواندنی، خطاهای gateway/server می‌توانند failover شوند.
-    if (isReadOnlyMethod(method) && backupUrl && [502, 503, 504].includes(response.status)) {
-      primaryError = apiErrorFromResponse(response, data);
-    } else {
-      throw apiErrorFromResponse(response, data);
+    const response = await fetch(buildApiUrl(path), { ...options, cache: "no-store", headers });
+    const text = await response.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+    if (!response.ok) {
+      const message = data && typeof data === "object" && data.error ? data.error : `HTTP ${response.status}`;
+      const details = data && typeof data === "object" && data.details ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}` : "";
+      throw new Error(message + details);
     }
-  } catch (error) {
-    primaryError = error;
-  }
-
-  if (!backupUrl) throw primaryError || new Error("اتصال به سرور برقرار نشد.");
-
-  // 2) مسیر پشتیبان: فقط پس از شکست واقعی مسیر اصلی.
-  // برای GET/HEAD/OPTIONS، failover در خطای شبکه یا 502/503/504 مجاز است.
-  // برای POST/PATCH/DELETE فقط خطای شبکه/timeout مجاز است؛ چون ممکن است
-  // عملیات در سرور اصلی انجام شده باشد ولی پاسخ به مرورگر نرسیده باشد.
-  const canFailover = isReadOnlyMethod(method)
-    ? (isNetworkFailure(primaryError) || /HTTP 502|HTTP 503|HTTP 504/.test(primaryError?.message || ""))
-    : isNetworkFailure(primaryError);
-
-  if (!canFailover) throw primaryError;
-
-  try {
-    const response = await fetchApi(
-      buildApiUrl(path, backupUrl),
-      { ...options, headers },
-      10000
-    );
-    const data = await readApiResponse(response);
-
-    if (!response.ok) throw apiErrorFromResponse(response, data);
-
-    console.warn("MOSHKFAM FAILOVER: Google backup API used", path);
     return data;
-  } catch (backupError) {
-    console.error("MOSHKFAM FAILOVER failed", backupError);
-    throw backupError || primaryError;
-  }
+  } catch (error) { primaryError = error; }
+  const backupRoutes = { "/api/test": "test", "/api/products": "products", "/api/site-settings": "settings" };
+  const route = backupRoutes[path];
+  if (!route || String(options.method || "GET").toUpperCase() !== "GET") throw primaryError || new Error("خطا در ارتباط با سرور.");
+  try {
+    const backupUrl = BACKUP_API_URL.replace(/\/+$/, "") + "?p=" + encodeURIComponent(route) + "&_nocache=" + Date.now();
+    const response = await fetch(backupUrl, { method: "GET", cache: "no-store" });
+    const text = await response.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+    if (!response.ok) throw new Error(data && typeof data === "object" && data.error ? data.error : `HTTP ${response.status}`);
+    return data;
+  } catch (backupError) { throw primaryError || backupError; }
 }
 
 async function get(path) {
-  return apiRequest(path, { method: "GET" });
+  return apiRequest(path, {
+    method: "GET"
+  });
 }
 
 async function postJson(path, body) {
   return apiRequest(path, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(body || {})
   });
 }

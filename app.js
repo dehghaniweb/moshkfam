@@ -45,6 +45,9 @@ const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.55";
 const WORKER_URL =
   "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
 
+const GOOGLE_PROXY_URL =
+  "https://script.google.com/macros/s/AKfycbxZE93G7lfthNctLEQGfLSva6vrdkqAKNmO4XuEs5Gn8hsd4mWUUkEh-x6620fkM-5AvA/exec";
+
 const tg =
   window.Telegram && window.Telegram.WebApp
     ? window.Telegram.WebApp
@@ -358,27 +361,29 @@ function buildApiUrl(path) {
   );
 }
 
-async function apiRequest(path, options = {}) {
-  const headers = {
-    ...(options.headers || {})
-  };
+function getGoogleProxyPath(path) {
+  if (path === "/api/products") return "products";
+  if (path === "/api/site-settings") return "settings";
+  return null;
+}
 
-  // Telegram WebApp authentication header
-  // Worker validates this signed initData before allowing admin/customer actions.
-  if (tg && tg.initData) {
-    headers["X-Telegram-Init-Data"] = tg.initData;
-  }
-  const sessionToken = getStoredToken();
-  if (sessionToken) headers["Authorization"] = "Bearer " + sessionToken;
-
-  const response = await fetch(buildApiUrl(path), {
-    ...options,
-    cache: "no-store",
-    headers
-  });
+async function requestFromGoogleProxy(proxyPath, options = {}) {
+  const separator = proxyPath.includes("?") ? "&" : "?";
+  const response = await fetch(
+    GOOGLE_PROXY_URL +
+      separator +
+      "p=" +
+      encodeURIComponent(proxyPath) +
+      "&_nocache=" +
+      Date.now(),
+    {
+      ...options,
+      method: "GET",
+      cache: "no-store"
+    }
+  );
 
   const text = await response.text();
-
   let data = null;
 
   try {
@@ -394,14 +399,68 @@ async function apiRequest(path, options = {}) {
       data.error
         ? data.error
         : `HTTP ${response.status}`;
-    const details =
-      data && typeof data === "object" && data.details
-        ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}`
-        : "";
-    throw new Error(message + details);
+    throw new Error(message);
   }
 
   return data;
+}
+
+async function apiRequest(path, options = {}) {
+  const headers = {
+    ...(options.headers || {})
+  };
+
+  // Telegram WebApp authentication header
+  // Worker validates this signed initData before allowing admin/customer actions.
+  if (tg && tg.initData) {
+    headers["X-Telegram-Init-Data"] = tg.initData;
+  }
+  const sessionToken = getStoredToken();
+  if (sessionToken) headers["Authorization"] = "Bearer " + sessionToken;
+
+  try {
+    const response = await fetch(buildApiUrl(path), {
+      ...options,
+      cache: "no-store",
+      headers
+    });
+
+    const text = await response.text();
+
+    let data = null;
+
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = text;
+    }
+
+    if (!response.ok) {
+      const message =
+        data &&
+        typeof data === "object" &&
+        data.error
+          ? data.error
+          : `HTTP ${response.status}`;
+      const details =
+        data && typeof data === "object" && data.details
+          ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}`
+          : "";
+      throw new Error(message + details);
+    }
+
+    return data;
+  } catch (workerError) {
+    const proxyPath =
+      String(options.method || "GET").toUpperCase() === "GET"
+        ? getGoogleProxyPath(path)
+        : null;
+
+    if (!proxyPath) throw workerError;
+
+    console.warn("Worker GET failed; using Google Apps Script proxy:", path);
+    return requestFromGoogleProxy(proxyPath);
+  }
 }
 
 async function get(path) {

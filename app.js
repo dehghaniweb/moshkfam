@@ -19,6 +19,7 @@
 const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.55";
 (async function forceClearCacheFromApp() {
   try {
+    if (new URLSearchParams(window.location.search).get("debug") === "1") return;
     const version = "moshkfam-app-20260926-06";
     const flag = "moshkfam_cache_cleared_" + version;
 
@@ -347,6 +348,65 @@ async function submitCartOrder(){
 
 
 /* =========================================================
+   BOOT DIAGNOSTIC
+   Enable with ?debug=1
+========================================================= */
+const MOSHKFAM_DEBUG = new URLSearchParams(window.location.search).get("debug") === "1";
+const bootDiagnostics = [];
+const bootStartedAt = performance.now();
+let bootCurrentStage = "START";
+let bootDiagnosticPanel = null;
+
+function bootDiag(stage, status = "RUNNING", details = "") {
+  const elapsed = Math.round(performance.now() - bootStartedAt);
+  bootCurrentStage = stage;
+  const item = { time: new Date().toISOString(), elapsed, stage, status, details: String(details || "") };
+  bootDiagnostics.push(item);
+  if (bootDiagnostics.length > 100) bootDiagnostics.shift();
+  const line = `[BOOT +${elapsed}ms] ${stage} ${status}${details ? ` | ${details}` : ""}`;
+  if (status === "ERROR") console.error(line);
+  else if (status === "TIMEOUT") console.error(line);
+  else console.log(line);
+  renderBootDiagnostics();
+}
+
+function bootDiagError(stage, error) {
+  const message = error?.stack || error?.message || String(error || "Unknown error");
+  bootDiag(stage, "ERROR", message);
+}
+
+function renderBootDiagnostics() {
+  if (!MOSHKFAM_DEBUG) return;
+  if (!bootDiagnosticPanel) {
+    bootDiagnosticPanel = document.createElement("div");
+    bootDiagnosticPanel.id = "moshkfamBootDiagnostics";
+    bootDiagnosticPanel.dir = "ltr";
+    bootDiagnosticPanel.style.cssText = [
+      "position:fixed","left:10px","right:10px","bottom:10px","z-index:100000",
+      "max-height:46vh","overflow:auto","padding:12px","border-radius:12px",
+      "background:rgba(15,23,42,.96)","color:#e2e8f0","font:12px/1.55 monospace",
+      "box-shadow:0 10px 35px rgba(0,0,0,.35)","white-space:pre-wrap"
+    ].join(";");
+    document.body.appendChild(bootDiagnosticPanel);
+  }
+  const recent = bootDiagnostics.slice(-18).map(x => {
+    const icon = x.status === "OK" ? "✓" : x.status === "ERROR" || x.status === "TIMEOUT" ? "✗" : "→";
+    return `${icon} +${x.elapsed}ms  ${x.stage}  ${x.status}${x.details ? `\n    ${x.details}` : ""}`;
+  }).join("\n");
+  bootDiagnosticPanel.textContent = `MOSHKFAM BOOT DIAGNOSTIC\nCurrent: ${bootCurrentStage}\n\n${recent}`;
+}
+
+window.MOSHKFAM_DEBUG_DUMP = () => JSON.stringify({
+  currentStage: bootCurrentStage,
+  elapsedMs: Math.round(performance.now() - bootStartedAt),
+  url: location.href,
+  userAgent: navigator.userAgent,
+  entries: bootDiagnostics
+}, null, 2);
+
+bootDiag("HTML/JS", "START", MOSHKFAM_DEBUG ? "debug mode enabled" : "normal mode");
+
+/* =========================================================
    API - AUTOMATIC NO CACHE
 ========================================================= */
 
@@ -368,6 +428,8 @@ function getGoogleProxyPath(path) {
 }
 
 async function requestFromGoogleProxy(proxyPath, options = {}) {
+  const requestStage = `GOOGLE ${proxyPath}`;
+  bootDiag(requestStage, "START", GOOGLE_PROXY_URL);
   const separator = proxyPath.includes("?") ? "&" : "?";
   const response = await fetch(
     GOOGLE_PROXY_URL +
@@ -384,6 +446,7 @@ async function requestFromGoogleProxy(proxyPath, options = {}) {
   );
 
   const text = await response.text();
+  bootDiag(requestStage, response.ok ? "OK" : "ERROR", `HTTP ${response.status}`);
   let data = null;
 
   try {
@@ -418,6 +481,9 @@ async function apiRequest(path, options = {}) {
   const sessionToken = getStoredToken();
   if (sessionToken) headers["Authorization"] = "Bearer " + sessionToken;
 
+  const requestStage = `WORKER ${path}`;
+  bootDiag(requestStage, "START", buildApiUrl(path));
+
   try {
     const response = await fetch(buildApiUrl(path), {
       ...options,
@@ -435,6 +501,8 @@ async function apiRequest(path, options = {}) {
       data = text;
     }
 
+    bootDiag(requestStage, response.ok ? "OK" : "ERROR", `HTTP ${response.status}`);
+
     if (!response.ok) {
       const message =
         data &&
@@ -451,6 +519,7 @@ async function apiRequest(path, options = {}) {
 
     return data;
   } catch (workerError) {
+    bootDiag(requestStage, "ERROR", workerError?.message || String(workerError));
     const proxyPath =
       String(options.method || "GET").toUpperCase() === "GET"
         ? getGoogleProxyPath(path)
@@ -459,7 +528,15 @@ async function apiRequest(path, options = {}) {
     if (!proxyPath) throw workerError;
 
     console.warn("Worker GET failed; using Google Apps Script proxy:", path);
-    return requestFromGoogleProxy(proxyPath);
+    bootDiag(`FALLBACK ${path}`, "START", `Google proxy: ${proxyPath}`);
+    try {
+      const result = await requestFromGoogleProxy(proxyPath);
+      bootDiag(`FALLBACK ${path}`, "OK");
+      return result;
+    } catch (proxyError) {
+      bootDiag(`FALLBACK ${path}`, "ERROR", proxyError?.message || String(proxyError));
+      throw proxyError;
+    }
   }
 }
 
@@ -517,7 +594,7 @@ async function loadWebSession(){const t=getStoredToken();if(!t){updateAccountUI(
 
 window.addEventListener("storage", function(event){if(event.key!=="moshkfam_session")return;loadWebSession();});
 async function logoutUser(){try{await apiRequest("/api/logout",{method:"POST"});}catch{}setStoredToken("");currentUser=null;isAdmin=false;cartItems={};updateCartBadge();updateAccountUI();await loadProducts();}
-async function loadSiteSettings(){try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";if($("salesSettingCompanyName"))$("salesSettingCompanyName").value=st.company_name||"مشکفام فارس";if($("salesSettingFooterText"))$("salesSettingFooterText").value=st.footer_text||"";if($("salesSettingPhone"))$("salesSettingPhone").value=st.phone||"";if($("salesSettingAddress"))$("salesSettingAddress").value=st.address||"";}catch(e){console.warn("Settings:",e);}}
+async function loadSiteSettings(){bootDiag("SITE SETTINGS", "START");try{const r=await get("/api/site-settings"),st=r?.settings||{};if($("footerCompanyName"))$("footerCompanyName").textContent="🌱 "+(st.company_name||"مشکفام فارس");if($("footerText"))$("footerText").textContent=st.footer_text||"";if($("footerPhone"))$("footerPhone").textContent=st.phone?"☎️ "+st.phone:"";if($("footerAddress"))$("footerAddress").textContent=st.address?"📍 "+st.address:"";if($("settingCompanyName"))$("settingCompanyName").value=st.company_name||"مشکفام فارس";if($("settingFooterText"))$("settingFooterText").value=st.footer_text||"";if($("settingPhone"))$("settingPhone").value=st.phone||"";if($("settingAddress"))$("settingAddress").value=st.address||"";if($("salesSettingCompanyName"))$("salesSettingCompanyName").value=st.company_name||"مشکفام فارس";if($("salesSettingFooterText"))$("salesSettingFooterText").value=st.footer_text||"";if($("salesSettingPhone"))$("salesSettingPhone").value=st.phone||"";if($("salesSettingAddress"))$("salesSettingAddress").value=st.address||"";}catch(e){bootDiagError("SITE SETTINGS",e);console.warn("Settings:",e);}}
 async function saveSalesSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("salesSettingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("salesSettingFooterText")?.value||"",phone:$("salesSettingPhone")?.value.trim()||"",address:$("salesSettingAddress")?.value||""});await loadSiteSettings();appAlert("✅ تنظیمات با موفقیت ذخیره شد.");}catch(e){appAlert("❌ ذخیره تنظیمات انجام نشد:\n"+(e.message||"خطای نامشخص"));}}
 async function saveSiteSettings(){try{await postJson("/api/admin/site-settings",{company_name:$("settingCompanyName")?.value.trim()||"مشکفام فارس",footer_text:$("settingFooterText")?.value||"",phone:$("settingPhone")?.value.trim()||"",address:$("settingAddress")?.value||""});await loadSiteSettings();alert("✅ اطلاعات پایین صفحه ذخیره شد.");}catch(e){alert("❌ ذخیره تنظیمات انجام نشد:\n"+e.message);}}
 async function createProduct(){
@@ -832,6 +909,7 @@ async function loadProductDetailGallery(productId){
 }
 
 async function loadProducts() {
+  bootDiag("PRODUCTS", "START");
   const loading = $("loading");
 
   if (loading) {
@@ -858,8 +936,10 @@ async function loadProducts() {
     buildCategories();
     renderCategories();
     renderProducts();
+    bootDiag("PRODUCTS", "OK", `${products.length} products`);
 
   } catch (error) {
+    bootDiagError("PRODUCTS", error);
     console.error("Products error:", error);
 
     products = [];
@@ -2872,35 +2952,44 @@ function finishBootLoader() {
 ========================================================= */
 
 (async function init() {
+  bootDiag("INIT", "START");
 
   try {
+    bootDiag("AUTHENTICATE", "START");
     await authenticate();
+    bootDiag("AUTHENTICATE", "OK");
   } catch (error) {
-    console.error(
-      "Authentication init:",
-      error
-    );
+    bootDiagError("AUTHENTICATE", error);
+    console.error("Authentication init:", error);
   }
 
   try {
+    bootDiag("USER INIT", "START");
     await loadCurrentUser();
+    bootDiag("CURRENT USER", "OK");
     await loadWebSession();
+    bootDiag("WEB SESSION", "OK");
     loadCart();
     startAdminInboxPolling();
+    bootDiag("USER INIT", "OK");
   } catch (error) {
-    console.error(
-      "User init:",
-      error
-    );
+    bootDiagError("USER INIT", error);
+    console.error("User init:", error);
   }
 
   try {
     await loadSiteSettings();
+    bootDiag("SITE SETTINGS", "DONE");
     await loadProducts();
+    bootDiag("PRODUCTS", "DONE");
+  } catch (error) {
+    bootDiagError("DATA INIT", error);
+    console.error("Data init:", error);
   } finally {
+    bootDiag("BOOT FINALIZE", "START");
     finishBootLoader();
+    bootDiag("BOOT FINALIZE", "OK");
   }
-
 })();
 
 

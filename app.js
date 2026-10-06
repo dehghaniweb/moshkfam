@@ -44,10 +44,6 @@ const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.55";
 
 const WORKER_URL =
   "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
-const BACKUP_API_URL =
-  window.MOSHKFAM_BACKUP_API_URL ||
-  "https://script.google.com/macros/s/AKfycbxZE93G7lfthNctLEQGfLSva6vrdkqAKNmO4XuEs5Gn8hsd4mWUUkEh-x6620fkM-5AvA/exec";
-
 
 const tg =
   window.Telegram && window.Telegram.WebApp
@@ -363,35 +359,49 @@ function buildApiUrl(path) {
 }
 
 async function apiRequest(path, options = {}) {
-  const headers = { ...(options.headers || {}) };
-  if (tg && tg.initData) headers["X-Telegram-Init-Data"] = tg.initData;
+  const headers = {
+    ...(options.headers || {})
+  };
+
+  // Telegram WebApp authentication header
+  // Worker validates this signed initData before allowing admin/customer actions.
+  if (tg && tg.initData) {
+    headers["X-Telegram-Init-Data"] = tg.initData;
+  }
   const sessionToken = getStoredToken();
   if (sessionToken) headers["Authorization"] = "Bearer " + sessionToken;
-  let primaryError = null;
+
+  const response = await fetch(buildApiUrl(path), {
+    ...options,
+    cache: "no-store",
+    headers
+  });
+
+  const text = await response.text();
+
+  let data = null;
+
   try {
-    const response = await fetch(buildApiUrl(path), { ...options, cache: "no-store", headers });
-    const text = await response.text();
-    let data = null;
-    try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-    if (!response.ok) {
-      const message = data && typeof data === "object" && data.error ? data.error : `HTTP ${response.status}`;
-      const details = data && typeof data === "object" && data.details ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}` : "";
-      throw new Error(message + details);
-    }
-    return data;
-  } catch (error) { primaryError = error; }
-  const backupRoutes = { "/api/test": "test", "/api/products": "products", "/api/site-settings": "settings" };
-  const route = backupRoutes[path];
-  if (!route || String(options.method || "GET").toUpperCase() !== "GET") throw primaryError || new Error("خطا در ارتباط با سرور.");
-  try {
-    const backupUrl = BACKUP_API_URL.replace(/\/+$/, "") + "?p=" + encodeURIComponent(route) + "&_nocache=" + Date.now();
-    const response = await fetch(backupUrl, { method: "GET", cache: "no-store" });
-    const text = await response.text();
-    let data = null;
-    try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-    if (!response.ok) throw new Error(data && typeof data === "object" && data.error ? data.error : `HTTP ${response.status}`);
-    return data;
-  } catch (backupError) { throw primaryError || backupError; }
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text;
+  }
+
+  if (!response.ok) {
+    const message =
+      data &&
+      typeof data === "object" &&
+      data.error
+        ? data.error
+        : `HTTP ${response.status}`;
+    const details =
+      data && typeof data === "object" && data.details
+        ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}`
+        : "";
+    throw new Error(message + details);
+  }
+
+  return data;
 }
 
 async function get(path) {

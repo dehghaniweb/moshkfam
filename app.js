@@ -44,7 +44,7 @@ const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.55";
 })();
 
 const WORKER_URL =
-  "https://api.moshkfamfertilizer.ir";
+  "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
 
 const GOOGLE_PROXY_URL =
   "https://script.google.com/macros/s/AKfycbxZE93G7lfthNctLEQGfLSva6vrdkqAKNmO4XuEs5Gn8hsd4mWUUkEh-x6620fkM-5AvA/exec";
@@ -485,21 +485,11 @@ async function apiRequest(path, options = {}) {
   bootDiag(requestStage, "START", buildApiUrl(path));
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-    let response;
-
-    try {
-      response = await fetch(buildApiUrl(path), {
-        ...options,
-        cache: "no-store",
-        headers,
-        signal: controller.signal
-      });
-    } finally {
-      clearTimeout(timeoutId);
-    }
+    const response = await fetch(buildApiUrl(path), {
+      ...options,
+      cache: "no-store",
+      headers
+    });
 
     const text = await response.text();
 

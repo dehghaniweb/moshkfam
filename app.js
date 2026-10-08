@@ -485,11 +485,21 @@ async function apiRequest(path, options = {}) {
   bootDiag(requestStage, "START", buildApiUrl(path));
 
   try {
-    const response = await fetch(buildApiUrl(path), {
-      ...options,
-      cache: "no-store",
-      headers
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    let response;
+
+    try {
+      response = await fetch(buildApiUrl(path), {
+        ...options,
+        cache: "no-store",
+        headers,
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     const text = await response.text();
 

@@ -44,7 +44,7 @@ const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.55";
 })();
 
 const WORKER_URL =
-  "https://moshkfam-telegram-bot.dehghaniweb.workers.dev";
+  "https://api.moshkfamfertilizer.ir";
 
 const GOOGLE_PROXY_URL =
   "https://script.google.com/macros/s/AKfycbxZE93G7lfthNctLEQGfLSva6vrdkqAKNmO4XuEs5Gn8hsd4mWUUkEh-x6620fkM-5AvA/exec";

@@ -71,9 +71,21 @@ function ensureGasBridge() {
 }
 
 window.addEventListener("message", function (event) {
-  if (!gasBridgeFrame || event.source !== gasBridgeFrame.contentWindow) return;
+  // Apps Script HTML Service may run Index.html in a nested sandbox iframe.
+  // In that case event.source is not the outer iframe's contentWindow.
+  // Validate the message marker and the Google-hosted frame origin instead.
+  if (!gasBridgeFrame) return;
   const message = event.data || {};
   if (message.source !== "MOSHKFAM_GAS_BRIDGE") return;
+  let bridgeOriginAllowed = false;
+  try {
+    const host = new URL(event.origin).hostname.toLowerCase();
+    bridgeOriginAllowed = host === "script.google.com" ||
+      host === "script.googleusercontent.com" ||
+      host.endsWith(".script.googleusercontent.com") ||
+      host.endsWith(".googleusercontent.com");
+  } catch (_) {}
+  if (!bridgeOriginAllowed) return;
 
   if (message.type === "READY") {
     gasBridgeReady = true;

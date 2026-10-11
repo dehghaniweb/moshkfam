@@ -547,13 +547,22 @@ async function apiRequest(path, options = {}) {
   bootDiag(requestStage, "START", apiUrl);
 
   let response;
+  let primaryTimeout = null;
+  const primaryController = new AbortController();
   try {
+    // Do not let an unreachable HTTPS Worker freeze startup indefinitely.
+    // Abort after 7 seconds so the Google Apps Script fallback can run.
+    primaryTimeout = setTimeout(() => primaryController.abort(), 7000);
     response = await fetch(apiUrl, {
       ...options,
       cache: "no-store",
-      headers
+      headers,
+      signal: primaryController.signal
     });
+    clearTimeout(primaryTimeout);
+    primaryTimeout = null;
   } catch (primaryError) {
+    if (primaryTimeout !== null) clearTimeout(primaryTimeout);
     bootDiag(requestStage, "ERROR", (primaryError?.message || String(primaryError)) + " | trying Google Apps Script fallback");
     const fallbackStage = `GOOGLE BRIDGE ${path}`;
     bootDiag(fallbackStage, "START", GAS_BRIDGE_URL);

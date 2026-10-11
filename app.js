@@ -46,9 +46,6 @@ const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.55";
 const WORKER_URL =
   "https://api.moshkfamfertilizer.ir";
 
-const GOOGLE_PROXY_URL =
-  "https://script.google.com/macros/s/AKfycbxZE93G7lfthNctLEQGfLSva6vrdkqAKNmO4XuEs5Gn8hsd4mWUUkEh-x6620fkM-5AvA/exec";
-
 const tg =
   window.Telegram && window.Telegram.WebApp
     ? window.Telegram.WebApp
@@ -421,53 +418,6 @@ function buildApiUrl(path) {
   );
 }
 
-function getGoogleProxyPath(path) {
-  if (path === "/api/products") return "products";
-  if (path === "/api/site-settings") return "settings";
-  return null;
-}
-
-async function requestFromGoogleProxy(proxyPath, options = {}) {
-  const requestStage = `GOOGLE ${proxyPath}`;
-  bootDiag(requestStage, "START", GOOGLE_PROXY_URL);
-  const separator = proxyPath.includes("?") ? "&" : "?";
-  const response = await fetch(
-    GOOGLE_PROXY_URL +
-      separator +
-      "p=" +
-      encodeURIComponent(proxyPath) +
-      "&_nocache=" +
-      Date.now(),
-    {
-      ...options,
-      method: "GET",
-      cache: "no-store"
-    }
-  );
-
-  const text = await response.text();
-  bootDiag(requestStage, response.ok ? "OK" : "ERROR", `HTTP ${response.status}`);
-  let data = null;
-
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    data = text;
-  }
-
-  if (!response.ok) {
-    const message =
-      data &&
-      typeof data === "object" &&
-      data.error
-        ? data.error
-        : `HTTP ${response.status}`;
-    throw new Error(message);
-  }
-
-  return data;
-}
-
 async function apiRequest(path, options = {}) {
   const headers = {
     ...(options.headers || {})
@@ -520,23 +470,7 @@ async function apiRequest(path, options = {}) {
     return data;
   } catch (workerError) {
     bootDiag(requestStage, "ERROR", workerError?.message || String(workerError));
-    const proxyPath =
-      String(options.method || "GET").toUpperCase() === "GET"
-        ? getGoogleProxyPath(path)
-        : null;
-
-    if (!proxyPath) throw workerError;
-
-    console.warn("Worker GET failed; using Google Apps Script proxy:", path);
-    bootDiag(`FALLBACK ${path}`, "START", `Google proxy: ${proxyPath}`);
-    try {
-      const result = await requestFromGoogleProxy(proxyPath);
-      bootDiag(`FALLBACK ${path}`, "OK");
-      return result;
-    } catch (proxyError) {
-      bootDiag(`FALLBACK ${path}`, "ERROR", proxyError?.message || String(proxyError));
-      throw proxyError;
-    }
+    throw workerError;
   }
 }
 

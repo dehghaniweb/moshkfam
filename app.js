@@ -2852,11 +2852,7 @@ function setupEvents() {
 
 setupEvents();
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(e => console.warn("PWA:", e));
-  });
-}
+
 
 function finishBootLoader() {
   const app = document.querySelector(".app");

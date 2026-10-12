@@ -2442,7 +2442,7 @@ async function loadLetterUnreadCount(){
   if(!currentUser)return;
   try{
     const endpoint=canUseAdminLetters()?"/api/admin/letters-unread-count":"/api/customer/letters-unread-count";
-    const r=await postJson(endpoint,{});
+    const r=await get(endpoint); // تغییر از postJson به get
     const unreadIds=Array.isArray(r?.unread_ids)?r.unread_ids.map(Number).filter(Number.isFinite):[];
     const serverSet=new Set(unreadIds);
     // IDs that are no longer unread on the server can be forgotten locally.
@@ -2453,6 +2453,8 @@ async function loadLetterUnreadCount(){
     saveLetterLocalReadIds();
   }catch(e){console.warn("Letter unread count",e);}
 }
+
+
 function startLetterPolling(){if(letterPollingTimer)clearInterval(letterPollingTimer);if(!currentUser)return;loadLetterUnreadCount();letterPollingTimer=setInterval(loadLetterUnreadCount,120000);if(!window.__moshkfamLetterVisibilityBound){window.__moshkfamLetterVisibilityBound=true;document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)loadLetterUnreadCount();});window.addEventListener('focus',()=>{if(currentUser)loadLetterUnreadCount();});}}
 
 async function loadLetterInbox(){

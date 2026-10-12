@@ -424,7 +424,8 @@ async function apiRequest(endpoint, options = {}) {
     "Content-Type": "application/json"
   };
 
-  if (window.Telegram?.WebApp?.initData) {
+  // هدر تلگرام را فقط وقتی بفرست که در صفحه لاگین نیستیم
+  if (window.Telegram?.WebApp?.initData && !endpoint.includes("/api/login")) {
     headers["X-Telegram-Init-Data"] = window.Telegram.WebApp.initData;
   }
 
@@ -2810,54 +2811,39 @@ function setupEvents() {
     /* Telegram Back Button */
     if (tg && tg.BackButton) {
       try {
-        if (
-          tg.isVersionAtLeast &&
-          tg.isVersionAtLeast("6.1")
-        ) {
+        if (tg?.isVersionAtLeast && tg.isVersionAtLeast("6.1")) {
           tg.BackButton.onClick(() => {
             const appDialog = $("appDialog");
             const catalogModal = $("catalogModal");
-            const modal = $("modal");
-            const adminModal = $("adminModal");
 
-            if (
-              appDialog &&
-              !appDialog.classList.contains("hidden")
-            ) {
+            if (appDialog && !appDialog.classList.contains("hidden")) {
               appDialogCancel();
               return;
             }
 
-            if (
-              catalogModal &&
-              !catalogModal.classList.contains("hidden")
-            ) {
+            if (catalogModal && !catalogModal.classList.contains("hidden")) {
               closeCatalog();
               return;
             }
 
-            if (
-              modal &&
-              !modal.classList.contains("hidden")
-            ) {
+            const modal = $("modal");
+            const adminModal = $("adminModal");
+
+            if (modal && !modal.classList.contains("hidden")) {
               closeModal();
               return;
             }
 
-            if (
-              adminModal &&
-              !adminModal.classList.contains("hidden")
-            ) {
+            if (adminModal && !adminModal.classList.contains("hidden")) {
               closeAdmin();
-              tg.BackButton.hide();
+              try {
+                tg.BackButton.hide();
+              } catch (e) {}
             }
           });
         }
       } catch (e) {
-        console.warn(
-          "Telegram BackButton is not supported:",
-          e
-        );
+        console.warn("Telegram BackButton is not supported:", e);
       }
     }
 

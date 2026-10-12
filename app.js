@@ -46,116 +46,6 @@ const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.55";
 const WORKER_URL =
   "https://api.moshkfamfertilizer.ir";
 
-// Google Apps Script iframe bridge used only when the primary API is unreachable.
-const GAS_BRIDGE_URL =
-  "https://script.google.com/macros/s/AKfycbxZE93G7lfthNctLEQGfLSva6vrdkqAKNmO4XuEs5Gn8hsd4mWUUkEh-x6620fkM-5AvA/exec?bridge=1";
-const GAS_BRIDGE_TIMEOUT_MS = 35000;
-let gasBridgeFrame = null;
-let gasBridgeReady = false;
-let gasBridgeReadyWaiters = [];
-const gasBridgePending = new Map();
-let gasBridgeRequestId = 0;
-
-function ensureGasBridge() {
-  if (gasBridgeFrame) return gasBridgeFrame;
-
-  const frame = document.createElement("iframe");
-  frame.title = "Moshkfam API fallback";
-  frame.setAttribute("aria-hidden", "true");
-  frame.tabIndex = -1;
-  frame.style.cssText = "position:absolute;width:1px;height:1px;left:-10000px;top:-10000px;border:0;opacity:0;pointer-events:none";
-  frame.src = GAS_BRIDGE_URL;
-  gasBridgeFrame = frame;
-  (document.body || document.documentElement).appendChild(frame);
-  return frame;
-}
-
-window.addEventListener("message", function (event) {
-  if (!gasBridgeFrame) return;
-  const message = event.data || {};
-  // Apps Script HtmlService runs the page inside a nested sandbox iframe.
-  // Its postMessage source may therefore differ from gasBridgeFrame.contentWindow.
-  // Accept only messages carrying our bridge marker from Google's hosted iframe.
-  const trustedBridgeOrigin =
-    event.origin === "https://script.google.com" ||
-    event.origin.endsWith(".googleusercontent.com");
-  if (!trustedBridgeOrigin || message.source !== "MOSHKFAM_GAS_BRIDGE") return;
-
-  if (message.type === "READY") {
-    gasBridgeReady = true;
-    gasBridgeReadyWaiters.splice(0).forEach(resolve => resolve());
-    return;
-  }
-
-  if (message.type === "RESPONSE" && message.id && gasBridgePending.has(message.id)) {
-    const pending = gasBridgePending.get(message.id);
-    gasBridgePending.delete(message.id);
-    clearTimeout(pending.timer);
-    pending.resolve(message.result);
-  }
-});
-
-function waitForGasBridgeReady() {
-  if (gasBridgeReady) return Promise.resolve();
-  ensureGasBridge();
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      const index = gasBridgeReadyWaiters.indexOf(onReady);
-      if (index >= 0) gasBridgeReadyWaiters.splice(index, 1);
-      reject(new Error("Google Apps Script bridge did not become ready"));
-    }, GAS_BRIDGE_TIMEOUT_MS);
-    function onReady() {
-      clearTimeout(timer);
-      resolve();
-    }
-    gasBridgeReadyWaiters.push(onReady);
-  });
-}
-
-async function requestViaGasBridge(path, options, headers) {
-  await waitForGasBridgeReady();
-  const id = "gas-" + Date.now() + "-" + (++gasBridgeRequestId);
-  const request = {
-    path: path,
-    method: String(options.method || "GET").toUpperCase(),
-    headers: headers,
-    body: options.body === undefined ? null : options.body
-  };
-
-  const result = await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      gasBridgePending.delete(id);
-      reject(new Error("Google Apps Script bridge request timed out"));
-    }, GAS_BRIDGE_TIMEOUT_MS);
-    gasBridgePending.set(id, { resolve, reject, timer });
-    gasBridgeFrame.contentWindow.postMessage({
-      source: "MOSHKFAM_SITE",
-      type: "REQUEST",
-      id: id,
-      request: request
-    }, "*");
-  });
-
-  if (!result || result.transportOk !== true) {
-    throw new Error(result && result.body ? result.body : "Google Apps Script bridge transport failed");
-  }
-
-  let data = null;
-  try {
-    data = result.body ? JSON.parse(result.body) : null;
-  } catch (_) {
-    data = result.body;
-  }
-
-  if (result.status < 200 || result.status >= 300) {
-    const message = data && typeof data === "object" && data.error
-      ? data.error
-      : "HTTP " + result.status;
-    throw new Error(message);
-  }
-  return data;
-}
-
 const tg =
   window.Telegram && window.Telegram.WebApp
     ? window.Telegram.WebApp
@@ -538,68 +428,50 @@ async function apiRequest(path, options = {}) {
   if (tg && tg.initData) {
     headers["X-Telegram-Init-Data"] = tg.initData;
   }
-
   const sessionToken = getStoredToken();
   if (sessionToken) headers["Authorization"] = "Bearer " + sessionToken;
 
   const requestStage = `WORKER ${path}`;
-  const apiUrl = buildApiUrl(path);
-  bootDiag(requestStage, "START", apiUrl);
+  bootDiag(requestStage, "START", buildApiUrl(path));
 
-  let response;
-  let primaryTimeout = null;
-  const primaryController = new AbortController();
   try {
-    // Do not let an unreachable HTTPS Worker freeze startup indefinitely.
-    // Abort after 7 seconds so the Google Apps Script fallback can run.
-    primaryTimeout = setTimeout(() => primaryController.abort(), 7000);
-    response = await fetch(apiUrl, {
+    const response = await fetch(buildApiUrl(path), {
       ...options,
       cache: "no-store",
-      headers,
-      signal: primaryController.signal
+      headers
     });
-    clearTimeout(primaryTimeout);
-    primaryTimeout = null;
-  } catch (primaryError) {
-    if (primaryTimeout !== null) clearTimeout(primaryTimeout);
-    bootDiag(requestStage, "ERROR", (primaryError?.message || String(primaryError)) + " | trying Google Apps Script fallback");
-    const fallbackStage = `GOOGLE BRIDGE ${path}`;
-    bootDiag(fallbackStage, "START", GAS_BRIDGE_URL);
+
+    const text = await response.text();
+
+    let data = null;
+
     try {
-      const fallbackData = await requestViaGasBridge(path, options, headers);
-      bootDiag(fallbackStage, "OK", "Fallback response received");
-      return fallbackData;
-    } catch (fallbackError) {
-      bootDiag(fallbackStage, "ERROR", fallbackError?.message || String(fallbackError));
-      throw fallbackError;
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = text;
     }
+
+    bootDiag(requestStage, response.ok ? "OK" : "ERROR", `HTTP ${response.status}`);
+
+    if (!response.ok) {
+      const message =
+        data &&
+        typeof data === "object" &&
+        data.error
+          ? data.error
+          : `HTTP ${response.status}`;
+      const details =
+        data && typeof data === "object" && data.details
+          ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}`
+          : "";
+      throw new Error(message + details);
+    }
+
+    return data;
+  } catch (workerError) {
+    bootDiag(requestStage, "ERROR", workerError?.message || String(workerError));
+    throw workerError;
   }
-
-  const text = await response.text();
-  let data = null;
-
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    data = text;
-  }
-
-  bootDiag(requestStage, response.ok ? "OK" : "ERROR", `HTTP ${response.status}`);
-
-  if (!response.ok) {
-    const message =
-      data && typeof data === "object" && data.error
-        ? data.error
-        : `HTTP ${response.status}`;
-    const details =
-      data && typeof data === "object" && data.details
-        ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}`
-        : "";
-    throw new Error(message + details);
-  }
-
-  return data;
 }
 
 async function get(path) {

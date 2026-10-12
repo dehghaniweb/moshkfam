@@ -2810,41 +2810,54 @@ function setupEvents() {
     /* Telegram Back Button */
     if (tg && tg.BackButton) {
       try {
-        if (tg?.isVersionAtLeast && tg.isVersionAtLeast("6.1") && tg?.BackButton) {
-  tg.BackButton.onClick(() => {
-    const appDialog = $("appDialog");
-    const catalogModal = $("catalogModal");
-    // ادامه کدهای قبلی دکمه بازگشت...
-  });
-}
+        if (
+          tg.isVersionAtLeast &&
+          tg.isVersionAtLeast("6.1")
+        ) {
+          tg.BackButton.onClick(() => {
+            const appDialog = $("appDialog");
+            const catalogModal = $("catalogModal");
+            const modal = $("modal");
+            const adminModal = $("adminModal");
 
-          if (appDialog && !appDialog.classList.contains("hidden")) {
-            appDialogCancel();
-            return;
-          }
+            if (
+              appDialog &&
+              !appDialog.classList.contains("hidden")
+            ) {
+              appDialogCancel();
+              return;
+            }
 
-          if (catalogModal && !catalogModal.classList.contains("hidden")) {
-            closeCatalog();
-            return;
-          }
+            if (
+              catalogModal &&
+              !catalogModal.classList.contains("hidden")
+            ) {
+              closeCatalog();
+              return;
+            }
 
-          const modal = $("modal");
-          const adminModal = $("adminModal");
+            if (
+              modal &&
+              !modal.classList.contains("hidden")
+            ) {
+              closeModal();
+              return;
+            }
 
-          if (modal && !modal.classList.contains("hidden")) {
-            closeModal();
-            return;
-          }
-
-          if (adminModal && !adminModal.classList.contains("hidden")) {
-            closeAdmin();
-            try {
+            if (
+              adminModal &&
+              !adminModal.classList.contains("hidden")
+            ) {
+              closeAdmin();
               tg.BackButton.hide();
-            } catch (e) {}
-          }
-        });
+            }
+          });
+        }
       } catch (e) {
-        console.warn("Telegram BackButton is not supported:", e);
+        console.warn(
+          "Telegram BackButton is not supported:",
+          e
+        );
       }
     }
 

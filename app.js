@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.55";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.56";
 (async function forceClearCacheFromApp() {
   try {
     if (new URLSearchParams(window.location.search).get("debug") === "1") return;
@@ -438,11 +438,25 @@ async function apiRequest(endpoint, options = {}) {
   bootDiag(requestStage, "START", buildApiUrl(endpoint));
 
   try {
-    const response = await fetch(buildApiUrl(endpoint), {
-      ...options,
-      cache: "no-store",
-      headers
-    });
+    const controller = new AbortController();
+    const timeoutMs = 12000;
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    let response;
+    try {
+      response = await fetch(buildApiUrl(endpoint), {
+        ...options,
+        cache: "no-store",
+        headers,
+        signal: controller.signal
+      });
+    } catch (fetchError) {
+      if (fetchError && fetchError.name === "AbortError") {
+        throw new Error("پاسخ سرور بیش از " + (timeoutMs / 1000) + " ثانیه طول کشید (" + endpoint + ")");
+      }
+      throw fetchError;
+    } finally {
+      clearTimeout(timer);
+    }
 
     const text = await response.text();
     let data = null;
@@ -626,6 +640,11 @@ async function authenticate() {
 
 async function loadCurrentUser() {
   if (!tg || !tg.initData) {
+    return;
+  }
+
+  // اگر /api/telegram-auth قبلاً موفق بوده، دوباره whoami لازم نیست.
+  if (currentUser) {
     return;
   }
 
@@ -2883,6 +2902,13 @@ function finishBootLoader() {
 (async function init() {
   bootDiag("INIT", "START");
 
+  // محافظ نهایی: هر اتفاقی بیفتد، بعد از ۲۰ ثانیه صفحه «لطفاً منتظر بمانید» بسته می‌شود.
+  const bootWatchdog = setTimeout(() => {
+    bootDiag("BOOT WATCHDOG", "TIMEOUT", "boot took too long; forcing UI open");
+    try { updateAccountUI(); } catch (e) { console.warn(e); }
+    finishBootLoader();
+  }, 20000);
+
   try {
     bootDiag("AUTHENTICATE", "START");
     await authenticate();
@@ -2916,6 +2942,7 @@ function finishBootLoader() {
     console.error("Data init:", error);
   } finally {
     bootDiag("BOOT FINALIZE", "START");
+    clearTimeout(bootWatchdog);
     finishBootLoader();
     bootDiag("BOOT FINALIZE", "OK");
   }

@@ -2453,7 +2453,7 @@ async function loadLetterUnreadCount(){
     saveLetterLocalReadIds();
   }catch(e){console.warn("Letter unread count",e);}
 }
-function startLetterPolling(){if(letterPollingTimer)clearInterval(letterPollingTimer);if(!currentUser)return;loadLetterUnreadCount();letterPollingTimer=setInterval(loadLetterUnreadCount,10000);if(!window.__moshkfamLetterVisibilityBound){window.__moshkfamLetterVisibilityBound=true;document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)loadLetterUnreadCount();});window.addEventListener('focus',()=>{if(currentUser)loadLetterUnreadCount();});}}
+function startLetterPolling(){if(letterPollingTimer)clearInterval(letterPollingTimer);if(!currentUser)return;loadLetterUnreadCount();letterPollingTimer=setInterval(loadLetterUnreadCount,120000);if(!window.__moshkfamLetterVisibilityBound){window.__moshkfamLetterVisibilityBound=true;document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)loadLetterUnreadCount();});window.addEventListener('focus',()=>{if(currentUser)loadLetterUnreadCount();});}}
 
 async function loadLetterInbox(){
   const list=$("letterList"), thread=$("letterThread"); if(!list||!thread)return;

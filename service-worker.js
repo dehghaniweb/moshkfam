@@ -1,8 +1,42 @@
-const CACHE = "moshkfam-shell-v3-20260923";
-const SHELL = ["./", "./index.html", "./style.css", "./app.js", "./manifest.json", "./images/logo.png", "./Images/logo.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/favicon-64.png", "./icons/apple-touch-icon.png"];
-self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())));
-self.addEventListener("activate", event => event.waitUntil(self.clients.claim()));
+const CACHE = "moshkfam-shell-v4-20261012";
+const SHELL = [
+  "./",
+  "./index.html",
+  "./style.css",
+  "./app.js",
+  "./manifest.json"
+];
+
+// اگر یکی از فایل‌ها (مثلاً آیکن یا لوگو) موجود نباشد، نصب سرویس‌ورکر شکست نمی‌خورد.
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE)
+      .then(cache => Promise.all(SHELL.map(url => cache.add(url).catch(() => null))))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
 self.addEventListener("fetch", event => {
-  if (new URL(event.request.url).origin !== location.origin) return;
-  event.respondWith(fetch(event.request).then(r => { const copy=r.clone(); caches.open(CACHE).then(c=>c.put(event.request,copy)); return r; }).catch(() => caches.match(event.request).then(r => r || caches.match("./index.html"))));
+  const req = event.request;
+  if (req.method !== "GET") return;
+  if (new URL(req.url).origin !== location.origin) return;
+  event.respondWith(
+    fetch(req)
+      .then(res => {
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
+        }
+        return res;
+      })
+      .catch(() => caches.match(req).then(r => r || caches.match("./index.html")))
+  );
 });

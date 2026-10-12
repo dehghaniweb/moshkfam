@@ -403,6 +403,7 @@ window.MOSHKFAM_DEBUG_DUMP = () => JSON.stringify({
 
 bootDiag("HTML/JS", "START", MOSHKFAM_DEBUG ? "debug mode enabled" : "normal mode");
 
+
 /* =========================================================
    API - AUTOMATIC NO CACHE
 ========================================================= */
@@ -418,41 +419,31 @@ function buildApiUrl(path) {
   );
 }
 
-// کد اصلاح‌شده برای ساخت هدرها در apiRequest
-const headers = {
-  "Content-Type": "application/json"
-};
+async function apiRequest(endpoint, options = {}) {
+  const headers = {
+    "Content-Type": "application/json"
+  };
 
-// فقط در صورت وجود initData آن را اضافه کن
-if (window.Telegram?.WebApp?.initData) {
-  headers["X-Telegram-Init-Data"] = window.Telegram.WebApp.initData;
-}
-
-if (authToken) {
-  headers["Authorization"] = `Bearer ${authToken}`;
-}
-
-
-  // Telegram WebApp authentication header
-  // Worker validates this signed initData before allowing admin/customer actions.
-  if (tg && tg.initData) {
-    headers["X-Telegram-Init-Data"] = tg.initData;
+  if (window.Telegram?.WebApp?.initData) {
+    headers["X-Telegram-Init-Data"] = window.Telegram.WebApp.initData;
   }
-  const sessionToken = getStoredToken();
-  if (sessionToken) headers["Authorization"] = "Bearer " + sessionToken;
 
-  const requestStage = `WORKER ${path}`;
-  bootDiag(requestStage, "START", buildApiUrl(path));
+  const sessionToken = getStoredToken();
+  if (sessionToken) {
+    headers["Authorization"] = "Bearer " + sessionToken;
+  }
+
+  const requestStage = `WORKER ${endpoint}`;
+  bootDiag(requestStage, "START", buildApiUrl(endpoint));
 
   try {
-    const response = await fetch(buildApiUrl(path), {
+    const response = await fetch(buildApiUrl(endpoint), {
       ...options,
       cache: "no-store",
       headers
     });
 
     const text = await response.text();
-
     let data = null;
 
     try {
@@ -464,16 +455,8 @@ if (authToken) {
     bootDiag(requestStage, response.ok ? "OK" : "ERROR", `HTTP ${response.status}`);
 
     if (!response.ok) {
-      const message =
-        data &&
-        typeof data === "object" &&
-        data.error
-          ? data.error
-          : `HTTP ${response.status}`;
-      const details =
-        data && typeof data === "object" && data.details
-          ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}`
-          : "";
+      const message = data && typeof data === "object" && data.error ? data.error : `HTTP ${response.status}`;
+      const details = data && typeof data === "object" && data.details ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}` : "";
       throw new Error(message + details);
     }
 
@@ -483,6 +466,7 @@ if (authToken) {
     throw workerError;
   }
 }
+ 
 
 async function get(path) {
   return apiRequest(path, {

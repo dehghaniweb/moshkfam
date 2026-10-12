@@ -418,10 +418,20 @@ function buildApiUrl(path) {
   );
 }
 
-async function apiRequest(path, options = {}) {
-  const headers = {
-    ...(options.headers || {})
-  };
+// کد اصلاح‌شده برای ساخت هدرها در apiRequest
+const headers = {
+  "Content-Type": "application/json"
+};
+
+// فقط در صورت وجود initData آن را اضافه کن
+if (window.Telegram?.WebApp?.initData) {
+  headers["X-Telegram-Init-Data"] = window.Telegram.WebApp.initData;
+}
+
+if (authToken) {
+  headers["Authorization"] = `Bearer ${authToken}`;
+}
+
 
   // Telegram WebApp authentication header
   // Worker validates this signed initData before allowing admin/customer actions.
@@ -2816,9 +2826,13 @@ function setupEvents() {
     /* Telegram Back Button */
     if (tg && tg.BackButton) {
       try {
-        tg.BackButton.onClick(() => {
-          const appDialog = $("appDialog");
-          const catalogModal = $("catalogModal");
+        if (tg?.isVersionAtLeast && tg.isVersionAtLeast("6.1") && tg?.BackButton) {
+  tg.BackButton.onClick(() => {
+    const appDialog = $("appDialog");
+    const catalogModal = $("catalogModal");
+    // ادامه کدهای قبلی دکمه بازگشت...
+  });
+}
 
           if (appDialog && !appDialog.classList.contains("hidden")) {
             appDialogCancel();

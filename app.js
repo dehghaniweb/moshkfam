@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.56";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.57";
 (async function forceClearCacheFromApp() {
   try {
     if (new URLSearchParams(window.location.search).get("debug") === "1") return;
@@ -50,6 +50,11 @@ const WORKER_URL =
 const GAS_BRIDGE_URL =
   "https://script.google.com/macros/s/AKfycbxZE93G7lfthNctLEQGfLSva6vrdkqAKNmO4XuEs5Gn8hsd4mWUUkEh-x6620fkM-5AvA/exec?bridge=1";
 const GAS_BRIDGE_TIMEOUT_MS = 35000;
+// مهلت بالا آمدن خود پل (iframe). اگر Google از این شبکه باز نشود، بیش از این منتظر نمی‌مانیم.
+const GAS_BRIDGE_READY_TIMEOUT_MS = 15000;
+// بعد از شکست بالا آمدن پل، این مدت درخواست‌ها مستقیم به Worker می‌روند تا هر درخواست منتظر نماند.
+const GAS_BRIDGE_COOLDOWN_MS = 2 * 60 * 1000;
+let gasBridgeDownUntil = 0;
 let gasBridgeFrame = null;
 let gasBridgeReady = false;
 // پنجرهٔ داخلی که کد پل را اجرا می‌کند (event.source پیام READY). پل Google داخل
@@ -59,6 +64,15 @@ let gasBridgeTarget = null;
 let gasBridgeReadyWaiters = [];
 const gasBridgePending = new Map();
 let gasBridgeRequestId = 0;
+
+// خطای «انتقال» پل (نه خطای HTTP سرور). requestSent مشخص می‌کند درخواست به پل فرستاده شده یا نه.
+function makeBridgeTransportError(message, requestSent) {
+  const error = new Error(message);
+  error.name = "BridgeTransportError";
+  error.bridgeTransport = true;
+  error.requestSent = requestSent === true;
+  return error;
+}
 
 function ensureGasBridge() {
   if (gasBridgeFrame) return gasBridgeFrame;
@@ -108,6 +122,7 @@ window.addEventListener("message", function (event) {
       gasBridgeTarget = event.source;
     }
     gasBridgeReady = true;
+    gasBridgeDownUntil = 0;
     gasBridgeReadyWaiters.splice(0).forEach(resolve => resolve());
     return;
   }
@@ -127,8 +142,9 @@ function waitForGasBridgeReady() {
     const timer = setTimeout(() => {
       const index = gasBridgeReadyWaiters.indexOf(onReady);
       if (index >= 0) gasBridgeReadyWaiters.splice(index, 1);
-      reject(new Error("Google Apps Script bridge did not become ready"));
-    }, GAS_BRIDGE_TIMEOUT_MS);
+      gasBridgeDownUntil = Date.now() + GAS_BRIDGE_COOLDOWN_MS;
+      reject(makeBridgeTransportError("Google Apps Script bridge did not become ready", false));
+    }, GAS_BRIDGE_READY_TIMEOUT_MS);
     function onReady() {
       clearTimeout(timer);
       resolve();
@@ -141,7 +157,7 @@ async function requestViaGasBridge(path, options, headers) {
   // پل فقط متن (JSON) را منتقل می‌کند. FormData/Blob با postMessage قابل ارسال
   // نیست و باعث DataCloneError می‌شد؛ پس قبل از هر کاری روشن رد می‌کنیم.
   if (options.body !== undefined && options.body !== null && typeof options.body !== "string") {
-    throw new Error("ارسال فایل از مسیر پشتیبان ممکن نیست. اتصال مستقیم به سرور لازم است.");
+    throw makeBridgeTransportError("ارسال فایل از مسیر پشتیبان ممکن نیست. اتصال مستقیم به سرور لازم است.", false);
   }
 
   await waitForGasBridgeReady();
@@ -156,7 +172,7 @@ async function requestViaGasBridge(path, options, headers) {
   const result = await new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       gasBridgePending.delete(id);
-      reject(new Error("Google Apps Script bridge request timed out"));
+      reject(makeBridgeTransportError("Google Apps Script bridge request timed out", true));
     }, GAS_BRIDGE_TIMEOUT_MS);
     gasBridgePending.set(id, { resolve, reject, timer });
     // مقصد اصلی: پنجرهٔ داخلی پل (از پیام READY). اگر به هر دلیل ثبت نشده بود،
@@ -172,12 +188,12 @@ async function requestViaGasBridge(path, options, headers) {
     } catch (postError) {
       clearTimeout(timer);
       gasBridgePending.delete(id);
-      reject(postError);
+      reject(makeBridgeTransportError(postError && postError.message ? postError.message : String(postError), false));
     }
   });
 
   if (!result || result.transportOk !== true) {
-    throw new Error(result && result.body ? result.body : "Google Apps Script bridge transport failed");
+    throw makeBridgeTransportError(result && result.body ? result.body : "Google Apps Script bridge transport failed", true);
   }
 
   let data = null;
@@ -569,6 +585,53 @@ function buildApiUrl(path) {
 }
 
 /* ---------------------------------------------------------
+   حالت مسیر ارتباط با سرور (برای هر دستگاه جدا ذخیره می‌شود)
+
+   "google" (پیش‌فرض): درخواست‌های متنی اول از پل Google Apps Script می‌روند
+                        (برای شبکه‌هایی که IPهای Cloudflare در آن‌ها بسته است).
+                        اگر پل بالا نیامد، مستقیم به Worker.
+                        آپلود فایل همیشه مستقیم به Worker می‌رود (پل فقط متن می‌برد).
+   "auto":             اول Worker، و اگر در دسترس نبود پل Google (رفتار قبلی).
+   "worker":           فقط مستقیم به Worker.
+
+   تغییر حالت: یک بار آدرس سایت را با ?api=google یا ?api=auto یا ?api=worker باز کنید.
+--------------------------------------------------------- */
+const API_MODE_STORAGE_KEY = "moshkfam_api_mode";
+const API_MODES = ["google", "auto", "worker"];
+const API_MODE_DEFAULT = "google";
+
+function normalizeApiMode(value) {
+  const mode = String(value || "").trim().toLowerCase();
+  return API_MODES.indexOf(mode) >= 0 ? mode : "";
+}
+
+function setApiMode(mode) {
+  const normalized = normalizeApiMode(mode);
+  if (!normalized) return false;
+  try { localStorage.setItem(API_MODE_STORAGE_KEY, normalized); } catch (_) {}
+  apiModeInMemory = normalized;
+  return true;
+}
+
+let apiModeInMemory = "";
+
+function getApiMode() {
+  if (apiModeInMemory) return apiModeInMemory;
+  let stored = "";
+  try { stored = normalizeApiMode(localStorage.getItem(API_MODE_STORAGE_KEY)); } catch (_) {}
+  apiModeInMemory = stored || API_MODE_DEFAULT;
+  return apiModeInMemory;
+}
+
+// ?api=... در آدرس صفحه
+function readApiModeFromLocation() {
+  try {
+    const requested = normalizeApiMode(new URLSearchParams(window.location.search).get("api"));
+    if (requested) setApiMode(requested);
+  } catch (_) {}
+}
+
+/* ---------------------------------------------------------
    سیاست مهلت و مسیر پشتیبان (Google Apps Script)
 
    - GET و POSTهای فقط‌خواندنی: اگر تا ۷ ثانیه پاسخی نیامد، مسیر پشتیبان.
@@ -769,6 +832,34 @@ async function apiRequest(path, options = {}) {
   bootDiag(requestStage, "START", apiUrl);
 
   const requestKind = classifyApiRequest(path, options);
+  const apiMode = getApiMode();
+
+  // حالت google: اول پل Google (به‌جز آپلود فایل). فقط وقتی پل در همین چند لحظهٔ اخیر
+  // بالا نیامده بود، مستقیم به Worker می‌رویم.
+  let bridgeAlreadyTried = false;
+  if (apiMode === "google" && requestKind !== "upload" && Date.now() >= gasBridgeDownUntil) {
+    const bridgeStage = `GOOGLE BRIDGE ${path}`;
+    bridgeAlreadyTried = true;
+    bootDiag(bridgeStage, "START", GAS_BRIDGE_URL);
+    try {
+      const bridgeData = await requestViaGasBridge(path, options, headers);
+      bootDiag(bridgeStage, "OK", "Bridge response received");
+      return bridgeData;
+    } catch (bridgeError) {
+      const bridgeReason = bridgeError?.message || String(bridgeError);
+      // پاسخ واقعی سرور (مثلاً HTTP 400) خطای انتقال نیست؛ همان‌طور نمایش داده می‌شود.
+      if (!bridgeError || bridgeError.bridgeTransport !== true) {
+        bootDiag(bridgeStage, "ERROR", bridgeReason);
+        throw bridgeError;
+      }
+      // نوشتنی که به پل فرستاده شده ولی پاسخش نرسیده، ممکن است ثبت شده باشد: ارسال دوباره ممنوع.
+      if (requestKind === "write" && bridgeError.requestSent === true) {
+        bootDiag(bridgeStage, "ERROR", bridgeReason + " | write may have been delivered; no resend");
+        throw makePrimaryApiError(bridgeError, false, API_AMBIGUOUS_WRITE_MESSAGE);
+      }
+      bootDiag(bridgeStage, "ERROR", bridgeReason + " | trying direct Worker");
+    }
+  }
 
   let response;
   try {
@@ -779,9 +870,10 @@ async function apiRequest(path, options = {}) {
   } catch (primaryError) {
     const primaryReason = primaryError?.message || String(primaryError);
 
-    // ارسال دوباره از مسیر پشتیبان فقط برای درخواست‌های بی‌خطر مجاز است.
-    if (!primaryError || primaryError.bridgeAllowed !== true) {
-      bootDiag(requestStage, "ERROR", primaryReason + " | no Google Apps Script fallback (" + requestKind + ")");
+    // ارسال دوباره از مسیر پشتیبان فقط برای درخواست‌های بی‌خطر مجاز است؛
+    // و فقط در حالت auto (در حالت google پل قبلاً امتحان شده، در حالت worker ممنوع است).
+    if (apiMode !== "auto" || bridgeAlreadyTried || !primaryError || primaryError.bridgeAllowed !== true) {
+      bootDiag(requestStage, "ERROR", primaryReason + " | no Google Apps Script fallback (" + requestKind + ", mode " + apiMode + ")");
       throw primaryError instanceof Error ? primaryError : new Error(primaryReason);
     }
 
@@ -840,6 +932,12 @@ async function postJson(path, body) {
   });
 }
 
+
+readApiModeFromLocation();
+// در حالت google، پل را زود بالا می‌آوریم تا اولین درخواست معطل نماند.
+if (getApiMode() === "google") {
+  try { ensureGasBridge(); } catch (_) {}
+}
 
 /* =========================================================
    UI MESSAGE

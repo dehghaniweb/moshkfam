@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "moshkfam-shell-";
-const CACHE = CACHE_PREFIX + "v4-20261012";
+const CACHE = CACHE_PREFIX + "v5-20261013";
 const SHELL = ["./", "./index.html", "./style.css", "./app.js", "./manifest.json", "./images/logo.png", "./Images/logo.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/favicon-64.png", "./icons/apple-touch-icon.png"];
 
 // نصب: هر فایل جداگانه کش می‌شود. اگر یکی از فایل‌ها وجود نداشته باشد (مثلاً یکی از دو مسیر

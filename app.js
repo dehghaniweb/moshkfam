@@ -46,6 +46,156 @@ const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.56";
 const WORKER_URL =
   "https://api.moshkfamfertilizer.ir";
 
+// Google Apps Script iframe bridge used only when the primary API is unreachable.
+const GAS_BRIDGE_URL =
+  "https://script.google.com/macros/s/AKfycbxZE93G7lfthNctLEQGfLSva6vrdkqAKNmO4XuEs5Gn8hsd4mWUUkEh-x6620fkM-5AvA/exec?bridge=1";
+const GAS_BRIDGE_TIMEOUT_MS = 35000;
+let gasBridgeFrame = null;
+let gasBridgeReady = false;
+// پنجرهٔ داخلی که کد پل را اجرا می‌کند (event.source پیام READY). پل Google داخل
+// یک iframe تو در توی sandbox اجرا می‌شود؛ پیام‌های درخواست باید مستقیم به همین
+// پنجره برسند، نه به پنجرهٔ بیرونی iframe.
+let gasBridgeTarget = null;
+let gasBridgeReadyWaiters = [];
+const gasBridgePending = new Map();
+let gasBridgeRequestId = 0;
+
+function ensureGasBridge() {
+  if (gasBridgeFrame) return gasBridgeFrame;
+
+  const frame = document.createElement("iframe");
+  frame.title = "Moshkfam API fallback";
+  frame.setAttribute("aria-hidden", "true");
+  frame.tabIndex = -1;
+  frame.style.cssText = "position:absolute;width:1px;height:1px;left:-10000px;top:-10000px;border:0;opacity:0;pointer-events:none";
+  frame.src = GAS_BRIDGE_URL;
+  gasBridgeFrame = frame;
+  (document.body || document.documentElement).appendChild(frame);
+  return frame;
+}
+
+// آیا این پنجره داخل iframe پل ما (در هر عمقی) قرار دارد؟ دسترسی به window.parent
+// حتی بین originهای متفاوت مجاز است، پس این بررسی روی پنجرهٔ Google هم کار می‌کند.
+function isWindowInsideGasBridgeFrame(win) {
+  if (!win || !gasBridgeFrame || !gasBridgeFrame.contentWindow) return false;
+  try {
+    let current = win;
+    for (let depth = 0; depth < 8; depth++) {
+      if (current === gasBridgeFrame.contentWindow) return true;
+      const parent = current.parent;
+      if (!parent || parent === current) return false;
+      current = parent;
+    }
+  } catch (_) {}
+  return false;
+}
+
+window.addEventListener("message", function (event) {
+  if (!gasBridgeFrame) return;
+  const message = event.data || {};
+  // Apps Script HtmlService runs the page inside a nested sandbox iframe.
+  // Its postMessage source may therefore differ from gasBridgeFrame.contentWindow.
+  // Accept only messages carrying our bridge marker from Google's hosted iframe.
+  const trustedBridgeOrigin =
+    event.origin === "https://script.google.com" ||
+    event.origin.endsWith(".googleusercontent.com");
+  if (!trustedBridgeOrigin || message.source !== "MOSHKFAM_GAS_BRIDGE") return;
+
+  if (message.type === "READY") {
+    // مقصد درخواست‌ها را همان پنجره‌ای قرار بده که پیام READY را فرستاده؛
+    // فقط اگر واقعاً داخل iframe پل ما باشد.
+    if (isWindowInsideGasBridgeFrame(event.source)) {
+      gasBridgeTarget = event.source;
+    }
+    gasBridgeReady = true;
+    gasBridgeReadyWaiters.splice(0).forEach(resolve => resolve());
+    return;
+  }
+
+  if (message.type === "RESPONSE" && message.id && gasBridgePending.has(message.id)) {
+    const pending = gasBridgePending.get(message.id);
+    gasBridgePending.delete(message.id);
+    clearTimeout(pending.timer);
+    pending.resolve(message.result);
+  }
+});
+
+function waitForGasBridgeReady() {
+  if (gasBridgeReady) return Promise.resolve();
+  ensureGasBridge();
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      const index = gasBridgeReadyWaiters.indexOf(onReady);
+      if (index >= 0) gasBridgeReadyWaiters.splice(index, 1);
+      reject(new Error("Google Apps Script bridge did not become ready"));
+    }, GAS_BRIDGE_TIMEOUT_MS);
+    function onReady() {
+      clearTimeout(timer);
+      resolve();
+    }
+    gasBridgeReadyWaiters.push(onReady);
+  });
+}
+
+async function requestViaGasBridge(path, options, headers) {
+  // پل فقط متن (JSON) را منتقل می‌کند. FormData/Blob با postMessage قابل ارسال
+  // نیست و باعث DataCloneError می‌شد؛ پس قبل از هر کاری روشن رد می‌کنیم.
+  if (options.body !== undefined && options.body !== null && typeof options.body !== "string") {
+    throw new Error("ارسال فایل از مسیر پشتیبان ممکن نیست. اتصال مستقیم به سرور لازم است.");
+  }
+
+  await waitForGasBridgeReady();
+  const id = "gas-" + Date.now() + "-" + (++gasBridgeRequestId);
+  const request = {
+    path: path,
+    method: String(options.method || "GET").toUpperCase(),
+    headers: headers,
+    body: options.body === undefined ? null : options.body
+  };
+
+  const result = await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      gasBridgePending.delete(id);
+      reject(new Error("Google Apps Script bridge request timed out"));
+    }, GAS_BRIDGE_TIMEOUT_MS);
+    gasBridgePending.set(id, { resolve, reject, timer });
+    // مقصد اصلی: پنجرهٔ داخلی پل (از پیام READY). اگر به هر دلیل ثبت نشده بود،
+    // مثل قبل به پنجرهٔ iframe می‌فرستیم.
+    const target = gasBridgeTarget || gasBridgeFrame.contentWindow;
+    try {
+      target.postMessage({
+        source: "MOSHKFAM_SITE",
+        type: "REQUEST",
+        id: id,
+        request: request
+      }, "*");
+    } catch (postError) {
+      clearTimeout(timer);
+      gasBridgePending.delete(id);
+      reject(postError);
+    }
+  });
+
+  if (!result || result.transportOk !== true) {
+    throw new Error(result && result.body ? result.body : "Google Apps Script bridge transport failed");
+  }
+
+  let data = null;
+  try {
+    data = result.body ? JSON.parse(result.body) : null;
+  } catch (_) {
+    data = result.body;
+  }
+
+  if (result.status < 200 || result.status >= 300) {
+    const message = data && typeof data === "object" && data.error
+      ? data.error
+      : "HTTP " + result.status;
+    throw new Error(message);
+  }
+  return data;
+}
+
 const tg =
   window.Telegram && window.Telegram.WebApp
     ? window.Telegram.WebApp
@@ -403,7 +553,6 @@ window.MOSHKFAM_DEBUG_DUMP = () => JSON.stringify({
 
 bootDiag("HTML/JS", "START", MOSHKFAM_DEBUG ? "debug mode enabled" : "normal mode");
 
-
 /* =========================================================
    API - AUTOMATIC NO CACHE
 ========================================================= */
@@ -419,69 +568,261 @@ function buildApiUrl(path) {
   );
 }
 
-async function apiRequest(endpoint, options = {}) {
-  const headers = {
-    "Content-Type": "application/json"
+/* ---------------------------------------------------------
+   سیاست مهلت و مسیر پشتیبان (Google Apps Script)
+
+   - GET و POSTهای فقط‌خواندنی: اگر تا ۷ ثانیه پاسخی نیامد، مسیر پشتیبان.
+   - POSTهای نوشتنی (ثبت سفارش، نامه، ویرایش، حذف و ...): فقط وقتی به مسیر
+     پشتیبان می‌روند که Worker از این شبکه واقعاً در دسترس نباشد. در غیر این
+     صورت ممکن بود Worker سفارش/نامه را ثبت کرده باشد ولی پاسخ دیر برسد و
+     درخواست دوباره ارسال شود (ثبت تکراری).
+   - آپلود فایل: بدون مهلت ۷ ثانیه‌ای و بدون مسیر پشتیبان، چون پل Google فقط
+     متن (JSON) منتقل می‌کند و FormData با postMessage قابل ارسال نیست.
+--------------------------------------------------------- */
+const API_FIRST_RESPONSE_TIMEOUT_MS = 7000;
+const API_REACHABILITY_PROBE_TIMEOUT_MS = 6000;
+const API_WRITE_MAX_WAIT_MS = 60000;
+const API_UPLOAD_MAX_WAIT_MS = 15 * 60 * 1000;
+
+const API_AMBIGUOUS_WRITE_MESSAGE =
+  "پاسخ سرور دریافت نشد. ممکن است درخواست شما ثبت شده باشد؛ پیش از ارسال دوباره، فهرست را بررسی کنید.";
+const API_UPLOAD_FAILED_MESSAGE =
+  "ارسال فایل کامل نشد. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید. اگر مطمئن نیستید، ابتدا وضعیت فایل را در فهرست ببینید.";
+const API_UPLOAD_TIMEOUT_MESSAGE =
+  "زمان ارسال فایل به پایان رسید. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید (برای فایل‌های حجیم اینترنت پایدارتری لازم است).";
+
+// مسیرهایی که با POST صدا زده می‌شوند ولی فقط می‌خوانند (یا تکرارشان بی‌ضرر است).
+// ارسال دوبارهٔ خودکار آن‌ها از مسیر پشتیبان هیچ خطری ندارد.
+const REPEAT_SAFE_POST_PATHS = new Set([
+  "/api/login",
+  "/api/logout",
+  "/api/telegram-auth",
+  "/api/whoami",
+  "/api/admin/admin-users",
+  "/api/admin/customers",
+  "/api/admin/customer-prices",
+  "/api/admin/customer-profile",
+  "/api/admin/customer-requests",
+  "/api/admin/products",
+  "/api/admin/cleanup-stats",
+  "/api/admin/service-limits",
+  "/api/admin/letter-recipients",
+  "/api/admin/letters",
+  "/api/admin/letter-thread",
+  "/api/admin/letters-unread-count",
+  "/api/admin/unread-count",
+  "/api/customer/letters",
+  "/api/customer/letter-thread",
+  "/api/customer/letters-unread-count",
+  "/api/customer/orders"
+]);
+
+function getApiPathname(path) {
+  return String(path || "").split("?")[0];
+}
+
+// بدنهٔ غیرمتنی (FormData، Blob، ArrayBuffer، stream) یعنی آپلود فایل.
+function isUploadBody(body) {
+  return body !== undefined && body !== null && typeof body !== "string";
+}
+
+// خروجی: "upload" | "safe" | "write"
+function classifyApiRequest(path, options) {
+  if (isUploadBody(options.body)) return "upload";
+  const method = String(options.method || "GET").toUpperCase();
+  if (method === "GET" || method === "HEAD") return "safe";
+  if (method === "POST" && REPEAT_SAFE_POST_PATHS.has(getApiPathname(path))) return "safe";
+  return "write";
+}
+
+// خطای مسیر اصلی. bridgeAllowed مشخص می‌کند ارسال دوباره از مسیر پشتیبان مجاز است یا نه.
+function makePrimaryApiError(original, bridgeAllowed, userMessage) {
+  const error = new Error(userMessage || (original && original.message) || String(original));
+  error.name = "PrimaryApiError";
+  error.cause = original;
+  error.bridgeAllowed = bridgeAllowed === true;
+  return error;
+}
+
+// آیا مسیر شبکه تا Worker باز است؟ هر پاسخ HTTP (حتی خطا) یعنی بله.
+async function isPrimaryApiReachable() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_REACHABILITY_PROBE_TIMEOUT_MS);
+  try {
+    await fetch(buildApiUrl("/api/test"), {
+      method: "GET",
+      cache: "no-store",
+      signal: controller.signal
+    });
+    return true;
+  } catch (_) {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchFromPrimaryApi(apiUrl, options, headers, requestKind) {
+  const controller = new AbortController();
+  const fetchOptions = {
+    ...options,
+    cache: "no-store",
+    headers,
+    signal: controller.signal
   };
 
-  // هدر تلگرام را فقط وقتی بفرست که در صفحه لاگین نیستیم
-  if (window.Telegram?.WebApp?.initData && !endpoint.includes("/api/login")) {
-    headers["X-Telegram-Init-Data"] = window.Telegram.WebApp.initData;
-  }
-
-  const sessionToken = getStoredToken();
-  if (sessionToken) {
-    headers["Authorization"] = "Bearer " + sessionToken;
-  }
-
-  const requestStage = `WORKER ${endpoint}`;
-  bootDiag(requestStage, "START", buildApiUrl(endpoint));
-
-  try {
-    const controller = new AbortController();
-    const timeoutMs = 12000;
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    let response;
+  // 1) آپلود فایل: فقط سقف طولانی؛ مسیر پشتیبان ممکن نیست.
+  if (requestKind === "upload") {
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, API_UPLOAD_MAX_WAIT_MS);
     try {
-      response = await fetch(buildApiUrl(endpoint), {
-        ...options,
-        cache: "no-store",
-        headers,
-        signal: controller.signal
-      });
-    } catch (fetchError) {
-      if (fetchError && fetchError.name === "AbortError") {
-        throw new Error("پاسخ سرور بیش از " + (timeoutMs / 1000) + " ثانیه طول کشید (" + endpoint + ")");
-      }
-      throw fetchError;
+      return await fetch(apiUrl, fetchOptions);
+    } catch (error) {
+      throw makePrimaryApiError(
+        error,
+        false,
+        timedOut ? API_UPLOAD_TIMEOUT_MESSAGE : API_UPLOAD_FAILED_MESSAGE
+      );
     } finally {
       clearTimeout(timer);
     }
+  }
 
-    const text = await response.text();
-    let data = null;
-
+  // 2) خواندنی/بی‌خطر: ۷ ثانیه، سپس مسیر پشتیبان (رفتار قبلی).
+  if (requestKind === "safe") {
+    const timer = setTimeout(() => controller.abort(), API_FIRST_RESPONSE_TIMEOUT_MS);
     try {
-      data = text ? JSON.parse(text) : null;
-    } catch {
-      data = text;
+      return await fetch(apiUrl, fetchOptions);
+    } catch (error) {
+      throw makePrimaryApiError(error, true);
+    } finally {
+      clearTimeout(timer);
     }
+  }
 
-    bootDiag(requestStage, response.ok ? "OK" : "ERROR", `HTTP ${response.status}`);
+  // 3) نوشتنی: درخواست اصلی را تا سقف ۶۰ ثانیه منتظر می‌مانیم. اگر بعد از ۷ ثانیه
+  // هنوز جوابی نیامده، یک آزمایش سبک (/api/test) می‌زنیم:
+  //   - Worker در دسترس است  -> درخواست احتمالاً رسیده؛ صبر می‌کنیم (ارسال دوباره نمی‌کنیم)
+  //   - Worker در دسترس نیست -> درخواست قطعاً به سرور نرسیده؛ مسیر پشتیبان مجاز است
+  let settled = false;
+  let abortedByProbe = false;
+  let abortedByLimit = false;
 
-    if (!response.ok) {
-      const message = data && typeof data === "object" && data.error ? data.error : `HTTP ${response.status}`;
-      const details = data && typeof data === "object" && data.details ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}` : "";
-      throw new Error(message + details);
+  const limitTimer = setTimeout(() => {
+    abortedByLimit = true;
+    controller.abort();
+  }, API_WRITE_MAX_WAIT_MS);
+
+  const probeTimer = setTimeout(async () => {
+    if (settled) return;
+    const reachable = await isPrimaryApiReachable();
+    if (settled || reachable) return;
+    abortedByProbe = true;
+    controller.abort();
+  }, API_FIRST_RESPONSE_TIMEOUT_MS);
+
+  const finish = () => {
+    settled = true;
+    clearTimeout(limitTimer);
+    clearTimeout(probeTimer);
+  };
+
+  try {
+    const response = await fetch(apiUrl, fetchOptions);
+    finish();
+    return response;
+  } catch (error) {
+    finish();
+    if (abortedByLimit) {
+      throw makePrimaryApiError(error, false, API_AMBIGUOUS_WRITE_MESSAGE);
     }
-
-    return data;
-  } catch (workerError) {
-    bootDiag(requestStage, "ERROR", workerError?.message || String(workerError));
-    throw workerError;
+    if (abortedByProbe) {
+      throw makePrimaryApiError(error, true);
+    }
+    // خطای سریع شبکه (قبل از ۷ ثانیه): فقط اگر Worker واقعاً در دسترس نیست مسیر پشتیبان.
+    const reachable = await isPrimaryApiReachable();
+    throw reachable
+      ? makePrimaryApiError(error, false, API_AMBIGUOUS_WRITE_MESSAGE)
+      : makePrimaryApiError(error, true);
   }
 }
- 
+
+async function apiRequest(path, options = {}) {
+  const headers = {
+    ...(options.headers || {})
+  };
+
+  // Telegram WebApp authentication header
+  // Worker validates this signed initData before allowing admin/customer actions.
+  if (tg && tg.initData) {
+    headers["X-Telegram-Init-Data"] = tg.initData;
+  }
+
+  const sessionToken = getStoredToken();
+  if (sessionToken) headers["Authorization"] = "Bearer " + sessionToken;
+
+  const requestStage = `WORKER ${path}`;
+  const apiUrl = buildApiUrl(path);
+  bootDiag(requestStage, "START", apiUrl);
+
+  const requestKind = classifyApiRequest(path, options);
+
+  let response;
+  try {
+    // Do not let an unreachable HTTPS Worker freeze startup indefinitely.
+    // Read-only requests abort after 7 seconds so the Google Apps Script
+    // fallback can run. Uploads and writes follow the safer policy above.
+    response = await fetchFromPrimaryApi(apiUrl, options, headers, requestKind);
+  } catch (primaryError) {
+    const primaryReason = primaryError?.message || String(primaryError);
+
+    // ارسال دوباره از مسیر پشتیبان فقط برای درخواست‌های بی‌خطر مجاز است.
+    if (!primaryError || primaryError.bridgeAllowed !== true) {
+      bootDiag(requestStage, "ERROR", primaryReason + " | no Google Apps Script fallback (" + requestKind + ")");
+      throw primaryError instanceof Error ? primaryError : new Error(primaryReason);
+    }
+
+    bootDiag(requestStage, "ERROR", primaryReason + " | trying Google Apps Script fallback");
+    const fallbackStage = `GOOGLE BRIDGE ${path}`;
+    bootDiag(fallbackStage, "START", GAS_BRIDGE_URL);
+    try {
+      const fallbackData = await requestViaGasBridge(path, options, headers);
+      bootDiag(fallbackStage, "OK", "Fallback response received");
+      return fallbackData;
+    } catch (fallbackError) {
+      bootDiag(fallbackStage, "ERROR", fallbackError?.message || String(fallbackError));
+      throw fallbackError;
+    }
+  }
+
+  const text = await response.text();
+  let data = null;
+
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text;
+  }
+
+  bootDiag(requestStage, response.ok ? "OK" : "ERROR", `HTTP ${response.status}`);
+
+  if (!response.ok) {
+    const message =
+      data && typeof data === "object" && data.error
+        ? data.error
+        : `HTTP ${response.status}`;
+    const details =
+      data && typeof data === "object" && data.details
+        ? `\n${typeof data.details === "string" ? data.details : JSON.stringify(data.details)}`
+        : "";
+    throw new Error(message + details);
+  }
+
+  return data;
+}
 
 async function get(path) {
   return apiRequest(path, {
@@ -640,11 +981,6 @@ async function authenticate() {
 
 async function loadCurrentUser() {
   if (!tg || !tg.initData) {
-    return;
-  }
-
-  // اگر /api/telegram-auth قبلاً موفق بوده، دوباره whoami لازم نیست.
-  if (currentUser) {
     return;
   }
 
@@ -2456,7 +2792,7 @@ async function loadLetterUnreadCount(){
   if(!currentUser)return;
   try{
     const endpoint=canUseAdminLetters()?"/api/admin/letters-unread-count":"/api/customer/letters-unread-count";
-    const r=await get(endpoint); // تغییر از postJson به get
+    const r=await postJson(endpoint,{});
     const unreadIds=Array.isArray(r?.unread_ids)?r.unread_ids.map(Number).filter(Number.isFinite):[];
     const serverSet=new Set(unreadIds);
     // IDs that are no longer unread on the server can be forgotten locally.
@@ -2467,9 +2803,7 @@ async function loadLetterUnreadCount(){
     saveLetterLocalReadIds();
   }catch(e){console.warn("Letter unread count",e);}
 }
-
-
-function startLetterPolling(){if(letterPollingTimer)clearInterval(letterPollingTimer);if(!currentUser)return;loadLetterUnreadCount();letterPollingTimer=setInterval(loadLetterUnreadCount,120000);if(!window.__moshkfamLetterVisibilityBound){window.__moshkfamLetterVisibilityBound=true;document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)loadLetterUnreadCount();});window.addEventListener('focus',()=>{if(currentUser)loadLetterUnreadCount();});}}
+function startLetterPolling(){if(letterPollingTimer)clearInterval(letterPollingTimer);if(!currentUser)return;loadLetterUnreadCount();letterPollingTimer=setInterval(loadLetterUnreadCount,10000);if(!window.__moshkfamLetterVisibilityBound){window.__moshkfamLetterVisibilityBound=true;document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)loadLetterUnreadCount();});window.addEventListener('focus',()=>{if(currentUser)loadLetterUnreadCount();});}}
 
 async function loadLetterInbox(){
   const list=$("letterList"), thread=$("letterThread"); if(!list||!thread)return;
@@ -2830,37 +3164,35 @@ function setupEvents() {
     /* Telegram Back Button */
     if (tg && tg.BackButton) {
       try {
-        if (tg?.isVersionAtLeast && tg.isVersionAtLeast("6.1")) {
-          tg.BackButton.onClick(() => {
-            const appDialog = $("appDialog");
-            const catalogModal = $("catalogModal");
+        tg.BackButton.onClick(() => {
+          const appDialog = $("appDialog");
+          const catalogModal = $("catalogModal");
 
-            if (appDialog && !appDialog.classList.contains("hidden")) {
-              appDialogCancel();
-              return;
-            }
+          if (appDialog && !appDialog.classList.contains("hidden")) {
+            appDialogCancel();
+            return;
+          }
 
-            if (catalogModal && !catalogModal.classList.contains("hidden")) {
-              closeCatalog();
-              return;
-            }
+          if (catalogModal && !catalogModal.classList.contains("hidden")) {
+            closeCatalog();
+            return;
+          }
 
-            const modal = $("modal");
-            const adminModal = $("adminModal");
+          const modal = $("modal");
+          const adminModal = $("adminModal");
 
-            if (modal && !modal.classList.contains("hidden")) {
-              closeModal();
-              return;
-            }
+          if (modal && !modal.classList.contains("hidden")) {
+            closeModal();
+            return;
+          }
 
-            if (adminModal && !adminModal.classList.contains("hidden")) {
-              closeAdmin();
-              try {
-                tg.BackButton.hide();
-              } catch (e) {}
-            }
-          });
-        }
+          if (adminModal && !adminModal.classList.contains("hidden")) {
+            closeAdmin();
+            try {
+              tg.BackButton.hide();
+            } catch (e) {}
+          }
+        });
       } catch (e) {
         console.warn("Telegram BackButton is not supported:", e);
       }
@@ -2870,7 +3202,11 @@ function setupEvents() {
 
 setupEvents();
 
-
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(e => console.warn("PWA:", e));
+  });
+}
 
 function finishBootLoader() {
   const app = document.querySelector(".app");
@@ -2901,13 +3237,6 @@ function finishBootLoader() {
 
 (async function init() {
   bootDiag("INIT", "START");
-
-  // محافظ نهایی: هر اتفاقی بیفتد، بعد از ۲۰ ثانیه صفحه «لطفاً منتظر بمانید» بسته می‌شود.
-  const bootWatchdog = setTimeout(() => {
-    bootDiag("BOOT WATCHDOG", "TIMEOUT", "boot took too long; forcing UI open");
-    try { updateAccountUI(); } catch (e) { console.warn(e); }
-    finishBootLoader();
-  }, 20000);
 
   try {
     bootDiag("AUTHENTICATE", "START");
@@ -2942,7 +3271,6 @@ function finishBootLoader() {
     console.error("Data init:", error);
   } finally {
     bootDiag("BOOT FINALIZE", "START");
-    clearTimeout(bootWatchdog);
     finishBootLoader();
     bootDiag("BOOT FINALIZE", "OK");
   }

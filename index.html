@@ -37,7 +37,7 @@
 
 <script>
   // مرجع واحد شماره نسخه برای تمام بخش‌های برنامه
-  window.MOSHKFAM_VERSION = "V1.0.57";
+  window.MOSHKFAM_VERSION = "V1.0.58";
 </script>
 
 <!--
@@ -61,7 +61,41 @@
 })();
 </script>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+/* V1.0.58: اسکریپت تلگرام نباید باعث توقف نمایش سایت شود.
+   اگر telegram.org کند یا فیلتر (بی‌پاسخ) باشد، سایت و اپ اندروید تا حدود ۲۴ ثانیه سفید می‌ماندند.
+   حالا غیرهمزمان بارگذاری می‌شود؛ فقط داخل تلگرام تا ۸ ثانیه منتظرش می‌مانیم (تا ورود با تلگرام
+   مثل قبل کار کند) و بیرون از تلگرام اصلاً منتظر نمی‌مانیم. */
+(function () {
+  var inTelegram = false;
+  try {
+    inTelegram = /tgWebApp/i.test(location.hash + location.search) ||
+      !!window.TelegramWebviewProxy ||
+      sessionStorage.getItem("moshkfam_in_telegram") === "1";
+  } catch (e) {}
+  window.__moshkfamInTelegram = inTelegram;
+  window.__moshkfamTelegramReady = new Promise(function (resolve) {
+    var s = document.createElement("script");
+    s.src = "https://telegram.org/js/telegram-web-app.js";
+    s.async = true;
+    s.onload = function () {
+      try {
+        // شبکهٔ اطمینان: اگر تشخیص اولیه خطا کرده بود ولی اسکریپت می‌گوید داخل تلگرام هستیم،
+        // یک‌بار صفحه را دوباره بارگذاری می‌کنیم تا ورود تلگرام فعال شود.
+        var wa = window.Telegram && window.Telegram.WebApp;
+        if (!inTelegram && wa && wa.initData) {
+          sessionStorage.setItem("moshkfam_in_telegram", "1");
+          location.reload();
+          return;
+        }
+      } catch (e) {}
+      resolve();
+    };
+    s.onerror = function () { resolve(); };
+    document.head.appendChild(s);
+  });
+})();
+</script>
 
 <style id="critical-style">
   html,body{margin:0;min-height:100%;font-family:Tahoma,Arial,sans-serif;background:#f4f7f5;color:#1f2937}
@@ -111,7 +145,7 @@
       <p>
         محصولات کشاورزی و کودهای تخصصی
       </p>
-      <span id="appVersion" class="app-version">V1.0.57</span>
+      <span id="appVersion" class="app-version">V1.0.58</span>
 
     </div>
 
@@ -167,8 +201,8 @@
 
   <div class="login-box" id="loginBox">
     <div class="login-fields">
-      <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username" dir="ltr" inputmode="email">
-      <input id="loginPassword" type="text" placeholder="رمز عبور" autocomplete="current-password" dir="ltr">
+      <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username" dir="ltr" inputmode="email" aria-label="نام کاربری">
+      <input id="loginPassword" type="text" placeholder="رمز عبور" autocomplete="current-password" dir="ltr" aria-label="رمز عبور">
       <button id="loginButton" type="button">🔐 ورود</button>
     </div>
     <div id="loginMessage" class="login-message"></div>
@@ -212,8 +246,7 @@
     id="searchInput"
     type="search"
     placeholder="🔎 جستجوی محصول..."
-    autocomplete="off"
-  >
+    autocomplete="off" aria-label="🔎 جستجوی محصول...">
 
 </div>
 
@@ -358,8 +391,8 @@
       </div>
     </div>
     <div class="letter-filters">
-      <label>از تاریخ شمسی<input id="letterDateFrom" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off"></label>
-      <label>تا تاریخ شمسی<input id="letterDateTo" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off"></label>
+      <label>از تاریخ شمسی<input id="letterDateFrom" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off" aria-label="۱۴۰۵/۰۷/۰۳"></label>
+      <label>تا تاریخ شمسی<input id="letterDateTo" class="jalali-date-input" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۰۳" autocomplete="off" aria-label="۱۴۰۵/۰۷/۰۳"></label>
       <label>وضعیت<select id="letterReadFilter"><option value="all">همه نامه‌ها</option><option value="unread">خوانده‌نشده</option><option value="incoming">دریافتی</option><option value="outgoing">ارسالی</option></select></label>
       <label id="letterSenderFilterWrap">فرستنده<select id="letterSenderFilter"><option value="">همه فرستنده‌ها</option></select></label>
       <button type="button" class="letter-filter-reset" onclick="resetLetterFilters()">↺ امروز</button><button type="button" class="letter-filter-reset" onclick="showAllLetters()">📚 همه تاریخ‌ها</button>
@@ -393,7 +426,7 @@
             <span class="recipient-chevron">⌄</span>
           </button>
           <div class="letter-recipient-list hidden" role="listbox">
-            <input id="letterRecipientSearch" class="letter-recipient-search" type="search" placeholder="جستجوی نام یا نام کاربری..." autocomplete="off" oninput="filterLetterRecipients()">
+            <input id="letterRecipientSearch" class="letter-recipient-search" type="search" placeholder="جستجوی نام یا نام کاربری..." autocomplete="off" oninput="filterLetterRecipients()" aria-label="جستجوی نام یا نام کاربری...">
             <div id="letterRecipientOptions"></div>
           </div>
         </div>
@@ -403,7 +436,7 @@
       </div>
       <small class="letter-field-hint">برای انتخاب، روی کادر نماینده بزنید و نام یا نام کاربری را جستجو کنید.</small>
     </div>
-    <input id="letterComposeSubject" class="letter-input" placeholder="عنوان نامه">
+    <input id="letterComposeSubject" class="letter-input" placeholder="عنوان نامه" aria-label="عنوان نامه">
     <textarea id="letterComposeBody" class="letter-textarea" rows="8" placeholder="متن نامه..."></textarea>
     <button class="admin-primary" type="button" onclick="sendNewLetter()">📨 ارسال نامه</button>
   </div>
@@ -492,7 +525,7 @@
           <button class="admin-primary" onclick="createProduct()">➕ ایجاد محصول</button>
         </div>
       </div>
-      <div class="admin-search-wrap"><input id="productDeleteSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام محصول..." oninput="searchAdminItems('productDeleteSearch', 'adminProducts')"></div>
+      <div class="admin-search-wrap"><input id="productDeleteSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام محصول..." oninput="searchAdminItems('productDeleteSearch', 'adminProducts')" aria-label="🔎 جستجوی نام محصول..."></div>
       <h4 class="admin-subtitle">محصولات موجود — حذف</h4>
       <div id="adminProducts"></div>
     </section>
@@ -502,7 +535,7 @@
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3 class="admin-section-title">✏️ ویرایش محصول<span id="adminProductCountEdit" class="admin-count-badge products">۰</span></h3>
       <p class="admin-section-help">محصول موردنظر را انتخاب و مشخصات آن را ویرایش کنید.</p>
-      <div class="admin-search-wrap"><input id="productEditSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام محصول..." oninput="searchAdminItems('productEditSearch', 'adminEditProducts')"></div>
+      <div class="admin-search-wrap"><input id="productEditSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام محصول..." oninput="searchAdminItems('productEditSearch', 'adminEditProducts')" aria-label="🔎 جستجوی نام محصول..."></div>
       <div id="adminEditProducts"></div>
     </section>
 
@@ -532,7 +565,7 @@
           <button type="button" class="admin-primary admin-add-user-button" onclick="createCustomerUser(); return false;">➕ افزودن نماینده</button>
         </div>
       </div>
-      <div class="admin-search-wrap"><input id="customerDeleteSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر..." oninput="searchAdminItems('customerDeleteSearch', 'adminUsersDelete')"></div>
+      <div class="admin-search-wrap"><input id="customerDeleteSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر..." oninput="searchAdminItems('customerDeleteSearch', 'adminUsersDelete')" aria-label="🔎 جستجوی نام یا یوزر..."></div>
       <h4 class="admin-subtitle">نماینده‌های موجود — حذف</h4>
       <div id="adminUsersDelete"></div>
       <pre id="customerDeleteDebug" class="admin-debug hidden" aria-live="polite"></pre>
@@ -543,7 +576,7 @@
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3 class="admin-section-title">✏️ ویرایش نماینده‌ها<span id="adminCustomerCountEdit" class="admin-count-badge customers">۰</span></h3>
       <p class="admin-section-help">اطلاعات نماینده را ویرایش کنید. برای تغییر رمز، رمز جدید را وارد کنید.</p>
-      <div class="admin-search-wrap"><input id="customerEditSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر..." oninput="searchAdminItems('customerEditSearch', 'adminUsers')"></div>
+      <div class="admin-search-wrap"><input id="customerEditSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر..." oninput="searchAdminItems('customerEditSearch', 'adminUsers')" aria-label="🔎 جستجوی نام یا یوزر..."></div>
       <div id="adminUsers"></div>
     </section>
 
@@ -551,7 +584,7 @@
     <section id="adminSection-prices" class="admin-view admin-inner-view hidden">
       <button class="admin-back" onclick="showAdminHome()">← بازگشت به پنل مدیریت</button>
       <h3>💰 قیمت اختصاصی مشتری</h3>
-      <div class="admin-search-wrap"><input id="customerPriceSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر نماینده..." oninput="searchCustomerPriceCustomer()"></div>
+      <div class="admin-search-wrap"><input id="customerPriceSearch" class="admin-search" type="search" placeholder="🔎 جستجوی نام یا یوزر نماینده..." oninput="searchCustomerPriceCustomer()" aria-label="🔎 جستجوی نام یا یوزر نماینده..."></div>
       <label class="admin-select-label">انتخاب مشتری<select id="customerSelect"><option value="">انتخاب مشتری</option></select></label>
       <div id="customerInfo" class="customer-info hidden"></div>
       <div id="customerPrices" class="customer-prices"></div>
@@ -578,9 +611,9 @@
             <label>نام<input id="newAdminFirstName"></label>
             <label>نام خانوادگی<input id="newAdminLastName"></label>
             <label>نوع حساب<select id="newAdminRole"><option value="admin" selected>مدیر نرم‌افزار</option><option value="sales">کارشناس فروش</option></select></label>
-            <label>Telegram ID<input id="newAdminTelegramId" inputmode="numeric" placeholder="مثلاً 123456789"></label>
-            <label>نام کاربری وب<input id="newAdminUsername" autocomplete="off" placeholder="اختیاری"></label>
-            <label class="password-field">رمز عبور وب<div class="password-input-wrap"><input id="newAdminPassword" type="password" autocomplete="new-password" placeholder="اختیاری"><button type="button" class="password-eye" id="eye-newAdminPassword" onclick="togglePasswordVisibility('newAdminPassword','eye-newAdminPassword'); return false;" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">👁️</button></div></label>
+            <label>Telegram ID<input id="newAdminTelegramId" inputmode="numeric" placeholder="مثلاً 123456789" aria-label="مثلاً 123456789"></label>
+            <label>نام کاربری وب<input id="newAdminUsername" autocomplete="off" placeholder="اختیاری" aria-label="اختیاری"></label>
+            <label class="password-field">رمز عبور وب<div class="password-input-wrap"><input id="newAdminPassword" type="password" autocomplete="new-password" placeholder="اختیاری" aria-label="اختیاری"><button type="button" class="password-eye" id="eye-newAdminPassword" onclick="togglePasswordVisibility('newAdminPassword','eye-newAdminPassword'); return false;" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">👁️</button></div></label>
           </div>
           <div class="admin-permission-box admin-new-admin-permissions"><strong>سطح دسترسی حساب جدید</strong><div class="admin-permission-grid">
             <label><input type="checkbox" id="newAdminPerm-products" checked> 📦 محصولات</label>
@@ -592,7 +625,7 @@
           <button type="button" class="admin-primary admin-add-user-button" onclick="createAdminUser(); return false;">🛡️ افزودن حساب</button>
         </div>
       </div>
-      <div class="admin-search-wrap admin-admin-search-wrap"><input id="adminUsersSearch" class="admin-search" type="search" placeholder="🔎 جستجوی مدیر یا کارشناس فروش..." oninput="searchAdminItems('adminUsersSearch', 'adminUsersList')"></div>
+      <div class="admin-search-wrap admin-admin-search-wrap"><input id="adminUsersSearch" class="admin-search" type="search" placeholder="🔎 جستجوی مدیر یا کارشناس فروش..." oninput="searchAdminItems('adminUsersSearch', 'adminUsersList')" aria-label="🔎 جستجوی مدیر یا کارشناس فروش..."></div>
       <div id="adminUsersList"></div>
     </section>
 
@@ -709,7 +742,20 @@
 
   };
 
-  document.body.appendChild(script);
+  // داخل تلگرام تا ۸ ثانیه منتظر اسکریپت تلگرام می‌مانیم؛ بیرون از تلگرام بلافاصله شروع می‌کنیم.
+  // اگر بار قبل (همین نشست) اسکریپت تلگرام نرسید، این بار فقط کوتاه منتظر می‌مانیم.
+  var slowBefore = false;
+  try { slowBefore = sessionStorage.getItem("moshkfam_tg_slow") === "1"; } catch (e) {}
+  var waitMs = window.__moshkfamInTelegram ? (slowBefore ? 1500 : 8000) : 0;
+  Promise.race([
+    (window.__moshkfamTelegramReady || Promise.resolve()).then(function () { return "ready"; }),
+    new Promise(function (r) { setTimeout(function () { r("timeout"); }, waitMs); })
+  ]).then(function (result) {
+    if (result === "timeout" && window.__moshkfamInTelegram) {
+      try { sessionStorage.setItem("moshkfam_tg_slow", "1"); } catch (e) {}
+    }
+    document.body.appendChild(script);
+  });
 
 })();
 

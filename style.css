@@ -5959,3 +5959,396 @@ body:not(.login-active) .header .admin-inbox-floating-button .admin-inbox-badge{
     z-index:9999!important;
   }
 }
+
+
+/* =====================================================================
+   V1.0.58 — Visual polish (details and boxes only)
+   Part 1: header controls — panel/settings button, logout button, shopping
+   buttons (cart / orders / letters / reports) and the account chip.
+
+   This block is intentionally the LAST thing in the file so it wins over the
+   many older patch layers above it. Delete everything from this comment to the
+   end of the file to go back to the previous look.
+===================================================================== */
+
+:root{
+  --mk-green:#166534;
+  --mk-green-hi:#15803d;
+  --mk-green-soft:#ecfdf5;
+  --mk-green-line:#bbf7d0;
+  --mk-blue-line:#bfdbfe;
+  --mk-red:#b91c1c;
+  --mk-red-soft:#fef2f2;
+  --mk-red-line:#fecaca;
+  --mk-ink:#14532d;
+  --mk-muted:#64748b;
+  --mk-shadow-sm:0 2px 8px rgba(15,23,42,.07);
+  --mk-shadow-md:0 6px 16px rgba(22,101,52,.24);
+  --mk-ring:0 0 0 3px rgba(22,163,74,.32);
+  /* sizes: desktop first, phones below */
+  --mk-btn-h:42px;
+  --mk-btn-pad:16px;
+  --mk-btn-fs:14px;
+  --mk-ico:46px;
+  --mk-ico-fs:21px;
+}
+@media (max-width:700px){
+  :root{
+    --mk-btn-h:40px;
+    --mk-btn-pad:12px;
+    --mk-btn-fs:13px;
+    --mk-ico:44px;
+    --mk-ico-fs:20px;
+  }
+}
+
+/* ---------- header grid: one tidy row on wide screens ---------- */
+html body:not(.mk-n):not(.mk-n) header.header{
+  display:grid !important;
+  grid-template-columns:auto auto minmax(0,1fr) auto auto !important;
+  grid-template-areas:"actions account gap shop brand" !important;
+  align-items:center !important;
+  column-gap:14px !important;
+  row-gap:10px !important;
+  min-height:0 !important;
+  padding:12px 24px !important;
+  overflow:visible !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header .brand{
+  grid-area:brand !important;
+  justify-self:end !important;
+  align-self:center !important;
+  margin:0 !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header .login-box{
+  grid-area:actions !important;
+  justify-self:start !important;
+  align-self:center !important;
+  margin:0 !important;
+}
+
+/* ---------- account chip (wide screens; phones use the strip under the header) ---------- */
+html body:not(.mk-n):not(.mk-n) header.header #account:not(.hidden){
+  grid-area:account !important;
+  align-self:center !important;
+  justify-self:start !important;
+  position:static !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  width:auto !important;
+  min-width:0 !important;
+  max-width:340px !important;
+  min-height:46px !important;
+  margin:0 !important;
+  padding:6px 12px !important;
+  border:1px solid var(--mk-green-line) !important;
+  border-radius:14px !important;
+  background:linear-gradient(135deg,#f8fafc 0%,#ecfdf5 100%) !important;
+  box-shadow:var(--mk-shadow-sm) !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header #account .account-main{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  min-width:0 !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header #account .avatar{
+  flex:0 0 34px !important;
+  width:34px !important;
+  height:34px !important;
+  display:grid !important;
+  place-items:center !important;
+  border-radius:50% !important;
+  background:#dcfce7 !important;
+  box-shadow:inset 0 0 0 1px var(--mk-green-line) !important;
+  font-size:17px !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header #account strong{
+  display:block !important;
+  max-width:160px !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  color:var(--mk-ink) !important;
+  font-size:13px !important;
+  line-height:1.4 !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header #account span{
+  display:block !important;
+  max-width:160px !important;
+  margin-top:1px !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  color:var(--mk-muted) !important;
+  font-size:11.5px !important;
+  line-height:1.3 !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header #account #accountInfo{
+  padding:3px 10px !important;
+  border-radius:999px !important;
+  background:#dcfce7 !important;
+  color:var(--mk-green) !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  white-space:nowrap !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header #account #accountInfo:empty{ display:none !important; }
+
+/* ---------- panel (settings) + logout buttons ---------- */
+html body:not(.mk-n):not(.mk-n) header.header .header-actions{
+  grid-area:actions !important;
+  justify-self:start !important;
+  align-self:center !important;
+  position:static !important;
+  inset:auto !important;
+  transform:none !important;
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:wrap !important;
+  direction:rtl !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:8px !important;
+  width:auto !important;
+  max-width:100% !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+html body.login-active:not(.mk-n) header.header .header-actions{ display:none !important; }
+
+html body:not(.mk-n):not(.mk-n) header.header .header-actions #adminButton:not(.hidden),
+html body:not(.mk-n):not(.mk-n) header.header .header-actions #logoutButton:not(.hidden){
+  position:relative !important;
+  inset:auto !important;
+  margin:0 !important;
+  flex:0 0 auto !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:6px !important;
+  height:var(--mk-btn-h) !important;
+  min-height:var(--mk-btn-h) !important;
+  min-width:0 !important;
+  padding:0 var(--mk-btn-pad) !important;
+  border-radius:12px !important;
+  font-family:inherit !important;
+  font-size:var(--mk-btn-fs) !important;
+  font-weight:700 !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+  cursor:pointer !important;
+  -webkit-tap-highlight-color:transparent;
+  transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .12s ease !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header .header-actions #adminButton:not(.hidden){
+  border:1px solid #14532d !important;
+  background:linear-gradient(135deg,#16a34a 0%,#166534 100%) !important;
+  color:#fff !important;
+  box-shadow:0 4px 12px rgba(22,101,52,.28) !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header .header-actions #logoutButton:not(.hidden){
+  border:1.5px solid var(--mk-red-line) !important;
+  background:#fff !important;
+  color:var(--mk-red) !important;
+  box-shadow:0 2px 6px rgba(185,28,28,.08) !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header .header-actions #logoutButton:not(.hidden)::before{
+  content:"🚪";
+  font-size:15px;
+  line-height:1;
+}
+@media (hover:hover){
+  html body:not(.mk-n):not(.mk-n) header.header .header-actions #adminButton:not(.hidden):hover{
+    box-shadow:var(--mk-shadow-md) !important;
+    transform:translateY(-1px);
+  }
+  html body:not(.mk-n):not(.mk-n) header.header .header-actions #logoutButton:not(.hidden):hover{
+    border-color:#fca5a5 !important;
+    background:var(--mk-red-soft) !important;
+    transform:translateY(-1px);
+  }
+}
+html body:not(.mk-n):not(.mk-n) header.header .header-actions #adminButton:not(.hidden):active,
+html body:not(.mk-n):not(.mk-n) header.header .header-actions #logoutButton:not(.hidden):active{ transform:scale(.97) !important; }
+html body:not(.mk-n):not(.mk-n) header.header .header-actions #adminButton:not(.hidden):focus-visible,
+html body:not(.mk-n):not(.mk-n) header.header .header-actions #logoutButton:not(.hidden):focus-visible{
+  outline:none !important;
+  box-shadow:var(--mk-ring) !important;
+}
+
+/* ---------- shopping buttons: cart / orders / letters / reports ----------
+   (no `display` on the buttons on purpose: which of them is visible for which
+   role is decided by the older rules and the app, we only restyle them)      */
+html body:not(.mk-n):not(.mk-n) header.header .header-shopping-actions{
+  grid-area:shop !important;
+  justify-self:end !important;
+  align-self:center !important;
+  position:static !important;
+  inset:auto !important;
+  transform:none !important;
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  direction:rtl !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:10px !important;
+  width:auto !important;
+  height:auto !important;
+  min-height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  pointer-events:auto !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header .header-shopping-actions > :is(#cartButton,#ordersButton,#letterInboxButton,#salesReportsButton){
+  position:relative !important;
+  inset:auto !important;
+  flex:0 0 auto !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:7px !important;
+  width:var(--mk-ico) !important;
+  height:var(--mk-ico) !important;
+  min-width:var(--mk-ico) !important;
+  min-height:var(--mk-ico) !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:1.5px solid var(--mk-green-line) !important;
+  border-radius:14px !important;
+  background:#fff !important;
+  color:var(--mk-ink) !important;
+  box-shadow:var(--mk-shadow-sm) !important;
+  font-size:var(--mk-ico-fs) !important;
+  line-height:1 !important;
+  cursor:pointer !important;
+  -webkit-tap-highlight-color:transparent;
+  transition:border-color .18s ease,box-shadow .18s ease,transform .12s ease !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header .header-shopping-actions > #cartButton{ order:1 !important; }
+html body:not(.mk-n):not(.mk-n) header.header .header-shopping-actions > #ordersButton{ order:2 !important; border-color:var(--mk-blue-line) !important; }
+html body:not(.mk-n):not(.mk-n) header.header .header-shopping-actions > #letterInboxButton{ order:3 !important; }
+html body:not(.mk-n):not(.mk-n) header.header .header-shopping-actions > #salesReportsButton{
+  order:4 !important;
+  width:auto !important;
+  padding:0 14px !important;
+  border-color:#e2e8f0 !important;
+  color:#334155 !important;
+  font-size:19px !important;
+}
+html body:not(.mk-n):not(.mk-n) header.header .header-shopping-actions > #salesReportsButton span{
+  font-size:13px !important;
+  font-weight:700 !important;
+  line-height:1 !important;
+}
+@media (hover:hover){
+  html body:not(.mk-n):not(.mk-n) header.header .header-shopping-actions > :is(#cartButton,#ordersButton,#letterInboxButton,#salesReportsButton):hover{
+    border-color:#86efac !important;
+    box-shadow:0 5px 14px rgba(15,23,42,.12) !important;
+    transform:translateY(-1px);
+  }
+}
+html body:not(.mk-n):not(.mk-n) header.header .header-shopping-actions > :is(#cartButton,#ordersButton,#letterInboxButton,#salesReportsButton):active{ transform:scale(.95) !important; }
+html body:not(.mk-n):not(.mk-n) header.header .header-shopping-actions > :is(#cartButton,#ordersButton,#letterInboxButton,#salesReportsButton):focus-visible{
+  outline:none !important;
+  box-shadow:var(--mk-ring) !important;
+}
+
+/* ---------- tablet: two tidy rows ---------- */
+@media (min-width:701px) and (max-width:1119px){
+  html body:not(.mk-n):not(.mk-n) header.header{
+    grid-template-columns:auto minmax(0,1fr) auto !important;
+    grid-template-areas:"account gap brand" "actions gap shop" !important;
+    padding:12px 20px !important;
+  }
+  html body:not(.mk-n):not(.mk-n) header.header .login-box{ grid-area:account !important; }
+}
+
+/* ---------- phones ---------- */
+@media (max-width:700px){
+  html body:not(.mk-n):not(.mk-n) header.header{
+    grid-template-columns:minmax(0,1fr) auto !important;
+    grid-template-areas:"actions brand" "shop shop" !important;
+    padding:10px 12px !important;
+    column-gap:10px !important;
+    row-gap:8px !important;
+  }
+  html body:not(.mk-n):not(.mk-n) header.header #account:not(.hidden){ display:none !important; }
+  html body:not(.mk-n):not(.mk-n) header.header .header-shopping-actions{ justify-self:end !important; gap:9px !important; }
+}
+
+
+/* =====================================================================
+   V1.0.58 — Visual polish, part 2: boxes and small details
+   (still only details: no page layout is changed)
+===================================================================== */
+
+/* ---- login box: comfortable width instead of a tiny/oversized one ---- */
+html body:not(.mk-n):not(.mk-n) header.header .login-box{
+  width:min(260px,100%) !important;
+  min-width:0 !important;
+  max-width:260px !important;
+  box-sizing:border-box !important;
+}
+@media (max-width:700px){
+  html body:not(.mk-n):not(.mk-n) header.header .login-box{
+    width:100% !important;
+    max-width:290px !important;
+  }
+}
+
+/* ---- primary buttons that still had the browser's default black "outset" border
+        (cart "submit order", "send letter", admin "save") ---- */
+:where(button.admin-primary){ border:0; }
+html body button.admin-primary{
+  transition:box-shadow .18s ease,transform .12s ease,filter .18s ease;
+}
+@media (hover:hover){
+  html body button.admin-primary:hover{ filter:brightness(1.06); }
+}
+html body button.admin-primary:active{ transform:scale(.985); }
+
+/* ---- modal close button must never sit on top of the first line of text ---- */
+html body #letterInboxModal .letter-inbox-modal-card > .letter-inbox-header{ margin-top:30px !important; }
+html body #letterComposeModal .letter-compose-card > h2{ margin-top:34px !important; }
+html body #modal .back-product{ margin-top:30px !important; }
+html body #adminModal .admin-card > .close{ top:12px !important; }
+
+/* ---- compose form: the fields were glued together ---- */
+html body #letterComposeModal .letter-input,
+html body #letterComposeModal .letter-textarea{
+  display:block !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+  margin:0 0 12px !important;
+}
+
+/* ---- keyboard focus: one clear, consistent ring on every field ---- */
+html body :is(input,select,textarea):focus-visible{
+  outline:none !important;
+  border-color:#16a34a !important;
+  box-shadow:var(--mk-ring) !important;
+}
+
+/* ---- product cards: gentle lift on devices that have a mouse ---- */
+@media (hover:hover) and (min-width:701px){
+  html body #productGrid > *{
+    transition:transform .18s ease,box-shadow .18s ease;
+  }
+  html body #productGrid > *:hover{
+    transform:translateY(-3px);
+    box-shadow:0 12px 26px rgba(15,23,42,.13) !important;
+  }
+}
+
+/* ---- respect users who turn animations off ---- */
+@media (prefers-reduced-motion:reduce){
+  html body *,
+  html body *::before,
+  html body *::after{
+    transition-duration:.01ms !important;
+    animation-duration:.01ms !important;
+    scroll-behavior:auto !important;
+  }
+}

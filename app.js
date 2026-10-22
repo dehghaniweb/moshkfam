@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - FORCE CACHE CLEAR (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.57";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.58";
 (async function forceClearCacheFromApp() {
   try {
     if (new URLSearchParams(window.location.search).get("debug") === "1") return;
@@ -2901,7 +2901,9 @@ async function loadLetterUnreadCount(){
     saveLetterLocalReadIds();
   }catch(e){console.warn("Letter unread count",e);}
 }
-function startLetterPolling(){if(letterPollingTimer)clearInterval(letterPollingTimer);if(!currentUser)return;loadLetterUnreadCount();letterPollingTimer=setInterval(loadLetterUnreadCount,10000);if(!window.__moshkfamLetterVisibilityBound){window.__moshkfamLetterVisibilityBound=true;document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)loadLetterUnreadCount();});window.addEventListener('focus',()=>{if(currentUser)loadLetterUnreadCount();});}}
+// V1.0.58: هر ۶۰ ثانیه (قبلاً ۱۰ ثانیه) و فقط وقتی صفحه دیده می‌شود؛ با برگشتن به صفحه بلافاصله به‌روز می‌شود.
+const BADGE_POLL_MS=60000;
+function startLetterPolling(){if(letterPollingTimer)clearInterval(letterPollingTimer);if(!currentUser)return;loadLetterUnreadCount();letterPollingTimer=setInterval(()=>{if(!document.hidden)loadLetterUnreadCount();},BADGE_POLL_MS);if(!window.__moshkfamLetterVisibilityBound){window.__moshkfamLetterVisibilityBound=true;document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)loadLetterUnreadCount();});window.addEventListener('focus',()=>{if(currentUser)loadLetterUnreadCount();});}}
 
 async function loadLetterInbox(){
   const list=$("letterList"), thread=$("letterThread"); if(!list||!thread)return;
@@ -3139,7 +3141,11 @@ function startAdminInboxPolling(){
   if(adminInboxTimer) clearInterval(adminInboxTimer);
   if(!isAdmin) return;
   loadAdminInboxCount();
-  adminInboxTimer=setInterval(loadAdminInboxCount,15000);
+  adminInboxTimer=setInterval(()=>{ if(!document.hidden) loadAdminInboxCount(); },BADGE_POLL_MS);
+  if(!window.__moshkfamAdminInboxVisibilityBound){
+    window.__moshkfamAdminInboxVisibilityBound=true;
+    document.addEventListener("visibilitychange",()=>{ if(!document.hidden && isAdmin) loadAdminInboxCount(); });
+  }
 }
 async function loadOrderHistoryCount(){
   const badge=$("ordersCount");

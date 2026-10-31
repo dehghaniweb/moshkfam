@@ -37,7 +37,7 @@
 
 <script>
   // مرجع واحد شماره نسخه برای تمام بخش‌های برنامه
-  window.MOSHKFAM_VERSION = "V1.0.58";
+  window.MOSHKFAM_VERSION = "V1.0.59";
 </script>
 
 <!--
@@ -145,7 +145,7 @@
       <p>
         محصولات کشاورزی و کودهای تخصصی
       </p>
-      <span id="appVersion" class="app-version">V1.0.58</span>
+      <span id="appVersion" class="app-version">V1.0.59</span>
 
     </div>
 
@@ -761,6 +761,52 @@
 
 </script>
 
+
+<script>
+/* V1.0.59: سقف انتظار لودر. اگر داده‌ها دیر رسیدند، بعد از ۱۰ ثانیه صفحه نمایش داده می‌شود
+   (محصولات در پس‌زمینه می‌آیند). اگر app.js اصلاً بارگذاری نشد، پیام خطا و دکمهٔ «تلاش دوباره» نشان داده می‌شود. */
+(function () {
+  var HIDE_AFTER_MS = 10000;
+  var ERROR_AFTER_MS = 25000;
+  var startedAt = Date.now();
+
+  function showLoadError(loader) {
+    var title = loader.querySelector(".boot-title");
+    var sub = loader.querySelector(".boot-sub");
+    var spinner = loader.querySelector(".boot-spinner");
+    var card = loader.querySelector(".boot-card");
+    if (title) title.textContent = "بارگذاری کامل نشد";
+    if (sub) sub.textContent = "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.";
+    if (spinner) spinner.style.display = "none";
+    if (card && !card.querySelector(".boot-retry")) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "boot-retry";
+      button.textContent = "تلاش دوباره";
+      button.style.cssText = "margin-top:16px;padding:10px 22px;border:0;border-radius:12px;background:#16a34a;color:#fff;font:inherit;font-weight:700;cursor:pointer";
+      button.onclick = function () { location.reload(); };
+      card.appendChild(button);
+    }
+  }
+
+  var timer = setInterval(function () {
+    var loader = document.getElementById("bootLoader");
+    if (!loader) { clearInterval(timer); return; }
+    var elapsed = Date.now() - startedAt;
+    if (typeof window.finishBootLoader === "function") {
+      if (elapsed >= HIDE_AFTER_MS) {
+        clearInterval(timer);
+        try { window.finishBootLoader(); } catch (e) {}
+      }
+      return;
+    }
+    if (elapsed >= ERROR_AFTER_MS) {
+      clearInterval(timer);
+      showLoadError(loader);
+    }
+  }, 500);
+})();
+</script>
 
 </body>
 </html>

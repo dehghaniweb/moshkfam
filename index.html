@@ -37,7 +37,7 @@
 
 <script>
   // مرجع واحد شماره نسخه برای تمام بخش‌های برنامه
-  window.MOSHKFAM_VERSION = "V1.0.61";
+  window.MOSHKFAM_VERSION = "V1.0.60";
 </script>
 
 <!--
@@ -47,202 +47,16 @@
 -->
 
 <script>
-/* V1.0.61: فهرست مراحل بارگذاری روی صفحهٔ «لطفاً منتظر بمانید».
-   هر مرحله با تیک سبز (موفق) یا ضربدر قرمز (ناموفق) نشان داده می‌شود تا روشن باشد کجا گیر کرده است.
-   جزئیات فنی همچنان با ?debug=1 در دسترس است. */
-(function () {
-  var T0 = Date.now();
-  var SLOW_MS = 10000;      // بعد از این مدت، مرحله «کند» حساب می‌شود
-  var ACTIONS_MS = 12000;   // بعد از این مدت، دکمه‌های «تلاش دوباره / ورود به سایت» ظاهر می‌شوند
-  var STEPS = [
-    { id: "style",    label: "بارگذاری ظاهر سایت" },
-    { id: "files",    label: "دریافت فایل‌های برنامه" },
-    { id: "start",    label: "راه‌اندازی برنامه" },
-    { id: "link",     label: "برقراری ارتباط با سرور" },
-    { id: "session",  label: "بررسی ورود شما", optional: true },
-    { id: "settings", label: "دریافت اطلاعات شرکت" },
-    { id: "products", label: "دریافت لیست محصولات" }
-  ];
-  var state = {}, rows = {};
-  STEPS.forEach(function (s) { state[s.id] = { status: "wait", t0: 0, t1: 0, note: "" }; });
-  var forced = false, hidden = false, finished = false, ticker = null;
-
-  function fa(n) { try { return Number(n).toLocaleString("fa-IR"); } catch (e) { return String(n); } }
-  function hasSession() {
-    try { return !!localStorage.getItem("moshkfam_session") || !!window.__moshkfamInTelegram; }
-    catch (e) { return !!window.__moshkfamInTelegram; }
-  }
-  function anyFail() { return STEPS.some(function (s) { return state[s.id].status === "fail" && !(s.optional && !hasSession()); }); }
-
-  function set(id, status, note) {
-    var st = state[id];
-    if (!st || hidden) return;
-    var now = Date.now();
-    if (status === "run" && (st.status === "ok")) return;       // موفق‌شده دوباره «در حال انجام» نمی‌شود
-    if (st.status === "wait") st.t0 = now;
-    if (status === "run" && st.status === "fail") st.t0 = now;
-    if (status === "ok" || status === "fail") st.t1 = now;
-    st.status = status;
-    if (note !== undefined) st.note = note;
-    render();
-  }
-
-  function stepForPath(p) {
-    if (p === "/api/site-settings") return "settings";
-    if (p === "/api/products") return "products";
-    if (p === "/api/session" || p === "/api/telegram-auth" || p === "/api/whoami") return "session";
-    return null;
-  }
-
-  // پیام‌های تشخیصی برنامه (bootDiag) را به مرحله‌های فهرست تبدیل می‌کند.
-  function onDiag(stage, status, details) {
-    if (hidden) return;
-    var d = String(details || "");
-    if ((stage === "HTML/JS" || stage === "INIT") && status === "START") { set("start", "ok"); return; }
-    var m = /^(WORKER|GOOGLE BRIDGE) (\/api\/[^ ?]+)/.exec(stage);
-    if (m) {
-      var viaBridge = m[1] === "GOOGLE BRIDGE", sid = stepForPath(m[2]);
-      if (status === "START") {
-        if (state.link.status !== "ok") set("link", "run", viaBridge ? "پل گوگل" : "");
-        if (sid) set(sid, "run");
-        return;
-      }
-      if (status === "OK") {
-        if (state.link.status !== "ok") set("link", "ok", viaBridge ? "از مسیر گوگل" : "مستقیم");
-        if (sid) set(sid, "ok");
-        return;
-      }
-      if (status === "ERROR") {
-        if (/^HTTP \d+/.test(d)) {                       // سرور جواب داد ولی خطا برگرداند
-          if (state.link.status !== "ok") set("link", "ok", viaBridge ? "از مسیر گوگل" : "مستقیم");
-          if (sid) set(sid, "fail", "خطای سرور (" + fa((/\d+/.exec(d) || [""])[0]) + ")");
-          return;
-        }
-        if (/trying direct Worker|trying Google Apps Script fallback/.test(d)) {   // هنوز مسیر دیگری مانده
-          if (state.link.status !== "ok") set("link", "run", viaBridge ? "پل گوگل پاسخ نداد؛ تلاش مستقیم" : "تلاش از پل گوگل");
-          return;
-        }
-        if (state.link.status !== "ok") set("link", "fail", "ارتباط برقرار نشد");
-        if (sid) set(sid, "fail", "دریافت نشد");
-        return;
-      }
-    }
-    if (stage === "PRODUCTS" && status === "ERROR") set("products", "fail", "دریافت نشد");
-    if (stage === "PRODUCTS" && status === "OK") set("products", "ok");
-    if (stage === "SITE SETTINGS" && status === "ERROR") set("settings", "fail", "دریافت نشد");
-  }
-
-  function build() {
-    var ul = document.getElementById("bootSteps");
-    if (!ul) return null;
-    if (!ul.firstChild) {
-      STEPS.forEach(function (s) {
-        var li = document.createElement("li");
-        li.className = "boot-step wait";
-        li.innerHTML = '<span class="boot-mark"></span><span class="boot-label"></span><span class="boot-note"></span>';
-        li.children[1].textContent = s.label;
-        ul.appendChild(li);
-        rows[s.id] = li;
-      });
-    }
-    return ul;
-  }
-
-  function render() {
-    if (hidden || !build()) return;
-    var now = Date.now(), failed = anyFail();
-    STEPS.forEach(function (s) {
-      var li = rows[s.id], st = state[s.id];
-      if (!li) return;
-      if (s.optional && !hasSession()) { li.style.display = "none"; return; }
-      li.style.display = "";
-      var cls = st.status, note = st.note || "";
-      if (st.status === "run") {
-        var sec = Math.floor((now - st.t0) / 1000);
-        if (sec >= 1) note = (note ? note + " · " : "") + fa(sec) + " ثانیه";
-        if (now - st.t0 >= SLOW_MS) cls += " slow";
-      } else if (st.status === "ok") {
-        var dur = (st.t1 - st.t0) / 1000;
-        if (dur >= 1) note = (note ? note + " · " : "") + fa(Math.round(dur)) + " ثانیه";
-      }
-      var mark = st.status === "ok" ? "✓" : st.status === "fail" ? "✕" : "";
-      if (li.className !== "boot-step " + cls) li.className = "boot-step " + cls;
-      if (li.children[0].textContent !== mark) li.children[0].textContent = mark;
-      if (li.children[2].textContent !== note) li.children[2].textContent = note;
-    });
-    var elapsed = now - T0, showActions = failed || elapsed >= ACTIONS_MS;
-    var actions = document.getElementById("bootActions"), title = document.querySelector("#bootLoader .boot-title"), hint = document.getElementById("bootHint");
-    if (actions) actions.className = "boot-actions" + (showActions ? " show" : "");
-    if (title) title.textContent = failed ? "بارگذاری کامل نشد" : "لطفاً منتظر بمانید";
-    if (hint) hint.textContent = failed
-      ? "مرحلهٔ ضربدرخورده مشکل دارد. دوباره تلاش کنید یا وارد سایت شوید."
-      : (showActions ? "اینترنت کند است؛ می‌توانید منتظر بمانید یا وارد سایت شوید." : "");
-  }
-
-  function hideNow() {
-    if (hidden) return;
-    hidden = true;
-    clearInterval(ticker);
-    var app = document.querySelector(".app"), loader = document.getElementById("bootLoader");
-    if (app) app.style.visibility = "visible";
-    function unlock() {
-      document.body.classList.remove("booting");
-      document.documentElement.style.overflow = "";
-      document.documentElement.style.height = "";
-    }
-    if (loader) {
-      loader.classList.add("hide");
-      setTimeout(function () { loader.remove(); unlock(); }, 300);
-    } else { unlock(); }
-  }
-
-  // برنامه وقتی راه‌اندازی تمام شد این را صدا می‌زند.
-  function finish() {
-    if (hidden) return;
-    finished = true;
-    STEPS.forEach(function (s) { if (state[s.id].status === "run") set(s.id, "fail", "پاسخی نیامد"); });
-    render();
-    if (anyFail() && !forced) return;           // کاربر ضربدر را ببیند و خودش ادامه دهد
-    setTimeout(hideNow, 700);                    // لحظه‌ای تیک‌های کامل دیده شوند
-  }
-  function dismiss() { forced = true; hideNow(); }
-  function retry() {
-    var btn = document.getElementById("bootRetry");
-    if (btn) { btn.disabled = true; btn.textContent = "در حال بارگذاری مجدد..."; btn.classList.add("busy"); }
-    setTimeout(function () { location.reload(); }, 150);
-  }
-
-  window.addEventListener("error", function () {
-    if (state.start.status === "run") set("start", "fail", "خطا در اجرای برنامه");
-  });
-  ticker = setInterval(render, 500);
-  document.addEventListener("DOMContentLoaded", render);
-
-  window.MoshkfamBoot = {
-    set: set, onDiag: onDiag, finish: finish, dismiss: dismiss, retry: retry,
-    steps: function () { return JSON.parse(JSON.stringify(state)); }
-  };
-})();
-</script>
-
-<script>
 (function () {
 
   const version = Date.now();
 
   const css = document.createElement("link");
+
   css.rel = "stylesheet";
   css.href = "style.css?_nocache=" + version;
-  css.onload = function () { MoshkfamBoot.set("style", "ok"); };
-  css.onerror = function () { MoshkfamBoot.set("style", "fail", "بارگذاری نشد"); };
-  MoshkfamBoot.set("style", "run");
-  document.head.appendChild(css);
 
-  // ظاهر جدید پنل‌ها و صفحهٔ ورود (بعد از style.css تا بر آن غلبه کند). اگر نرسید، سایت با ظاهر قبلی کار می‌کند.
-  const theme = document.createElement("link");
-  theme.rel = "stylesheet";
-  theme.href = "theme.css?_nocache=" + version;
-  document.head.appendChild(theme);
+  document.head.appendChild(css);
 
 })();
 </script>
@@ -257,16 +71,9 @@
   try {
     inTelegram = /tgWebApp/i.test(location.hash + location.search) ||
       !!window.TelegramWebviewProxy ||
-      /Telegram/i.test(navigator.userAgent || "") ||
       sessionStorage.getItem("moshkfam_in_telegram") === "1";
   } catch (e) {}
   window.__moshkfamInTelegram = inTelegram;
-  // V1.0.61: بیرون از تلگرام اسکریپت telegram.org اصلاً درخواست نمی‌شود. اگر آن سایت فیلتر یا کند بود،
-  // این درخواست معلق می‌ماند و نوار لود مرورگر (زیر آدرس سایت) هیچ‌وقت کامل نمی‌شد.
-  if (!inTelegram) {
-    window.__moshkfamTelegramReady = Promise.resolve();
-    return;
-  }
   window.__moshkfamTelegramReady = new Promise(function (resolve) {
     var s = document.createElement("script");
     s.src = "https://telegram.org/js/telegram-web-app.js";
@@ -297,38 +104,12 @@
   body.booting .app{overflow:hidden!important;}
   #bootLoader{position:fixed!important;inset:0!important;z-index:99999!important;display:flex!important;align-items:center!important;justify-content:center!important;width:100vw!important;height:100vh!important;background:#f0fdf4!important;transition:none!important;overflow:hidden!important}
   #bootLoader.hide{opacity:0;pointer-events:none}
-  .boot-card{width:320px!important;min-width:0!important;max-width:calc(100vw - 28px)!important;min-height:0!important;padding:22px 20px 18px!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:center!important;text-align:center!important;background:rgba(255,255,255,.96)!important;border:1px solid #bbf7d0!important;border-radius:24px!important;box-shadow:0 18px 50px rgba(22,101,52,.16)!important;direction:rtl}
-  .boot-icon{font-size:40px;margin-bottom:6px}
-  .boot-title{font-size:18px!important;line-height:1.6!important;font-weight:800!important;color:#166534!important}
-  .boot-sub{margin-top:4px;font-size:12.5px!important;line-height:1.8!important;color:#6b7280!important}
-  .boot-steps{list-style:none;margin:10px 0 0;padding:0;text-align:right}
-  .boot-step{display:flex;align-items:center;gap:10px;padding:7px 2px;font-size:13px;line-height:1.5;color:#9ca3af;border-bottom:1px dashed #e5e7eb}
-  .boot-step:last-child{border-bottom:0}
-  .boot-mark{flex:0 0 22px;width:22px;height:22px;box-sizing:border-box;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:900;line-height:1;border:2px solid #e5e7eb;color:#fff}
-  .boot-label{flex:1;min-width:0}
-  .boot-note{flex:0 0 auto;font-size:11px;color:#6b7280;white-space:nowrap}
-  .boot-step.run{color:#374151}
-  .boot-step.run .boot-mark{border-color:#dcfce7;border-top-color:#16a34a;animation:bootSpin .8s linear infinite}
-  .boot-step.ok{color:#166534}
-  .boot-step.ok .boot-mark{background:#16a34a;border-color:#16a34a}
-  .boot-step.fail{color:#b91c1c;font-weight:700}
-  .boot-step.fail .boot-mark{background:#dc2626;border-color:#dc2626}
-  .boot-step.fail .boot-note{color:#b91c1c}
-  .boot-step.slow .boot-note{color:#b45309;font-weight:700}
-  .boot-hint{min-height:0;margin-top:8px;font-size:12px;line-height:1.8;color:#6b7280}
-  .boot-hint:empty{display:none}
-  .boot-actions{display:none;gap:8px;margin-top:12px}
-  .boot-actions.show{display:flex}
-  .boot-btn{flex:1;min-height:46px;border:0;border-radius:13px;padding:10px 8px;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .08s ease,filter .12s ease,box-shadow .12s ease,background .12s ease}
-  .boot-btn.primary{background:#16a34a;color:#fff;box-shadow:0 4px 0 #166534,0 8px 16px rgba(22,163,74,.28)}
-  .boot-btn.ghost{background:#fff;color:#166534;border:1.5px solid #86efac;box-shadow:0 4px 0 #bbf7d0}
-  .boot-btn:active{transform:translateY(4px);filter:brightness(.92);box-shadow:0 0 0 transparent}
-  .boot-btn:disabled,.boot-btn.busy{opacity:.7;cursor:wait;transform:translateY(4px);box-shadow:none}
+  .boot-card{width:280px!important;min-width:280px!important;max-width:calc(100vw - 32px)!important;min-height:184px!important;padding:26px 30px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;background:rgba(255,255,255,.94)!important;border:1px solid #bbf7d0!important;border-radius:24px!important;box-shadow:0 18px 50px rgba(22,101,52,.16)!important}
+  .boot-icon{font-size:42px;margin-bottom:10px}
+  .boot-title{font-size:18px!important;line-height:1.6!important;min-height:29px!important;font-weight:800!important;color:#166534!important}
+  .boot-sub{margin-top:8px;font-size:12px!important;line-height:1.8!important;min-height:22px!important;color:#6b7280!important}
+  .boot-spinner{width:34px!important;height:34px!important;flex:0 0 34px!important;margin:15px auto 0;border:4px solid #dcfce7!important;border-top-color:#16a34a!important;border-radius:50%!important;animation:bootSpin .8s linear infinite}
   @keyframes bootSpin{to{transform:rotate(360deg)}}
-  /* style.css اندازهٔ کارت لودر را ثابت (۱۸۴ پیکسل) می‌کند؛ فهرست مراحل باید کارت را بلند کند. */
-  html body #bootLoader .boot-card{position:relative!important;top:auto!important;left:auto!important;transform:none!important;margin:0!important;width:320px!important;min-width:0!important;max-width:calc(100vw - 28px)!important;height:auto!important;min-height:0!important;max-height:calc(100vh - 24px)!important;overflow-y:auto!important;align-items:stretch!important;justify-content:flex-start!important}
-  html body #bootLoader .boot-icon{width:auto!important;height:auto!important;line-height:1.3!important;flex:0 0 auto!important}
-  html body #bootLoader .boot-title,html body #bootLoader .boot-sub{width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
 </style>
 </head>
 
@@ -339,13 +120,8 @@
   <div class="boot-card">
     <div class="boot-icon">🌱</div>
     <div class="boot-title">لطفاً منتظر بمانید</div>
-    <div class="boot-sub">در حال آماده‌سازی سامانه مشکفام فارس:</div>
-    <ul id="bootSteps" class="boot-steps"></ul>
-    <div id="bootHint" class="boot-hint"></div>
-    <div id="bootActions" class="boot-actions">
-      <button type="button" id="bootRetry" class="boot-btn primary" onclick="MoshkfamBoot.retry()">🔄 تلاش دوباره</button>
-      <button type="button" id="bootContinue" class="boot-btn ghost" onclick="MoshkfamBoot.dismiss()">ورود به سایت</button>
-    </div>
+    <div class="boot-sub">در حال آماده‌سازی سامانه مشکفام فارس...</div>
+    <div class="boot-spinner"></div>
   </div>
 </div>
 
@@ -369,7 +145,7 @@
       <p>
         محصولات کشاورزی و کودهای تخصصی
       </p>
-      <span id="appVersion" class="app-version">V1.0.61</span>
+      <span id="appVersion" class="app-version">V1.0.60</span>
 
     </div>
 
@@ -426,10 +202,7 @@
   <div class="login-box" id="loginBox">
     <div class="login-fields">
       <input id="loginUsername" type="text" placeholder="نام کاربری" autocomplete="username" dir="ltr" inputmode="email" aria-label="نام کاربری">
-      <div class="login-password-wrap">
-        <input id="loginPassword" type="password" placeholder="رمز عبور" autocomplete="current-password" dir="ltr" aria-label="رمز عبور">
-        <button type="button" id="loginPasswordEye" class="login-eye" onclick="togglePasswordVisibility('loginPassword','loginPasswordEye')" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">👁️</button>
-      </div>
+      <input id="loginPassword" type="text" placeholder="رمز عبور" autocomplete="current-password" dir="ltr" aria-label="رمز عبور">
       <button id="loginButton" type="button">🔐 ورود</button>
     </div>
     <div id="loginMessage" class="login-message"></div>
@@ -945,7 +718,6 @@
   // برنامه از چند فایل کوچک (app-1.js تا app-4.js) گرفته و به‌ترتیب یک‌جا اجرا می‌شود؛
   // نتیجه دقیقاً مثل یک فایل app.js است. هر فایل تا ۳ بار دوباره امتحان می‌شود.
   const APP_PARTS = ["app-1.js", "app-2.js", "app-3.js", "app-4.js"];
-  function fa(n) { try { return Number(n).toLocaleString("fa-IR"); } catch (e) { return String(n); } }
 
   function fetchPart(name) {
     var attempt = 0;
@@ -975,36 +747,15 @@
   }
 
   function startApp() {
-    var total = APP_PARTS.length, done = 0;
-    MoshkfamBoot.set("files", "run", fa(0) + " از " + fa(total));
-    // فایل‌های اضافی رابط کاربری (پنل‌ها) جدا و اختیاری‌اند؛ نرسیدنشان برنامه را متوقف نمی‌کند.
-    var extra = fetchPart("admin-ui.js").catch(function () { return ""; });
-    Promise.all(APP_PARTS.map(function (name) {
-      return fetchPart(name).then(function (text) {
-        done++;
-        MoshkfamBoot.set("files", "run", fa(done) + " از " + fa(total));
-        return text;
-      }, function (error) {
-        MoshkfamBoot.set("files", "fail", name + " دریافت نشد");
-        throw error;
-      });
-    })).then(function (texts) {
-      MoshkfamBoot.set("files", "ok");
-      MoshkfamBoot.set("start", "run");
+    Promise.all(APP_PARTS.map(fetchPart)).then(function (texts) {
       var script = document.createElement("script");
       script.textContent = texts.join("\n") + "\n//# sourceURL=app.js";
       document.body.appendChild(script);
       console.log("MOSHKFAM APP LOADED:", version);
-      extra.then(function (code) {
-        if (!code) return;
-        try {
-          var ui = document.createElement("script");
-          ui.textContent = code + "\n//# sourceURL=admin-ui.js";
-          document.body.appendChild(ui);
-        } catch (e) { console.warn("admin-ui:", e); }
-      });
     }).catch(function (error) {
       console.error("MOSHKFAM APP LOAD FAILED:", error);
+      var loading = document.getElementById("loading");
+      if (loading) loading.textContent = "❌ خطا در بارگذاری برنامه";
     });
   }
 
@@ -1026,5 +777,53 @@
 })();
 
 </script>
+
+
+<script>
+/* V1.0.60: سقف انتظار لودر. اگر داده‌ها دیر رسیدند، بعد از ۱۰ ثانیه صفحه نمایش داده می‌شود
+   (محصولات در پس‌زمینه می‌آیند). اگر app.js اصلاً بارگذاری نشد، پیام خطا و دکمهٔ «تلاش دوباره» نشان داده می‌شود. */
+(function () {
+  var HIDE_AFTER_MS = 10000;
+  var ERROR_AFTER_MS = 25000;
+  var startedAt = Date.now();
+
+  function showLoadError(loader) {
+    var title = loader.querySelector(".boot-title");
+    var sub = loader.querySelector(".boot-sub");
+    var spinner = loader.querySelector(".boot-spinner");
+    var card = loader.querySelector(".boot-card");
+    if (title) title.textContent = "بارگذاری کامل نشد";
+    if (sub) sub.textContent = "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.";
+    if (spinner) spinner.style.display = "none";
+    if (card && !card.querySelector(".boot-retry")) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "boot-retry";
+      button.textContent = "تلاش دوباره";
+      button.style.cssText = "margin-top:16px;padding:10px 22px;border:0;border-radius:12px;background:#16a34a;color:#fff;font:inherit;font-weight:700;cursor:pointer";
+      button.onclick = function () { location.reload(); };
+      card.appendChild(button);
+    }
+  }
+
+  var timer = setInterval(function () {
+    var loader = document.getElementById("bootLoader");
+    if (!loader) { clearInterval(timer); return; }
+    var elapsed = Date.now() - startedAt;
+    if (typeof window.finishBootLoader === "function") {
+      if (elapsed >= HIDE_AFTER_MS) {
+        clearInterval(timer);
+        try { window.finishBootLoader(); } catch (e) {}
+      }
+      return;
+    }
+    if (elapsed >= ERROR_AFTER_MS) {
+      clearInterval(timer);
+      showLoadError(loader);
+    }
+  }, 500);
+})();
+</script>
+
 </body>
 </html>

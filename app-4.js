@@ -232,12 +232,6 @@ if ("serviceWorker" in navigator) {
 }
 
 function finishBootLoader() {
-  // فهرست مراحل بارگذاری (در index.html) تصمیم می‌گیرد: همه تیک خوردند → صفحه باز شود؛
-  // مرحله‌ای ضربدر خورد → کاربر ببیند و خودش ادامه دهد.
-  if (window.MoshkfamBoot && typeof window.MoshkfamBoot.finish === "function") {
-    window.MoshkfamBoot.finish();
-    return;
-  }
   const app = document.querySelector(".app");
   const loader = document.getElementById("bootLoader");
 
@@ -264,14 +258,15 @@ function finishBootLoader() {
    INITIAL LOAD
 ========================================================= */
 
-// اگر راه‌اندازی از این مدت طولانی‌تر شد فقط در لاگ ثبت می‌شود؛ دکمه‌های «تلاش دوباره / ورود به سایت»
-// را فهرست مراحل بارگذاری در index.html نشان می‌دهد.
-const BOOT_LOADER_MAX_WAIT_MS = 12000;
+// سقف انتظار صفحهٔ «لطفاً منتظر بمانید». اگر پل Google یا Worker کند بود، صفحه بعد از این مدت
+// نمایش داده می‌شود و محصولات در پس‌زمینه بارگذاری می‌شوند (به‌جای ماندن بی‌پایان روی لودر).
+const BOOT_LOADER_MAX_WAIT_MS = 8000;
 
 (async function init() {
   bootDiag("INIT", "START");
   const bootLoaderCap = setTimeout(() => {
-    bootDiag("BOOT LOADER", "TIMEOUT", "startup still running after " + BOOT_LOADER_MAX_WAIT_MS + "ms");
+    bootDiag("BOOT LOADER", "TIMEOUT", "loader hidden after " + BOOT_LOADER_MAX_WAIT_MS + "ms; data keeps loading in background");
+    finishBootLoader();
   }, BOOT_LOADER_MAX_WAIT_MS);
 
   try {

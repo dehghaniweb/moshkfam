@@ -275,15 +275,18 @@ body[data-account-role="sales"] #adminModal{   /* کارشناس فروش: آب�
 @media (max-width:700px){
   html body.login-active.login-active.login-active header.header{
     position:relative!important;height:auto!important;min-height:0!important;
-    grid-template-columns:minmax(0,1fr) 128px!important;grid-template-rows:auto!important;
+    grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto!important;
     grid-template-areas:"login brand"!important;column-gap:12px!important;align-items:center!important;
     padding:10px 14px 14px!important;
   }
   /* آرم شرکت سمت راست (صفحه راست‌به‌چپ است)، روبه‌روی نام کاربری و رمز */
-  html body.login-active.login-active.login-active header.header .brand{grid-area:brand!important;display:flex!important;align-items:center!important;justify-content:center!important;align-self:center!important;justify-self:stretch!important;margin:0!important;padding:0!important;}
-  html body.login-active header.header .brand>div{display:none!important;}
+  html body.login-active.login-active.login-active header.header .brand{grid-area:brand!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:8px!important;align-self:center!important;justify-self:end!important;margin:0!important;padding:0!important;}
+  /* بین فرم ورود و آرم: فقط نام شرکت (شعار و شمارهٔ نسخه مخفی) */
+  html body.login-active header.header .brand>div{display:block!important;text-align:center!important;width:64px!important;max-width:64px!important;}
+  html body.login-active header.header .brand h1{font-size:15px!important;line-height:1.6!important;margin:0!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important;width:auto!important;}
+  html body.login-active header.header .brand p,html body.login-active header.header .brand .app-version{display:none!important;}
   /* آرم با نسبت اصلی خودش (عریض) و دقیقاً وسط‌چین نسبت به ارتفاع کادر ورود؛ بدون حاشیهٔ سیاه خالی */
-  html body.login-active header.header .brand img{width:128px!important;height:auto!important;aspect-ratio:1536/532!important;min-height:0!important;max-height:none!important;object-fit:contain!important;margin:0!important;padding:0!important;border-radius:12px!important;box-shadow:none!important;}
+  html body.login-active header.header .brand img{width:100px!important;height:100px!important;aspect-ratio:auto!important;min-height:0!important;max-height:none!important;object-fit:contain!important;margin:0!important;padding:4px!important;box-sizing:border-box!important;background:#000!important;border-radius:16px!important;box-shadow:none!important;flex:0 0 100px!important;}
   html body.login-active header.header #loginBox{
     position:static!important;grid-area:login!important;justify-self:stretch!important;align-self:start!important;
     display:block!important;box-sizing:border-box!important;

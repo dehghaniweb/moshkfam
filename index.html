@@ -173,12 +173,12 @@
     var elapsed = now - T0, showActions = failed || elapsed >= ACTIONS_MS;
     var actions = document.getElementById("bootActions"), title = document.querySelector("#bootLoader .boot-title"), hint = document.getElementById("bootHint");
     if (actions) actions.className = "boot-actions" + (showActions ? " show" : "");
-    if (title) title.textContent = failed ? "بارگذاری کامل نشد" : "لطفاً منتظر بمانید";
+    if (title) title.textContent = (failed && !assetsPending()) ? "بارگذاری کامل نشد" : "لطفاً منتظر بمانید";
     if (hint) hint.textContent = failed
       ? (assetsPending()
-          ? "اتصال ناپایدار است؛ برنامه خودکار دوباره تلاش می‌کند. می‌توانید منتظر بمانید یا دوباره تلاش کنید."
-          : "مرحلهٔ ضربدرخورده مشکل دارد. دوباره تلاش کنید یا وارد سایت شوید.")
-      : (showActions ? "اینترنت کند است؛ می‌توانید منتظر بمانید یا وارد سایت شوید." : "");
+          ? "اتصال ناپایدار است؛ برنامه خودکار دوباره تلاش می‌کند. لطفاً منتظر بمانید."
+          : "بخشی از اطلاعات دریافت نشد؛ سایت باز می‌شود.")
+      : (showActions ? "اینترنت کند است؛ لطفاً منتظر بمانید." : "");
   }
 
   function hideNow() {
@@ -204,8 +204,8 @@
     finished = true;
     STEPS.forEach(function (s) { if (state[s.id].status === "run") set(s.id, "fail", "پاسخی نیامد"); });
     render();
-    if (anyFail() && !forced) return;           // کاربر ضربدر را ببیند و خودش ادامه دهد
-    setTimeout(hideNow, 700);                    // لحظه‌ای تیک‌های کامل دیده شوند
+    // دکمه‌ای در لودر نیست: فایل‌های سایت خودکار تکرار می‌شوند؛ اگر فقط بخشی از اطلاعات (مثلاً محصولات) نیامد، بعد از چند ثانیه سایت باز می‌شود.
+    setTimeout(hideNow, anyFail() ? 3000 : 700);                    // لحظه‌ای تیک‌های کامل دیده شوند
   }
   function dismiss() { forced = true; hideNow(); }
   function assetsPending() {
@@ -728,10 +728,6 @@ try {
     <div class="boot-sub">در حال آماده‌سازی سامانه مشکفام فارس:</div>
     <ul id="bootSteps" class="boot-steps"></ul>
     <div id="bootHint" class="boot-hint"></div>
-    <div id="bootActions" class="boot-actions">
-      <button type="button" id="bootRetry" class="boot-btn primary" onclick="MoshkfamBoot.retry()">🔄 تلاش دوباره</button>
-      <button type="button" id="bootContinue" class="boot-btn ghost" onclick="MoshkfamBoot.dismiss()">ورود به سایت</button>
-    </div>
   </div>
 </div>
 

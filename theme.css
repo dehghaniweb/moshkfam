@@ -1,0 +1,342 @@
+/* =========================================================
+   MOSHKFAM — پنل مدیر نرم‌افزار و پنل کارشناس فروش (ظاهر جدید)
+   این فایل بعد از style.css بارگذاری می‌شود و فقط داخل #adminModal اثر دارد.
+   حذف این فایل = بازگشت کامل به ظاهر قبلی.
+========================================================= */
+
+#adminModal{
+  --adm:#15803d;          /* رنگ اصلی مدیر نرم‌افزار: سبز */
+  --adm-dark:#14532d;
+  --adm-soft:#ecfdf5;
+  --adm-line:#cfe8d8;
+  --adm-ink:#0f2a1c;
+  --adm-muted:#5b6b62;
+  --adm-bg:#f4f7f5;
+  --adm-card:#ffffff;
+  --adm-danger:#b91c1c;
+  --adm-radius:16px;
+}
+body[data-account-role="sales"] #adminModal{   /* کارشناس فروش: آبی */
+  --adm:#1d4ed8;
+  --adm-dark:#1e3a8a;
+  --adm-soft:#eff6ff;
+  --adm-line:#c7d7f5;
+  --adm-ink:#0f1f4a;
+  --adm-muted:#55627e;
+  --adm-bg:#f3f6fc;
+}
+
+/* ---------- قاب اصلی ---------- */
+#adminModal.modal{padding:12px!important;align-items:center!important;}
+#adminModal .modal-backdrop{background:rgba(15,23,42,.55)!important;backdrop-filter:blur(3px);}
+#adminModal .modal-card.admin-card{
+  direction:rtl!important;
+  background:var(--adm-bg)!important;
+  color:var(--adm-ink);
+  padding:0!important;
+  width:100%!important;
+  max-width:1000px!important;
+  max-height:calc(100dvh - 24px)!important;
+  border-radius:24px!important;
+  border:1px solid var(--adm-line)!important;
+  box-shadow:0 24px 70px rgba(2,12,6,.35)!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  scrollbar-gutter:auto!important;
+  scroll-behavior:smooth;
+}
+#adminModal .modal-card.admin-card>*:not(.admin-header):not(#adminLoadingOverlay){margin-inline:18px;}
+#adminModal .modal-card.admin-card>.close{display:none!important;}   /* دکمهٔ بستن داخل هدر قرار می‌گیرد */
+
+/* ---------- هدر چسبان ---------- */
+#adminModal .admin-header{
+  position:sticky!important;top:0;z-index:40;
+  display:flex!important;flex-wrap:wrap;align-items:center!important;justify-content:space-between;gap:10px 12px!important;
+  margin:0 0 16px!important;padding:16px 18px 14px!important;
+  border:0!important;
+  background:linear-gradient(135deg,var(--adm-dark),var(--adm))!important;
+  color:#fff;
+  border-radius:24px 24px 18px 18px;
+  box-shadow:0 8px 22px rgba(2,12,6,.22);
+}
+#adminModal .admin-header>div:first-child{margin:0!important;flex:1 1 150px;min-width:0;order:1;}
+#adminModal .admin-kicker{font-size:11px!important;letter-spacing:.2px;color:rgba(255,255,255,.78)!important;margin:0 0 2px!important;}
+#adminModal .admin-header h2,
+#adminModal .admin-card .admin-header h2{margin:0!important;color:#fff!important;font-size:19px!important;line-height:1.5;}
+#adminModal .admin-header-status{order:3;flex:1 1 100%;}
+#adminModal .admin-account-mini{
+  display:flex!important;align-items:center;gap:10px;
+  max-width:none!important;min-width:0!important;margin:0;padding:8px 10px;
+  border-radius:14px;background:rgba(255,255,255,.14);color:#fff!important;
+  font-size:12px!important;line-height:1.5!important;text-align:right!important;
+}
+#adminModal .adm-avatar{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--adm-dark);font-weight:900;font-size:15px;}
+#adminModal .adm-who{display:flex;flex-direction:column;min-width:0;}
+#adminModal .adm-who b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#adminModal .adm-who small{font-size:11px;color:rgba(255,255,255,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#adminModal .adm-close{
+  order:2;flex:0 0 auto;width:42px;height:42px;border:0;border-radius:50%;
+  background:rgba(255,255,255,.18);color:#fff;font-size:26px;line-height:1;cursor:pointer;font-family:inherit;
+  display:grid;place-items:center;transition:background .15s;
+}
+#adminModal .adm-close:hover{background:rgba(255,255,255,.32);}
+
+/* ---------- منوی اصلی (دسته‌بندی‌شده) ---------- */
+#adminModal #adminHome{padding:0 0 18px;}
+#adminModal .admin-menu{display:block!important;}
+#adminModal .admin-menu-group{margin:0 0 20px;}
+#adminModal .admin-menu-group.is-empty{display:none;}
+#adminModal .admin-menu-group-title{
+  display:flex;align-items:center;gap:10px;margin:0 2px 10px;
+  font-size:12.5px;font-weight:900;color:var(--adm-muted);letter-spacing:.2px;
+}
+#adminModal .admin-menu-group-title::after{content:"";flex:1;height:1px;background:var(--adm-line);}
+#adminModal .admin-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+#adminModal .admin-menu-item{
+  display:flex!important;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:6px;
+  min-height:112px!important;padding:14px!important;text-align:right;
+  background:var(--adm-card)!important;
+  border:1px solid var(--adm-line)!important;border-radius:var(--adm-radius)!important;
+  box-shadow:0 2px 8px rgba(15,42,28,.06);
+  transition:transform .15s,box-shadow .15s,border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+#adminModal .admin-menu-item:hover,#adminModal .admin-menu-item:focus-visible{
+  transform:translateY(-2px);border-color:var(--adm)!important;box-shadow:0 8px 20px rgba(15,42,28,.12);outline:none;
+}
+#adminModal .admin-menu-item:active{transform:scale(.98);}
+#adminModal .admin-menu-item>span{
+  grid-row:auto!important;width:42px;height:42px;border-radius:13px;
+  display:grid!important;place-items:center;font-size:22px!important;
+  background:var(--adm-soft);border:1px solid var(--adm-line);
+}
+#adminModal .admin-menu-item b{font-size:13.5px!important;line-height:1.5;color:var(--adm-dark)!important;}
+#adminModal .admin-menu-item small{
+  font-size:11px!important;line-height:1.6!important;margin:0!important;color:var(--adm-muted)!important;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+#adminModal .admin-menu-item[onclick*="cleanup"]>span{background:#fef2f2;border-color:#fecaca;}
+
+/* ---------- بخش‌های داخلی ---------- */
+#adminModal .admin-inner-view{padding-bottom:26px;}
+#adminModal .admin-back{
+  display:inline-flex!important;align-items:center;gap:6px;width:auto!important;min-height:40px!important;
+  margin:0 0 12px!important;padding:8px 16px!important;
+  background:var(--adm-card)!important;color:var(--adm)!important;
+  border:1px solid var(--adm-line)!important;border-radius:999px!important;
+  font-size:13px!important;font-weight:800!important;box-shadow:0 2px 8px rgba(15,42,28,.07)!important;
+}
+#adminModal .admin-back:hover{background:var(--adm-soft)!important;border-color:var(--adm)!important;}
+#adminModal .admin-section-title,
+#adminModal .admin-inner-view>h3{
+  position:static!important;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:4px 0 6px!important;padding:0!important;
+  font-size:19px!important;line-height:1.6;color:var(--adm-dark)!important;
+}
+#adminModal .admin-count-badge{
+  position:static!important;border:0!important;box-shadow:none!important;
+  min-width:28px;height:26px;padding:0 9px;border-radius:999px!important;
+  background:var(--adm)!important;color:#fff;font-size:12px;font-weight:900;
+}
+#adminModal .admin-section-help,#adminModal .admin-inner-view>p{
+  margin:0 0 14px!important;color:var(--adm-muted)!important;font-size:12.5px!important;line-height:1.9;
+}
+#adminModal .admin-subtitle{margin:18px 0 10px!important;font-size:14px;color:var(--adm-dark);}
+
+/* ---------- جستجو و فرم‌ها ---------- */
+#adminModal .admin-search-wrap{margin:8px 0 14px!important;}
+#adminModal .admin-search,
+#adminModal .admin-card input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+#adminModal .admin-card select,
+#adminModal .admin-card textarea{
+  min-height:48px;border:1px solid #cdd8d1!important;border-radius:13px!important;
+  background:#fff!important;font:inherit;font-size:16px!important;color:var(--adm-ink);
+  padding:10px 14px!important;box-shadow:none!important;
+}
+#adminModal .admin-card textarea{min-height:96px;line-height:1.8;}
+#adminModal .admin-search:focus,
+#adminModal .admin-card input:focus,
+#adminModal .admin-card select:focus,
+#adminModal .admin-card textarea:focus{
+  outline:none!important;border-color:var(--adm)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--adm) 22%,transparent)!important;
+}
+#adminModal .admin-card label{display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:800;color:var(--adm-muted);}
+#adminModal .admin-card label>input,#adminModal .admin-card label>select,#adminModal .admin-card label>textarea{font-weight:500;}
+#adminModal .admin-card label.admin-active{flex-direction:row;align-items:center;gap:10px;font-size:13px;color:var(--adm-ink);}
+#adminModal .admin-edit-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important;margin:0 0 12px;}
+#adminModal .admin-edit-grid-wide,#adminModal .admin-edit-grid .admin-edit-grid-wide-label{grid-template-columns:1fr!important;}
+#adminModal .password-input-wrap{display:flex;gap:8px;align-items:stretch;}
+#adminModal .password-input-wrap input{flex:1;min-width:0;}
+#adminModal .password-eye{flex:0 0 48px;border:1px solid #cdd8d1;border-radius:13px;background:#fff;font-size:18px;cursor:pointer;}
+
+/* ---------- دکمه‌ها ---------- */
+#adminModal .admin-primary,
+#adminModal .admin-save-customer-button,
+#adminModal .admin-product-buttons button,
+#adminModal .customer-price-row>button,
+#adminModal .limits-refresh,
+#adminModal .admin-media-box>button:not(.danger){
+  min-height:46px;padding:10px 20px!important;border:0!important;border-radius:13px!important;
+  background:linear-gradient(135deg,var(--adm),var(--adm-dark))!important;color:#fff!important;
+  font:inherit;font-size:14px!important;font-weight:800!important;cursor:pointer;
+  box-shadow:0 6px 16px color-mix(in srgb,var(--adm) 32%,transparent)!important;
+  transition:transform .12s,filter .15s;
+}
+#adminModal .admin-primary:hover,#adminModal .admin-save-customer-button:hover,
+#adminModal .admin-product-buttons button:hover{filter:brightness(1.07);}
+#adminModal .admin-primary:active,#adminModal .admin-save-customer-button:active{transform:scale(.98);}
+#adminModal .admin-primary:disabled{opacity:.6;cursor:wait;}
+#adminModal .admin-danger,
+#adminModal .admin-danger-button,
+#adminModal button.danger{
+  min-height:46px;padding:10px 18px!important;border:1.5px solid #fca5a5!important;border-radius:13px!important;
+  background:#fff!important;color:var(--adm-danger)!important;font:inherit;font-size:14px!important;font-weight:800!important;
+  box-shadow:none!important;cursor:pointer;transition:background .15s,color .15s;
+}
+#adminModal .admin-danger:hover,#adminModal .admin-danger-button:hover,#adminModal button.danger:hover{background:var(--adm-danger)!important;color:#fff!important;border-color:var(--adm-danger)!important;}
+#adminModal .admin-card button:focus-visible{outline:3px solid color-mix(in srgb,var(--adm) 45%,transparent);outline-offset:2px;}
+
+/* ---------- کارت‌ها و آکاردئون‌ها ---------- */
+#adminModal .admin-accordion{
+  margin:0 0 10px!important;background:var(--adm-card)!important;
+  border:1px solid var(--adm-line)!important;border-radius:var(--adm-radius)!important;
+  box-shadow:0 2px 8px rgba(15,42,28,.05)!important;overflow:hidden;
+}
+#adminModal .admin-accordion.open{border-color:var(--adm)!important;box-shadow:0 8px 22px rgba(15,42,28,.10)!important;}
+#adminModal .admin-accordion-title{
+  display:flex!important;align-items:center;justify-content:space-between;gap:10px;width:100%;
+  padding:12px 14px!important;background:transparent!important;border:0!important;
+  text-align:right;font:inherit;cursor:pointer;color:var(--adm-ink)!important;
+}
+#adminModal .admin-accordion-title-text{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;flex:1;}
+#adminModal .admin-accordion-title-text strong{font-size:14px;color:var(--adm-dark);}
+#adminModal .admin-accordion-title-text small{font-size:11.5px;color:var(--adm-muted);direction:ltr;}
+#adminModal .admin-item-number{
+  flex:0 0 auto;min-width:28px;height:28px;display:inline-grid;place-items:center;border-radius:9px;
+  background:var(--adm-soft);border:1px solid var(--adm-line);color:var(--adm);font-size:12px;font-weight:900;
+}
+#adminModal .admin-accordion-chevron{
+  flex:0 0 auto;width:32px!important;height:32px!important;border-radius:10px!important;display:grid;place-items:center;
+  background:var(--adm-soft)!important;border:1px solid var(--adm-line)!important;color:var(--adm)!important;
+}
+#adminModal .admin-accordion-body{padding:4px 14px 14px!important;border-top:1px dashed var(--adm-line);}
+#adminModal .admin-static-accordion{border-style:solid;}
+#adminModal .admin-accordion-summary{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 12px;font-size:12.5px;color:var(--adm-muted);}
+#adminModal .admin-product-buttons{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px;}
+
+#adminModal .admin-media-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px;}
+#adminModal .admin-media-box,#adminModal .admin-product-images-manager,#adminModal .admin-permission-box,
+#adminModal .customer-info,#adminModal .customer-price-row,#adminModal .limit-service-card,#adminModal .admin-cleanup-card{
+  background:var(--adm-card);border:1px solid var(--adm-line);border-radius:14px;
+}
+#adminModal .admin-media-box{display:flex;flex-direction:column;gap:8px;padding:12px;}
+#adminModal .customer-price-row{display:grid!important;grid-template-columns:1fr minmax(120px,170px) auto;gap:10px;align-items:center;padding:10px 12px;margin-bottom:8px;}
+#adminModal .customer-price-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px;font-size:12px;color:var(--adm-muted);}
+#adminModal .message{background:var(--adm-card);border:1px dashed var(--adm-line);border-radius:14px;padding:14px;color:var(--adm-muted);text-align:center;}
+#adminModal .message.error{border-color:#fca5a5;color:var(--adm-danger);background:#fef2f2;}
+#adminModal .limits-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+#adminModal .limits-panel-head h3{margin:0 0 4px;font-size:18px;color:var(--adm-dark);}
+#adminModal .limits-panel-head p{margin:0;font-size:12px;color:var(--adm-muted);}
+#adminModal .admin-loading-overlay{border-radius:24px;}
+
+/* ---------- موبایل: ورقهٔ تمام‌عرض از پایین ---------- */
+@media (max-width:700px){
+  #adminModal.modal{padding:0!important;align-items:flex-end!important;}
+  #adminModal .modal-card.admin-card{
+    max-width:100%!important;border-radius:22px 22px 0 0!important;
+    max-height:calc(100dvh - 10px)!important;height:calc(100dvh - 10px);
+    padding-bottom:env(safe-area-inset-bottom)!important;
+  }
+  #adminModal .modal-card.admin-card>*:not(.admin-header):not(#adminLoadingOverlay){margin-inline:14px;}
+  #adminModal .admin-header{padding:14px 14px 12px!important;border-radius:22px 22px 16px 16px;}
+  #adminModal .admin-menu-grid{gap:10px;}
+  #adminModal .admin-menu-item{min-height:104px!important;padding:12px!important;}
+  #adminModal .admin-edit-grid{grid-template-columns:1fr!important;}
+  #adminModal .admin-media-grid{grid-template-columns:1fr;}
+  #adminModal .customer-price-row{grid-template-columns:1fr auto;}
+  #adminModal .customer-price-row>div:first-child{grid-column:1/-1;font-weight:800;}
+  #adminModal .admin-product-buttons button,#adminModal .admin-system-actions button{width:100%;}
+}
+@media (min-width:701px){
+  #adminModal .admin-menu-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+  #adminModal .admin-header-status{order:0;flex:0 1 auto;}
+  #adminModal .admin-header{flex-wrap:nowrap;}
+}
+@media (prefers-reduced-motion:reduce){
+  #adminModal *{transition:none!important;scroll-behavior:auto!important;}
+}
+
+
+/* =========================================================
+   صفحهٔ ورود (مهمان) روی موبایل: کادر کوتاه‌تر و بدون برخورد با آرم
+   قبلاً کادر ورود چهار ردیف روی هم بود (حدود ۱۴۵ پیکسل) و کنار آرم گیر می‌کرد.
+   حالا: آرم در وسط، زیرش یک کارت: نام کاربری و رمز کنار هم، دکمهٔ ورود زیرشان.
+========================================================= */
+@media (max-width:700px){
+  html body.login-active.login-active.login-active header.header{
+    position:relative!important;height:auto!important;min-height:0!important;
+    grid-template-columns:1fr!important;grid-template-rows:auto auto!important;
+    grid-template-areas:"brand" "login"!important;row-gap:10px!important;
+    padding:10px 14px 14px!important;
+  }
+  html body.login-active.login-active.login-active header.header .brand{grid-area:brand!important;justify-self:center!important;}
+  html body.login-active header.header #loginBox{
+    position:static!important;grid-area:login!important;justify-self:stretch!important;align-self:start!important;
+    display:block!important;box-sizing:border-box!important;
+    width:100%!important;max-width:420px!important;margin:0 auto!important;padding:10px!important;
+    background:#f4faf6!important;border:1px solid #cfe8d8!important;border-radius:16px!important;
+  }
+  html body.login-active header.header #loginBox .login-fields{
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important;width:100%!important;
+  }
+  html body.login-active header.header #loginBox .login-fields input{
+    width:100%!important;min-width:0!important;box-sizing:border-box!important;
+    height:42px!important;padding:6px 10px!important;font-size:16px!important;
+    border:1px solid #cdd8d1!important;border-radius:12px!important;background:#fff!important;
+  }
+  html body.login-active header.header #loginBox .login-password-wrap{position:relative!important;width:100%!important;min-width:0!important;display:block!important;}
+  html body.login-active header.header #loginBox .login-password-wrap input{padding-left:40px!important;}
+  html body.login-active header.header #loginBox .login-eye{
+    position:absolute!important;left:2px!important;top:50%!important;transform:translateY(-50%)!important;
+    width:38px!important;height:38px!important;min-width:0!important;padding:0!important;margin:0!important;
+    border:0!important;background:transparent!important;color:#166534!important;font-size:18px!important;
+    box-shadow:none!important;display:grid!important;place-items:center;
+  }
+  html body.login-active header.header #loginBox .login-fields>button{
+    grid-column:1/-1!important;width:100%!important;height:44px!important;font-size:15px!important;
+    border-radius:12px!important;background:#166534!important;color:#fff!important;
+    box-shadow:0 4px 0 #0f4d27!important;transition:transform .08s,box-shadow .08s;
+  }
+  html body.login-active header.header #loginBox .login-fields>button:active{transform:translateY(3px);box-shadow:0 1px 0 #0f4d27!important;}
+  html body.login-active header.header #loginBox .login-message{min-height:0;margin-top:6px;font-size:12.5px;text-align:center;}
+  html body.login-active header.header #loginBox .login-message:empty{display:none;}
+}
+
+
+/* عناصر مخفی همیشه مخفی بمانند (قاعده‌های بالا display را با !important تعیین می‌کنند) */
+#adminModal .hidden,#adminModal [hidden]{display:none!important;}
+
+
+/* کارت حساب کاربری داخل هدر: پس‌زمینهٔ شفاف (قاعدهٔ قدیمی سفید بود و متن سفید دیده نمی‌شد) */
+#adminModal .admin-account-mini,#adminModal .admin-account-top{
+  background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.24)!important;
+  box-shadow:none!important;color:#fff!important;width:100%!important;max-width:none!important;min-width:0!important;
+  border-radius:14px!important;
+}
+#adminModal .admin-account-mini *{color:inherit;}
+#adminModal .admin-account-mini .adm-avatar{color:var(--adm-dark)!important;}
+#adminModal .admin-accordion-title-text strong,#adminModal .admin-product-accordion strong{color:var(--adm-dark)!important;}
+#adminModal .admin-card input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+#adminModal .admin-card select,#adminModal .admin-card textarea{font-weight:600!important;}
+@media (max-width:700px){
+  #adminModal .admin-menu-item small{display:none!important;}
+  #adminModal .admin-menu-item{min-height:92px!important;justify-content:center;}
+}
+@media (min-width:701px){
+  #adminModal .admin-account-mini,#adminModal .admin-account-top{width:auto!important;min-width:220px!important;}
+}
+
+/* اگر تعداد دکمه‌های یک گروه فرد بود، آخری تمام‌عرض شود (جای خالی نماند) */
+#adminModal .admin-menu-grid>.admin-menu-item:last-child:nth-child(odd){
+  grid-column:1/-1;flex-direction:row!important;align-items:center!important;gap:12px!important;min-height:72px!important;
+}

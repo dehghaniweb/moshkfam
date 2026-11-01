@@ -20,11 +20,13 @@ const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.58";
 (async function forceClearCacheFromApp() {
   try {
     if (new URLSearchParams(window.location.search).get("debug") === "1") return;
-    const version = "moshkfam-app-20260926-06";
+    // V1.0.61: پاک‌سازی کش و بارگذاری دوبارهٔ صفحه فقط «یک‌بار برای هر دستگاه» انجام می‌شود،
+    // نه در هر نشست؛ قبلاً هر بار باز کردن سایت همهٔ فایل‌ها را دوبار دانلود می‌کرد.
+    const version = "moshkfam-app-20261031-01";
     const flag = "moshkfam_cache_cleared_" + version;
 
-    if (sessionStorage.getItem(flag)) return;
-    sessionStorage.setItem(flag, "1");
+    if (localStorage.getItem(flag)) return;
+    localStorage.setItem(flag, "1");
 
     if ("caches" in window) {
       const names = await caches.keys();
@@ -530,6 +532,7 @@ function bootDiag(stage, status = "RUNNING", details = "") {
   if (status === "ERROR") console.error(line);
   else if (status === "TIMEOUT") console.error(line);
   else console.log(line);
+  try { if (window.MoshkfamBoot) window.MoshkfamBoot.onDiag(stage, status, details); } catch (_) {}
   renderBootDiagnostics();
 }
 

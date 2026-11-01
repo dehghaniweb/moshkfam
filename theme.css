@@ -275,15 +275,15 @@ body[data-account-role="sales"] #adminModal{   /* کارشناس فروش: آب�
 @media (max-width:700px){
   html body.login-active.login-active.login-active header.header{
     position:relative!important;height:auto!important;min-height:0!important;
-    grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto!important;
+    grid-template-columns:minmax(0,1fr) 128px!important;grid-template-rows:auto!important;
     grid-template-areas:"login brand"!important;column-gap:12px!important;align-items:center!important;
     padding:10px 14px 14px!important;
   }
   /* آرم شرکت سمت راست (صفحه راست‌به‌چپ است)، روبه‌روی نام کاربری و رمز */
-  html body.login-active.login-active.login-active header.header .brand{grid-area:brand!important;display:flex!important;align-self:stretch!important;justify-self:end!important;margin:0!important;padding:0!important;}
+  html body.login-active.login-active.login-active header.header .brand{grid-area:brand!important;display:flex!important;align-items:center!important;justify-content:center!important;align-self:center!important;justify-self:stretch!important;margin:0!important;padding:0!important;}
   html body.login-active header.header .brand>div{display:none!important;}
-  /* آرم هم‌قد کادر ورود: کل آرم دیده می‌شود (بدون برش) */
-  html body.login-active header.header .brand img{width:104px!important;height:100%!important;min-height:0!important;max-height:none!important;object-fit:contain!important;margin:0!important;border-radius:14px!important;}
+  /* آرم با نسبت اصلی خودش (عریض) و دقیقاً وسط‌چین نسبت به ارتفاع کادر ورود؛ بدون حاشیهٔ سیاه خالی */
+  html body.login-active header.header .brand img{width:128px!important;height:auto!important;aspect-ratio:1536/532!important;min-height:0!important;max-height:none!important;object-fit:contain!important;margin:0!important;padding:0!important;border-radius:12px!important;box-shadow:none!important;}
   html body.login-active header.header #loginBox{
     position:static!important;grid-area:login!important;justify-self:stretch!important;align-self:start!important;
     display:block!important;box-sizing:border-box!important;
@@ -299,7 +299,7 @@ body[data-account-role="sales"] #adminModal{   /* کارشناس فروش: آب�
     border:1px solid #cdd8d1!important;border-radius:12px!important;background:#fff!important;
   }
   html body.login-active header.header #loginBox .login-password-wrap{position:relative!important;width:100%!important;min-width:0!important;display:block!important;}
-  html body.login-active header.header #loginBox .login-password-wrap input{padding-left:40px!important;}
+  html body.login-active header.header #loginBox .login-password-wrap input{padding-left:10px!important;}
   html body.login-active header.header #loginBox .login-eye{
     position:absolute!important;left:2px!important;top:50%!important;transform:translateY(-50%)!important;
     width:34px!important;height:34px!important;min-width:0!important;padding:0!important;margin:0!important;
@@ -344,3 +344,7 @@ body[data-account-role="sales"] #adminModal{   /* کارشناس فروش: آب�
 #adminModal .admin-menu-grid>.admin-menu-item:last-child:nth-child(odd){
   grid-column:1/-1;flex-direction:row!important;align-items:center!important;gap:12px!important;min-height:72px!important;
 }
+
+
+/* علامت چشم رمز عبور حذف شد */
+html body header.header #loginBox #loginPasswordEye,html body header.header #loginBox .login-eye,html body.login-active header.header #loginBox .login-eye{display:none!important;}

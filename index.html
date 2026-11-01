@@ -37,7 +37,7 @@
 
 <script>
   // مرجع واحد شماره نسخه برای تمام بخش‌های برنامه
-  window.MOSHKFAM_VERSION = "V1.0.61";
+  window.MOSHKFAM_VERSION = "V1.0.62";
 </script>
 
 <!--
@@ -175,7 +175,9 @@
     if (actions) actions.className = "boot-actions" + (showActions ? " show" : "");
     if (title) title.textContent = failed ? "بارگذاری کامل نشد" : "لطفاً منتظر بمانید";
     if (hint) hint.textContent = failed
-      ? "مرحلهٔ ضربدرخورده مشکل دارد. دوباره تلاش کنید یا وارد سایت شوید."
+      ? (assetsPending()
+          ? "اتصال ناپایدار است؛ برنامه خودکار دوباره تلاش می‌کند. می‌توانید منتظر بمانید یا دوباره تلاش کنید."
+          : "مرحلهٔ ضربدرخورده مشکل دارد. دوباره تلاش کنید یا وارد سایت شوید.")
       : (showActions ? "اینترنت کند است؛ می‌توانید منتظر بمانید یا وارد سایت شوید." : "");
   }
 
@@ -206,8 +208,19 @@
     setTimeout(hideNow, 700);                    // لحظه‌ای تیک‌های کامل دیده شوند
   }
   function dismiss() { forced = true; hideNow(); }
+  function assetsPending() {
+    var A = window.MoshkfamAssets;
+    return !!(A && A.pending && A.pending());
+  }
   function retry() {
     var btn = document.getElementById("bootRetry");
+    // V1.0.62: اگر فایل‌های سایت هنوز کامل نیامده‌اند، صفحه دوباره بارگذاری نمی‌شود؛ همان فایل‌ها فوراً دوباره امتحان می‌شوند
+    // (فایل‌هایی که قبلاً کامل رسیده‌اند از نو گرفته نمی‌شوند).
+    if (assetsPending()) {
+      window.MoshkfamAssets.retryNow();
+      if (btn) { btn.classList.add("busy"); setTimeout(function () { btn.classList.remove("busy"); }, 1200); }
+      return;
+    }
     if (btn) { btn.disabled = true; btn.textContent = "در حال بارگذاری مجدد..."; btn.classList.add("busy"); }
     setTimeout(function () { location.reload(); }, 150);
   }
@@ -226,25 +239,398 @@
 </script>
 
 <script>
+/* V1.0.62: بارگذاری مقاوم فایل‌های سایت (ظاهر + برنامه) — جایگزین بارگذاری قدیمی.
+
+   ایراد قبلی: هر بار ۷ فایل هم‌زمان، با آدرس یکتا و بدون کش گرفته می‌شد و هر فایل فقط ۲۰ ثانیه مهلت «کل» داشت.
+   روی اینترنت کند یا نیمه‌فیلتر، دانلودی که در حال پیشرفت بود هم قطع می‌شد و از صفر شروع می‌کرد؛ فایل ظاهر (style.css)
+   اصلاً تلاش مجدد نداشت و بعد از ۳ شکست، صفحه برای همیشه روی «app-4.js دریافت نشد» می‌ماند.
+
+   حالا:
+   • هر تلاش فقط وقتی قطع می‌شود که ۲۰ ثانیه هیچ بایتی نرسد (نه کل زمان). تا موفقیت، با فاصلهٔ فزاینده خودکار دوباره امتحان می‌شود.
+   • حداکثر ۳ دانلود هم‌زمان؛ فایل‌های اختیاری (theme.css و admin-ui.js) جلوی فایل‌های اصلی را نمی‌گیرند.
+   • بعد از اولین بارگذاری موفق، یک نسخهٔ کامل در حافظهٔ دستگاه (Cache Storage) ذخیره می‌شود. دفعات بعد اگر شبکه تا ۳ ثانیه
+     جواب نداد، سایت از همان نسخه باز می‌شود و نسخهٔ تازه پشت‌صحنه گرفته می‌شود و برای دفعهٔ بعد، یک‌جا جایگزین می‌شود.
+   • آدرس را با ?fresh=1 باز کنید تا نسخهٔ ذخیره‌شده نادیده گرفته شود و همه‌چیز تازه گرفته شود (برای تست بعد از انتشار).
+   • شمارهٔ نسخه (MOSHKFAM_VERSION بالای همین فایل) هم نام حافظهٔ ذخیره را تعیین می‌کند؛ با تغییر آن، همه‌چیز از نو گرفته می‌شود. */
+try {
 (function () {
+  "use strict";
 
-  const version = Date.now();
+  /* ---------- فهرست فایل‌ها (اگر فایل جدیدی به برنامه اضافه شد، اینجا اضافه شود) ---------- */
+  var CSS_MAIN = "style.css";                                          // ظاهر اصلی (ضروری)
+  var CSS_EXTRA = "theme.css";                                         // ظاهر پنل‌ها و صفحهٔ ورود (اختیاری)
+  var JS_EXTRA = "admin-ui.js";                                        // بهبودهای پنل مدیر (اختیاری)
+  var APP_PARTS = ["app-1.js", "app-2.js", "app-3.js", "app-4.js"];    // به‌ترتیب و یک‌جا اجرا می‌شوند (ضروری)
+  var CRITICAL = [CSS_MAIN].concat(APP_PARTS);
+  var OPTIONAL = [CSS_EXTRA, JS_EXTRA];
 
-  const css = document.createElement("link");
-  css.rel = "stylesheet";
-  css.href = "style.css?_nocache=" + version;
-  css.onload = function () { MoshkfamBoot.set("style", "ok"); };
-  css.onerror = function () { MoshkfamBoot.set("style", "fail", "بارگذاری نشد"); };
-  MoshkfamBoot.set("style", "run");
-  document.head.appendChild(css);
+  /* ---------- زمان‌بندی ---------- */
+  var STALL_MS = 20000;          // اگر این‌قدر هیچ بایتی نرسید، همان تلاش قطع و دوباره امتحان می‌شود
+  var HARD_MS = 240000;          // سقف مطلق یک تلاش (برای اتصال‌های بسیار کند)
+  var GRACE_MS = 3000;           // وقتی نسخهٔ ذخیره‌شده هست: این‌قدر منتظر نسخهٔ تازه از شبکه می‌مانیم
+  var EXTRA_CSS_WAIT_MS = 2500;  // بعد از فایل‌های اصلی، این‌قدر برای theme.css صبر می‌کنیم (تا ظاهر ناگهان عوض نشود)
+  var CONCURRENCY = 3;           // حداکثر دانلود هم‌زمان
+  var FAIL_SHOW = 4;             // بعد از این تعداد شکست پشت‌سرهم ضربدر قرمز نشان داده می‌شود (تلاش خودکار ادامه دارد)
+  var BG_ATTEMPTS = 3;           // بعد از شروع برنامه، پشت‌صحنه فقط این‌قدر تلاش می‌شود
 
-  // ظاهر جدید پنل‌ها و صفحهٔ ورود (بعد از style.css تا بر آن غلبه کند). اگر نرسید، سایت با ظاهر قبلی کار می‌کند.
-  const theme = document.createElement("link");
-  theme.rel = "stylesheet";
-  theme.href = "theme.css?_nocache=" + version;
-  document.head.appendChild(theme);
+  var VER = String(window.MOSHKFAM_VERSION || "dev");
+  var BUCKET_PREFIX = "moshkfam-assets-";
+  var BUCKET = BUCKET_PREFIX + VER;
+  var FRESH = false;
+  try { FRESH = /[?&]fresh=1(&|$)/.test(location.search); } catch (e) {}
 
+  function boot() { return window.MoshkfamBoot || { set: function () {} }; }
+  function fa(n) { try { return Number(n).toLocaleString("fa-IR"); } catch (e) { return String(n); } }
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function noop() {}
+
+  /* ---------- ظاهر: دو <style> به‌ترتیب (style.css بعد از آن theme.css) ساخته می‌شود تا ترتیب cascade همیشه درست باشد ---------- */
+  var styleEls = {}, cssApplied = {};
+  [CSS_MAIN, CSS_EXTRA].forEach(function (name) {
+    var el = document.createElement("style");
+    el.setAttribute("data-moshkfam", name);
+    document.head.appendChild(el);
+    styleEls[name] = el;
+  });
+  function applyCss(name, text) {
+    if (!styleEls[name] || typeof text !== "string" || !text) return;
+    styleEls[name].textContent = text + "\n/*# sourceURL=" + name + " */";
+    cssApplied[name] = true;
+  }
+
+  /* ---------- نسخهٔ ذخیره‌شده در حافظهٔ دستگاه ---------- */
+  var SNAP_KEY = null;
+  try { SNAP_KEY = new URL("__moshkfam_assets__", location.href).href; } catch (e) {}
+  function openBucket() {
+    try { if (SNAP_KEY && window.caches) return caches.open(BUCKET).catch(function () { return null; }); } catch (e) {}
+    return Promise.resolve(null);
+  }
+  function readSnapshot() {
+    if (FRESH) return Promise.resolve(null);
+    return openBucket()
+      .then(function (c) { return c ? c.match(SNAP_KEY) : null; })
+      .then(function (res) { return res ? res.json() : null; })
+      .then(function (s) { return s && s.v === VER && s.files ? s : null; })
+      .catch(function () { return null; });
+  }
+  function writeSnapshot(files) {
+    return openBucket().then(function (c) {
+      if (!c) return;
+      var body = JSON.stringify({ v: VER, t: Date.now(), files: files });
+      return c.put(SNAP_KEY, new Response(body, { headers: { "Content-Type": "application/json" } }));
+    }).then(function () {
+      // حافظهٔ نسخه‌های قدیمی (شمارهٔ نسخهٔ دیگر) پاک می‌شود
+      if (!window.caches) return;
+      return caches.keys().then(function (keys) {
+        return Promise.all(keys.filter(function (k) { return k.indexOf(BUCKET_PREFIX) === 0 && k !== BUCKET; })
+          .map(function (k) { return caches.delete(k); }));
+      });
+    }).catch(noop);
+  }
+  function purgeSnapshot() {
+    try { return window.caches ? caches.delete(BUCKET).catch(noop) : Promise.resolve(); } catch (e) { return Promise.resolve(); }
+  }
+
+  /* ---------- دانلود یک فایل با مهلت «بی‌حرکتی» (نه مهلت کل) ---------- */
+  function readBody(res, onBytes) {
+    if (!res.body || typeof res.body.getReader !== "function" || typeof TextDecoder !== "function") return res.text();
+    var reader = res.body.getReader(), dec = new TextDecoder("utf-8"), text = "";
+    return (function pump() {
+      return reader.read().then(function (r) {
+        if (r.done) return text + dec.decode();
+        text += dec.decode(r.value, { stream: true });
+        onBytes(r.value.length);
+        return pump();
+      });
+    })();
+  }
+
+  function attemptFetch(name) {
+    return new Promise(function (resolve, reject) {
+      var ctrl = typeof AbortController === "function" ? new AbortController() : null;
+      var stallTimer = null, hardTimer = null, over = false;
+      function end(err, value) {
+        if (over) return;
+        over = true;
+        clearTimeout(stallTimer); clearTimeout(hardTimer);
+        if (err) { try { if (ctrl) ctrl.abort(); } catch (e) {} reject(err); } else resolve(value);
+      }
+      function kick() {
+        clearTimeout(stallTimer);
+        stallTimer = setTimeout(function () { end(new Error(name + " stalled")); }, STALL_MS);
+      }
+      hardTimer = setTimeout(function () { end(new Error(name + " timeout")); }, HARD_MS);
+      kick();
+      var opts = { cache: FRESH ? "reload" : "no-cache" };
+      if (ctrl) opts.signal = ctrl.signal;
+      fetch(name + "?v=" + encodeURIComponent(VER), opts).then(function (res) {
+        if (!res.ok) throw new Error(name + " HTTP " + res.status);
+        kick();
+        return readBody(res, kick);
+      }).then(function (text) {
+        // پاسخ خالی یا صفحهٔ HTML (مثلاً صفحهٔ خطا/قطع‌کنندهٔ شبکه) به‌جای کد، نباید ذخیره یا اجرا شود
+        if (!text || !text.trim()) throw new Error(name + " empty");
+        if (text.charAt(0) === "<") throw new Error(name + " is not code");
+        end(null, text);
+      }).catch(function (e) { end(e instanceof Error ? e : new Error(String(e))); });
+    });
+  }
+
+  /* ---------- مسیر پشتیبان: پل Google Apps Script ----------
+     اگر دامنه/Cloudflare/GitHub Pages از شبکهٔ کاربر بسته یا بسیار کند باشد، بعد از ۲ شکست پشت‌سرهم، تلاش‌ها یکی در میان
+     از پل گوگل انجام می‌شود (Code.gs مسیر asset را دارد؛ بعد از تغییر Code.gs باید Deploy جدید زده شود). */
+  var GAS_BRIDGE_URL = "https://script.google.com/macros/s/AKfycbxZE93G7lfthNctLEQGfLSva6vrdkqAKNmO4XuEs5Gn8hsd4mWUUkEh-x6620fkM-5AvA/exec?bridge=1";
+  var bridge = { frame: null, ready: false, target: null, waiters: [], pending: {}, seq: 0 };
+
+  function isBridgeWindow(win) {
+    try {
+      var cur = win;
+      for (var d = 0; d < 8; d++) {
+        if (bridge.frame && cur === bridge.frame.contentWindow) return true;
+        var up = cur.parent;
+        if (!up || up === cur) return false;
+        cur = up;
+      }
+    } catch (e) {}
+    return false;
+  }
+  window.addEventListener("message", function (event) {
+    var m = event.data || {};
+    if (!bridge.frame || m.source !== "MOSHKFAM_GAS_BRIDGE") return;
+    var o = String(event.origin || "");
+    if (o !== "https://script.google.com" && !/\.googleusercontent\.com$/.test(o)) return;
+    if (m.type === "READY") {
+      if (!isBridgeWindow(event.source)) return;       // پیام READY پل خودِ برنامه (app-1.js) نیست
+      bridge.target = event.source; bridge.ready = true;
+      bridge.waiters.splice(0).forEach(function (f) { f(); });
+    } else if (m.type === "RESPONSE" && bridge.pending[m.id]) {
+      var cb = bridge.pending[m.id];
+      delete bridge.pending[m.id];
+      cb(m.result);
+    }
+  });
+
+  function fetchViaBridge(name) {
+    return new Promise(function (resolve, reject) {
+      var over = false, timers = [];
+      function end(err, value) {
+        if (over) return;
+        over = true;
+        timers.forEach(clearTimeout);
+        if (err) reject(err); else resolve(value);
+      }
+      if (!bridge.frame) {
+        var f = document.createElement("iframe");
+        f.title = "Moshkfam assets fallback";
+        f.setAttribute("aria-hidden", "true");
+        f.tabIndex = -1;
+        f.style.cssText = "position:absolute;width:1px;height:1px;left:-10000px;top:-10000px;border:0;opacity:0;pointer-events:none";
+        f.src = GAS_BRIDGE_URL;
+        bridge.frame = f;
+        (document.body || document.documentElement).appendChild(f);
+      }
+      function send() {
+        var id = "asset-" + Date.now() + "-" + (++bridge.seq);
+        bridge.pending[id] = function (r) {
+          if (!r || r.transportOk !== true || r.status !== 200) return end(new Error(name + " bridge failed"));
+          var text = r.body;
+          if (!text || !String(text).trim()) return end(new Error(name + " empty"));
+          if (String(text).charAt(0) === "<") return end(new Error(name + " is not code"));
+          end(null, String(text));
+        };
+        timers.push(setTimeout(function () { delete bridge.pending[id]; end(new Error(name + " bridge timeout")); }, 60000));
+        try {
+          bridge.target.postMessage({ source: "MOSHKFAM_SITE", type: "REQUEST", id: id, request: { asset: name } }, "*");
+        } catch (e) { end(e); }
+      }
+      if (bridge.ready) { send(); return; }
+      bridge.waiters.push(send);
+      timers.push(setTimeout(function () {
+        var i = bridge.waiters.indexOf(send);
+        if (i >= 0) bridge.waiters.splice(i, 1);
+        end(new Error("bridge not ready"));
+      }, 20000));
+    });
+  }
+
+  /* ---------- تلاش مجدد خودکار با فاصلهٔ فزاینده؛ «تلاش دوباره» فاصله را رد می‌کند ---------- */
+  var blocking = true;                 // تا وقتی برنامه شروع نشده، تلاش‌ها تا موفقیت ادامه دارد
+  var net = {};                        // نام فایل → متن تازه‌ای که از شبکه رسیده
+  var info = {};                       // نام فایل → وضعیت برای نمایش در لودر
+  var wakers = [];
+  CRITICAL.concat(OPTIONAL).forEach(function (n) { info[n] = { fails: 0, state: "wait" }; });
+
+  function waitOrWake(ms) {
+    return new Promise(function (resolve) {
+      var t = setTimeout(wake, ms);
+      function wake() {
+        clearTimeout(t);
+        var i = wakers.indexOf(wake);
+        if (i >= 0) wakers.splice(i, 1);
+        resolve();
+      }
+      wakers.push(wake);
+    });
+  }
+  function retryNow() { wakers.slice().forEach(function (w) { w(); }); }
+
+  function getFile(name) {
+    var inf = info[name];
+    return new Promise(function (resolve, reject) {
+      var tries = 0;
+      (function next() {
+        tries++;
+        inf.state = "run";
+        report();
+        var viaBridge = inf.fails >= 2 && inf.fails % 2 === 0;   // شکست‌های ۲،۴،۶… → این بار از پل گوگل
+        (viaBridge ? fetchViaBridge(name) : attemptFetch(name)).then(function (text) {
+          inf.state = "ok"; inf.fails = 0;
+          net[name] = text;
+          report();
+          resolve(text);
+        }, function (err) {
+          inf.fails++;
+          try { console.warn("MOSHKFAM asset:", name, err && err.message, "(try " + tries + ")"); } catch (e) {}
+          if (!blocking && tries >= BG_ATTEMPTS) { inf.state = "gaveup"; report(); reject(err); return; }
+          if (inf.fails >= FAIL_SHOW) inf.state = "fail";
+          report();
+          var wait = Math.min(15000, 800 * Math.pow(2, Math.min(inf.fails - 1, 5)));
+          waitOrWake(Math.round(wait * (0.85 + Math.random() * 0.3))).then(next);
+        });
+      })();
+    });
+  }
+
+  var running = 0, waiting = [];
+  function release() { running--; var go = waiting.shift(); if (go) go(); }
+  function schedule(name) {
+    return new Promise(function (resolve, reject) {
+      function go() { running++; getFile(name).then(resolve, reject).then(release, release); }
+      if (running < CONCURRENCY) go(); else waiting.push(go);
+    });
+  }
+
+  /* ---------- نمایش وضعیت در فهرست مراحل لودر ---------- */
+  var uiLocked = false;
+  function report() {
+    if (uiLocked) return;
+    var B = boot();
+    var s = info[CSS_MAIN];
+    if (s.state === "ok") B.set("style", "ok", "");
+    else if (s.state === "fail") B.set("style", "fail", "بارگذاری نشد");
+    else B.set("style", "run", s.fails ? "تلاش مجدد" : "");
+
+    var done = 0, failedName = "", retrying = false;
+    APP_PARTS.forEach(function (n) {
+      var i = info[n];
+      if (i.state === "ok") done++;
+      else if (i.state === "fail" && !failedName) failedName = n;
+      if (i.fails) retrying = true;
+    });
+    if (done === APP_PARTS.length) B.set("files", "ok", "");
+    else if (failedName) B.set("files", "fail", failedName + " دریافت نشد");
+    else B.set("files", "run", fa(done) + " از " + fa(APP_PARTS.length) + (retrying ? " · تلاش مجدد" : ""));
+  }
+
+  /* ---------- شروع دانلود: اول فایل‌های اصلی، بعد اختیاری‌ها ---------- */
+  var P = {};
+  CRITICAL.forEach(function (n) { P[n] = schedule(n); });
+  OPTIONAL.forEach(function (n) { P[n] = schedule(n); P[n].catch(noop); });
+  var criticalP = Promise.all(CRITICAL.map(function (n) { return P[n]; }));
+  criticalP.catch(noop);
+  var optionalSettledP = Promise.all(OPTIONAL.map(function (n) { return P[n].then(noop, noop); }));
+
+  /* ---------- تصمیم: از شبکه شروع کنیم یا از نسخهٔ ذخیره‌شده ---------- */
+  var started = false, startedAt = 0, adminP = null, lastFiles = null, readyResolve;
+  var ready = new Promise(function (r) { readyResolve = r; });
+
+  function netTexts() { var t = {}; CRITICAL.concat(OPTIONAL).forEach(function (n) { if (net[n]) t[n] = net[n]; }); return t; }
+
+  function begin(texts, source) {
+    if (started) return;
+    started = true; startedAt = Date.now(); blocking = false;
+    applyCss(CSS_MAIN, texts[CSS_MAIN]);
+    if (texts[CSS_EXTRA]) applyCss(CSS_EXTRA, texts[CSS_EXTRA]);
+    uiLocked = true;
+    var B = boot();
+    B.set("style", "ok", "");
+    B.set("files", "ok", source === "cache" ? "از حافظهٔ دستگاه" : "");
+    var admin = texts[JS_EXTRA] || net[JS_EXTRA] || "";
+    adminP = admin ? Promise.resolve(admin) : P[JS_EXTRA].then(function (t) { return t || ""; }, function () { return ""; });
+    // theme.css اگر بعداً رسید (و هنوز اعمال نشده بود) اعمال شود؛ style.css بعد از شروع عوض نمی‌شود تا با کد در حال اجرا هماهنگ بماند
+    P[CSS_EXTRA].then(function (t) { if (!cssApplied[CSS_EXTRA]) applyCss(CSS_EXTRA, t); }, noop);
+    readyResolve({ parts: APP_PARTS.map(function (n) { return texts[n]; }), source: source });
+  }
+
+  function saveIfChanged() {
+    if (!CRITICAL.every(function (n) { return net[n]; })) return Promise.resolve();
+    var files = {};
+    CRITICAL.forEach(function (n) { files[n] = net[n]; });
+    OPTIONAL.forEach(function (n) { var t = net[n] || (lastFiles && lastFiles[n]); if (t) files[n] = t; });
+    var same = lastFiles && Object.keys(files).length === Object.keys(lastFiles).length &&
+      Object.keys(files).every(function (k) { return lastFiles[k] === files[k]; });
+    if (same) return Promise.resolve();
+    lastFiles = files;
+    return writeSnapshot(files);
+  }
+
+  readSnapshot().then(function (snap) {
+    var haveSnap = !!snap && CRITICAL.every(function (n) { return typeof snap.files[n] === "string" && snap.files[n]; });
+    lastFiles = haveSnap ? snap.files : null;
+    if (haveSnap) {
+      // نسخهٔ قبلی هست: ظاهرش فوراً اعمال می‌شود؛ تا ۳ ثانیه منتظر نسخهٔ تازهٔ شبکه می‌مانیم، وگرنه از همان نسخهٔ ذخیره‌شده شروع می‌کنیم
+      applyCss(CSS_MAIN, snap.files[CSS_MAIN]);
+      if (snap.files[CSS_EXTRA]) applyCss(CSS_EXTRA, snap.files[CSS_EXTRA]);
+      Promise.race([
+        criticalP.then(function () { return "network"; }, function () { return "cache"; }),
+        sleep(GRACE_MS).then(function () { return "cache"; })
+      ]).then(function (src) {
+        if (src === "network") {
+          var t = netTexts();
+          OPTIONAL.forEach(function (n) { if (!t[n] && snap.files[n]) t[n] = snap.files[n]; });
+          begin(t, "network");
+        } else {
+          begin(snap.files, "cache");
+        }
+      });
+    } else {
+      criticalP
+        .then(function () { return Promise.race([P[CSS_EXTRA].then(noop, noop), sleep(EXTRA_CSS_WAIT_MS)]); })
+        .then(function () { begin(netTexts(), "network"); });
+    }
+    // بعد از کامل شدن دانلودها، اگر چیزی فرق داشت نسخهٔ جدید یک‌جا ذخیره می‌شود (یک بار بعد از فایل‌های اصلی، یک بار بعد از اختیاری‌ها)
+    criticalP.then(saveIfChanged).then(function () { return optionalSettledP; }).then(saveIfChanged).catch(noop);
+  });
+
+  // اگر کد ذخیره‌شده/دریافت‌شده در ۳۰ ثانیهٔ اول خطای اجرا بدهد، ممکن است خراب باشد؛ پاک می‌شود تا دفعهٔ بعد تازه گرفته شود
+  window.addEventListener("error", function (e) {
+    if (!started || Date.now() - startedAt > 30000) return;
+    if (/(^|\/)(app|admin-ui)\.js$/.test(String((e && e.filename) || ""))) purgeSnapshot();
+  });
+
+  window.MoshkfamAssets = {
+    version: VER,
+    ready: ready,                                                    // Promise<{parts:[...], source:"network"|"cache"}>
+    adminUi: function () { return adminP || Promise.resolve(""); },  // متن admin-ui.js (یا خالی)
+    pending: function () { return !started; },                       // فایل‌های اصلی هنوز کامل نشده؟
+    retryNow: retryNow,
+    isBridgeWindow: isBridgeWindow,
+    purge: purgeSnapshot,
+    parts: APP_PARTS
+  };
+  report();
 })();
+} catch (err) {
+  // آخرین راه نجات: اگر خود لودر به هر دلیل خطا داد، سایت مثل یک سایت ساده (بدون کش و تلاش مجدد) بارگذاری می‌شود.
+  window.MoshkfamAssets = null;
+  try { console.error("MOSHKFAM assets loader failed; plain loading:", err); } catch (e) {}
+  ["style.css", "theme.css"].forEach(function (n) {
+    var l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href = n + "?v=" + encodeURIComponent(window.MOSHKFAM_VERSION || "x");
+    document.head.appendChild(l);
+  });
+}
 </script>
 
 <script>
@@ -939,92 +1325,62 @@
 
 <script>
 (function () {
+  "use strict";
+  var A = window.MoshkfamAssets;
 
-  const version = Date.now();
-
-  // برنامه از چند فایل کوچک (app-1.js تا app-4.js) گرفته و به‌ترتیب یک‌جا اجرا می‌شود؛
-  // نتیجه دقیقاً مثل یک فایل app.js است. هر فایل تا ۳ بار دوباره امتحان می‌شود.
-  const APP_PARTS = ["app-1.js", "app-2.js", "app-3.js", "app-4.js"];
-  function fa(n) { try { return Number(n).toLocaleString("fa-IR"); } catch (e) { return String(n); } }
-
-  function fetchPart(name) {
-    var attempt = 0;
-    function once() {
-      attempt++;
-      var controller = typeof AbortController === "function" ? new AbortController() : null;
-      var timer = controller ? setTimeout(function () { controller.abort(); }, 20000) : null;
-      var options = { cache: "no-store" };
-      if (controller) options.signal = controller.signal;
-      return fetch(name + "?_nocache=" + version, options)
-        .then(function (response) {
-          if (!response.ok) throw new Error(name + " HTTP " + response.status);
-          return response.text();
-        })
-        .then(function (text) {
-          if (timer) clearTimeout(timer);
-          if (!text) throw new Error(name + " empty");
-          return text;
-        })
-        .catch(function (error) {
-          if (timer) clearTimeout(timer);
-          if (attempt >= 3) throw error;
-          return new Promise(function (resolve) { setTimeout(resolve, 1200 * attempt); }).then(once);
-        });
-    }
-    return once();
-  }
-
-  function startApp() {
-    var total = APP_PARTS.length, done = 0;
-    MoshkfamBoot.set("files", "run", fa(0) + " از " + fa(total));
-    // فایل‌های اضافی رابط کاربری (پنل‌ها) جدا و اختیاری‌اند؛ نرسیدنشان برنامه را متوقف نمی‌کند.
-    var extra = fetchPart("admin-ui.js").catch(function () { return ""; });
-    Promise.all(APP_PARTS.map(function (name) {
-      return fetchPart(name).then(function (text) {
-        done++;
-        MoshkfamBoot.set("files", "run", fa(done) + " از " + fa(total));
-        return text;
-      }, function (error) {
-        MoshkfamBoot.set("files", "fail", name + " دریافت نشد");
-        throw error;
-      });
-    })).then(function (texts) {
-      MoshkfamBoot.set("files", "ok");
-      MoshkfamBoot.set("start", "run");
-      var script = document.createElement("script");
-      script.textContent = texts.join("\n") + "\n//# sourceURL=app.js";
-      document.body.appendChild(script);
-      console.log("MOSHKFAM APP LOADED:", version);
-      extra.then(function (code) {
-        if (!code) return;
-        try {
-          var ui = document.createElement("script");
-          ui.textContent = code + "\n//# sourceURL=admin-ui.js";
-          document.body.appendChild(ui);
-        } catch (e) { console.warn("admin-ui:", e); }
-      });
-    }).catch(function (error) {
-      console.error("MOSHKFAM APP LOAD FAILED:", error);
+  // برنامه از چند فایل کوچک (app-1.js تا app-4.js) ساخته می‌شود که دانلود و ذخیره‌شان با MoshkfamAssets (بالای همین صفحه) است؛
+  // اینجا فقط به‌ترتیب یک‌جا اجرا می‌شوند (نتیجه دقیقاً مثل یک فایل app.js است) و بعد از آن admin-ui.js.
+  function startApp(payload) {
+    MoshkfamBoot.set("start", "run");
+    var script = document.createElement("script");
+    script.textContent = payload.parts.join("\n") + "\n//# sourceURL=app.js";
+    document.body.appendChild(script);
+    console.log("MOSHKFAM APP LOADED:", A.version, payload.source);
+    // فایل اضافی رابط کاربری (پنل‌ها) اختیاری است؛ نرسیدنش برنامه را متوقف نمی‌کند.
+    A.adminUi().then(function (code) {
+      if (!code) return;
+      try {
+        var ui = document.createElement("script");
+        ui.textContent = code + "\n//# sourceURL=admin-ui.js";
+        document.body.appendChild(ui);
+      } catch (e) { console.warn("admin-ui:", e); }
     });
   }
 
+  // اگر لودر بالای صفحه به هر دلیل بالا نیامده بود: بارگذاری ساده با <script src>.
+  function plainLoad() {
+    var names = ["app-1.js", "app-2.js", "app-3.js", "app-4.js", "admin-ui.js"];
+    var v = encodeURIComponent(window.MOSHKFAM_VERSION || "x");
+    MoshkfamBoot.set("files", "run");
+    names.forEach(function (n) {
+      var s = document.createElement("script");
+      s.async = false;
+      s.src = n + "?v=" + v;
+      if (n === "app-4.js") s.onload = function () { MoshkfamBoot.set("files", "ok"); MoshkfamBoot.set("start", "run"); };
+      s.onerror = function () { if (n !== "admin-ui.js") MoshkfamBoot.set("files", "fail", n + " دریافت نشد"); };
+      document.body.appendChild(s);
+    });
+  }
+
+  if (!A) { plainLoad(); return; }
+
   // داخل تلگرام تا ۸ ثانیه منتظر اسکریپت تلگرام می‌مانیم؛ بیرون از تلگرام بلافاصله شروع می‌کنیم.
   // اگر بار قبل (همین نشست) اسکریپت تلگرام نرسید، این بار فقط کوتاه منتظر می‌مانیم.
+  // دانلود فایل‌های سایت از قبل و هم‌زمان با این انتظار انجام می‌شود.
   var slowBefore = false;
   try { slowBefore = sessionStorage.getItem("moshkfam_tg_slow") === "1"; } catch (e) {}
   var waitMs = window.__moshkfamInTelegram ? (slowBefore ? 1500 : 8000) : 0;
-  Promise.race([
+  var telegramGate = Promise.race([
     (window.__moshkfamTelegramReady || Promise.resolve()).then(function () { return "ready"; }),
     new Promise(function (r) { setTimeout(function () { r("timeout"); }, waitMs); })
   ]).then(function (result) {
     if (result === "timeout" && window.__moshkfamInTelegram) {
       try { sessionStorage.setItem("moshkfam_tg_slow", "1"); } catch (e) {}
     }
-    startApp();
   });
 
+  Promise.all([A.ready, telegramGate]).then(function (r) { startApp(r[0]); });
 })();
-
 </script>
 </body>
 </html>

@@ -225,13 +225,20 @@ function setupEvents() {
 
 setupEvents();
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(e => console.warn("PWA:", e));
-  });
+// V1.0.62: برنامه بعد از رویداد load اجرا می‌شود؛ پس «منتظر load ماندن» باعث می‌شد Service Worker اصلاً ثبت نشود.
+// ثبت آن تا پایان راه‌اندازی (یا حداکثر ۸ ثانیه) صبر می‌کند تا دانلودهای نصب آن با بارگذاری سایت رقابت نکند.
+let serviceWorkerRegistered = false;
+function registerServiceWorkerOnce() {
+  if (serviceWorkerRegistered || !("serviceWorker" in navigator)) return;
+  serviceWorkerRegistered = true;
+  navigator.serviceWorker
+    .register("./service-worker.js", { updateViaCache: "none" })
+    .catch(e => console.warn("PWA:", e));
 }
+if ("serviceWorker" in navigator) setTimeout(registerServiceWorkerOnce, 8000);
 
 function finishBootLoader() {
+  registerServiceWorkerOnce();
   // فهرست مراحل بارگذاری (در index.html) تصمیم می‌گیرد: همه تیک خوردند → صفحه باز شود؛
   // مرحله‌ای ضربدر خورد → کاربر ببیند و خودش ادامه دهد.
   if (window.MoshkfamBoot && typeof window.MoshkfamBoot.finish === "function") {

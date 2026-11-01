@@ -14,15 +14,17 @@
 ========================================================= */
 
 /* =========================================================
-   MOSHKFAM - FORCE CACHE CLEAR (App.js only)
+   MOSHKFAM - پاک‌سازی یک‌بارهٔ کش‌های قدیمی (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.58";
-(async function forceClearCacheFromApp() {
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.62";
+(async function clearLegacyCachesOnce() {
   try {
     if (new URLSearchParams(window.location.search).get("debug") === "1") return;
-    // V1.0.61: پاک‌سازی کش و بارگذاری دوبارهٔ صفحه فقط «یک‌بار برای هر دستگاه» انجام می‌شود،
-    // نه در هر نشست؛ قبلاً هر بار باز کردن سایت همهٔ فایل‌ها را دوبار دانلود می‌کرد.
-    const version = "moshkfam-app-20261031-01";
+    // V1.0.62: قبلاً اینجا «همهٔ کش‌ها پاک، Service Worker حذف و صفحه دوباره بارگذاری» می‌شد؛ یعنی در اولین ورود هر دستگاه
+    // همهٔ فایل‌ها دو بار دانلود می‌شدند (روی اینترنت کند تا چند دقیقه) و نسخهٔ ذخیره‌شدهٔ برنامه هم از بین می‌رفت.
+    // حالا فقط کش‌های قدیمی و ناشناخته (یک‌بار برای هر دستگاه) پاک می‌شوند؛ کش فایل‌های برنامه (moshkfam-assets-*) و
+    // کش پوستهٔ Service Worker (moshkfam-shell-*) دست‌نخورده می‌ماند و صفحه دوباره بارگذاری نمی‌شود.
+    const version = "moshkfam-app-20261101-01";
     const flag = "moshkfam_cache_cleared_" + version;
 
     if (localStorage.getItem(flag)) return;
@@ -30,16 +32,12 @@ const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.58";
 
     if ("caches" in window) {
       const names = await caches.keys();
-      await Promise.all(names.map(name => caches.delete(name)));
+      await Promise.all(
+        names
+          .filter(name => !name.startsWith("moshkfam-assets-") && !name.startsWith("moshkfam-shell-"))
+          .map(name => caches.delete(name))
+      );
     }
-
-    if ("serviceWorker" in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(registrations.map(reg => reg.unregister()));
-    }
-
-    // اجرای دوباره App.js از نسخه تازه
-    window.location.reload();
   } catch (e) {
     console.warn("Cache clear:", e);
   }
@@ -108,6 +106,8 @@ function isWindowInsideGasBridgeFrame(win) {
 
 window.addEventListener("message", function (event) {
   if (!gasBridgeFrame) return;
+  // V1.0.62: پل جداگانهٔ لودر فایل‌های سایت (index.html) پیام‌های خودش را دارد؛ اینجا نباید با پل برنامه قاطی شود.
+  if (window.MoshkfamAssets && window.MoshkfamAssets.isBridgeWindow && window.MoshkfamAssets.isBridgeWindow(event.source)) return;
   const message = event.data || {};
   // Apps Script HtmlService runs the page inside a nested sandbox iframe.
   // Its postMessage source may therefore differ from gasBridgeFrame.contentWindow.

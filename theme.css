@@ -280,33 +280,34 @@ body[data-account-role="sales"] #adminModal{   /* کارشناس فروش: آب�
     padding:10px 14px 14px!important;
   }
   /* آرم شرکت سمت راست (صفحه راست‌به‌چپ است)، روبه‌روی نام کاربری و رمز */
-  html body.login-active.login-active.login-active header.header .brand{grid-area:brand!important;justify-self:center!important;align-self:center!important;}
+  html body.login-active.login-active.login-active header.header .brand{grid-area:brand!important;display:flex!important;align-self:stretch!important;justify-self:end!important;margin:0!important;padding:0!important;}
   html body.login-active header.header .brand>div{display:none!important;}
-  html body.login-active header.header .brand img{width:88px!important;height:auto!important;max-height:none!important;}
+  /* آرم هم‌قد کادر ورود: کل آرم دیده می‌شود (بدون برش) */
+  html body.login-active header.header .brand img{width:104px!important;height:100%!important;min-height:0!important;max-height:none!important;object-fit:contain!important;margin:0!important;border-radius:14px!important;}
   html body.login-active header.header #loginBox{
     position:static!important;grid-area:login!important;justify-self:stretch!important;align-self:start!important;
     display:block!important;box-sizing:border-box!important;
-    width:100%!important;max-width:420px!important;margin:0 auto!important;padding:10px!important;
+    width:100%!important;max-width:420px!important;margin:0 auto!important;padding:8px!important;
     background:#f4faf6!important;border:1px solid #cfe8d8!important;border-radius:16px!important;
   }
   html body.login-active header.header #loginBox .login-fields{
-    display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important;width:100%!important;
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:6px!important;width:100%!important;
   }
   html body.login-active header.header #loginBox .login-fields input{
     width:100%!important;min-width:0!important;box-sizing:border-box!important;
-    height:42px!important;padding:6px 10px!important;font-size:16px!important;
+    height:34px!important;padding:2px 10px!important;font-size:16px!important;
     border:1px solid #cdd8d1!important;border-radius:12px!important;background:#fff!important;
   }
   html body.login-active header.header #loginBox .login-password-wrap{position:relative!important;width:100%!important;min-width:0!important;display:block!important;}
   html body.login-active header.header #loginBox .login-password-wrap input{padding-left:40px!important;}
   html body.login-active header.header #loginBox .login-eye{
     position:absolute!important;left:2px!important;top:50%!important;transform:translateY(-50%)!important;
-    width:38px!important;height:38px!important;min-width:0!important;padding:0!important;margin:0!important;
+    width:34px!important;height:34px!important;min-width:0!important;padding:0!important;margin:0!important;
     border:0!important;background:transparent!important;color:#166534!important;font-size:18px!important;
     box-shadow:none!important;display:grid!important;place-items:center;
   }
   html body.login-active header.header #loginBox .login-fields>button{
-    grid-column:1/-1!important;width:100%!important;height:44px!important;font-size:15px!important;
+    grid-column:1/-1!important;width:100%!important;height:36px!important;font-size:15px!important;
     border-radius:12px!important;background:#166534!important;color:#fff!important;
     box-shadow:0 4px 0 #0f4d27!important;transition:transform .08s,box-shadow .08s;
   }

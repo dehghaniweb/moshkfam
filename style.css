@@ -6352,3 +6352,12 @@ html body :is(input,select,textarea):focus-visible{
     scroll-behavior:auto !important;
   }
 }
+
+/* V1.0.64 — لوگوی عریض در هدر موبایل: قبلاً داخل کادر مربع ۹۲×۹۲ جا می‌شد و خیلی ریز بود.
+   حالا کادر مستطیلی با همان نسبت لوگو (فقط وقتی کاربر وارد شده است). */
+@media(max-width:700px){
+  html body:not(.login-active) header.header .brand img{
+    width:148px!important;height:66px!important;flex:0 0 148px!important;
+    padding:6px 8px!important;box-sizing:border-box!important;object-fit:contain!important;
+  }
+}

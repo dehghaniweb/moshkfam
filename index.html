@@ -37,7 +37,7 @@
 
 <script>
   // مرجع واحد شماره نسخه برای تمام بخش‌های برنامه
-  window.MOSHKFAM_VERSION = "V1.0.63";
+  window.MOSHKFAM_VERSION = "V1.0.64";
 </script>
 
 <!--
@@ -729,6 +729,24 @@ try {
   html body #bootLoader .boot-card{position:relative!important;top:auto!important;left:auto!important;transform:none!important;margin:0!important;width:320px!important;min-width:0!important;max-width:calc(100vw - 28px)!important;height:auto!important;min-height:0!important;max-height:calc(100vh - 24px)!important;overflow-y:auto!important;align-items:stretch!important;justify-content:flex-start!important}
   html body #bootLoader .boot-icon{width:auto!important;height:auto!important;line-height:1.3!important;flex:0 0 auto!important}
   html body #bootLoader .boot-title,html body #bootLoader .boot-sub{width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
+  /* V1.0.64: وقتی ارتفاع صفحه کم می‌شود (چرخاندن گوشی)، عنوان و متن زیرش روی هم می‌افتادند و مراحل بریده می‌شد.
+     علت: فرزندهای کارت اجازهٔ کوچک شدن داشتند. حالا هیچ‌کدام کوچک نمی‌شوند و در ارتفاع کم، کارت فشرده و در صورت نیاز اسکرول‌پذیر است. */
+  html body #bootLoader .boot-card>*{flex:0 0 auto!important;flex-shrink:0!important}
+  html body #bootLoader .boot-card{max-height:calc(100vh - 16px)!important;max-height:calc(100dvh - 16px)!important;-webkit-overflow-scrolling:touch}
+  html body #bootLoader{overflow:auto!important}
+  @media (max-height:520px){
+    html body #bootLoader .boot-card{width:min(440px,calc(100vw - 28px))!important;padding:10px 16px 10px!important;border-radius:18px!important}
+    html body #bootLoader .boot-icon{font-size:24px!important;line-height:1.1!important;margin-bottom:0!important}
+    html body #bootLoader .boot-title{font-size:15px!important;line-height:1.4!important}
+    html body #bootLoader .boot-sub{font-size:11px!important;line-height:1.4!important;margin-top:0!important}
+    html body #bootLoader .boot-steps{margin-top:4px!important}
+    html body #bootLoader .boot-step{padding:3px 2px!important;font-size:12px!important;gap:8px!important}
+    html body #bootLoader .boot-mark{flex:0 0 18px!important;width:18px!important;height:18px!important;font-size:11px!important}
+    html body #bootLoader .boot-note{font-size:10px!important}
+    html body #bootLoader .boot-hint{margin-top:4px!important;font-size:11px!important;line-height:1.5!important}
+    html body #bootLoader .boot-actions{margin-top:6px!important}
+    html body #bootLoader .boot-btn{min-height:36px!important;padding:6px 8px!important;font-size:12.5px!important}
+  }
 </style>
 </head>
 

@@ -37,7 +37,7 @@
 
 <script>
   // مرجع واحد شماره نسخه برای تمام بخش‌های برنامه
-  window.MOSHKFAM_VERSION = "V1.0.62";
+  window.MOSHKFAM_VERSION = "V1.0.63";
 </script>
 
 <!--
@@ -647,31 +647,45 @@ try {
       sessionStorage.getItem("moshkfam_in_telegram") === "1";
   } catch (e) {}
   window.__moshkfamInTelegram = inTelegram;
-  // V1.0.61: بیرون از تلگرام اسکریپت telegram.org اصلاً درخواست نمی‌شود. اگر آن سایت فیلتر یا کند بود،
-  // این درخواست معلق می‌ماند و نوار لود مرورگر (زیر آدرس سایت) هیچ‌وقت کامل نمی‌شد.
-  if (!inTelegram) {
-    window.__moshkfamTelegramReady = Promise.resolve();
-    return;
-  }
-  window.__moshkfamTelegramReady = new Promise(function (resolve) {
+  // اگر از hash/query تلگرام تشخیص داده شد، برای بارگذاری‌های بعدیِ همین نشست ذخیره می‌کنیم
+  // تا حتی اگر hash از بین رفت، ورود مدیر با تلگرام قطع نشود.
+  if (inTelegram) { try { sessionStorage.setItem("moshkfam_in_telegram", "1"); } catch (e) {} }
+
+  function loadTelegramScript(onDone) {
     var s = document.createElement("script");
     s.src = "https://telegram.org/js/telegram-web-app.js";
     s.async = true;
-    s.onload = function () {
-      try {
-        // شبکهٔ اطمینان: اگر تشخیص اولیه خطا کرده بود ولی اسکریپت می‌گوید داخل تلگرام هستیم،
-        // یک‌بار صفحه را دوباره بارگذاری می‌کنیم تا ورود تلگرام فعال شود.
-        var wa = window.Telegram && window.Telegram.WebApp;
-        if (!inTelegram && wa && wa.initData) {
-          sessionStorage.setItem("moshkfam_in_telegram", "1");
-          location.reload();
-          return;
-        }
-      } catch (e) {}
-      resolve();
-    };
-    s.onerror = function () { resolve(); };
+    s.onload = function () { onDone(true); };
+    s.onerror = function () { onDone(false); };
     document.head.appendChild(s);
+  }
+
+  // V1.0.63: بیرون از تلگرام، اسکریپت تلگرام «بعد از کامل شدن لود صفحه» درخواست می‌شود.
+  // به این ترتیب اگر telegram.org فیلتر/کند باشد، نوار لود مرورگر (زیر آدرس) کامل می‌شود،
+  // و اگر تشخیص اولیهٔ تلگرام اشتباه بوده باشد، ورود مدیر با تلگرام همچنان کار می‌کند.
+  if (!inTelegram) {
+    window.__moshkfamTelegramReady = Promise.resolve();
+    var lateStart = function () {
+      setTimeout(function () {
+        loadTelegramScript(function (ok) {
+          if (!ok) return;
+          try {
+            var wa = window.Telegram && window.Telegram.WebApp;
+            if (wa && wa.initData) {
+              // واقعاً داخل مینی‌اپ تلگرام هستیم: پرچم را ذخیره و یک‌بار صفحه را دوباره بارگذاری می‌کنیم.
+              sessionStorage.setItem("moshkfam_in_telegram", "1");
+              location.reload();
+            }
+          } catch (e) {}
+        });
+      }, 0);
+    };
+    if (document.readyState === "complete") lateStart();
+    else window.addEventListener("load", lateStart);
+    return;
+  }
+  window.__moshkfamTelegramReady = new Promise(function (resolve) {
+    loadTelegramScript(function () { resolve(); });
   });
 })();
 </script>

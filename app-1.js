@@ -16,7 +16,7 @@
 /* =========================================================
    MOSHKFAM - پاک‌سازی یک‌بارهٔ کش‌های قدیمی (App.js only)
    ========================================================= */
-const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.65";
+const APP_VERSION = window.MOSHKFAM_VERSION || "V1.0.66";
 (async function clearLegacyCachesOnce() {
   try {
     if (new URLSearchParams(window.location.search).get("debug") === "1") return;

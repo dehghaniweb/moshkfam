@@ -37,7 +37,7 @@
 
 <script>
   // مرجع واحد شماره نسخه برای تمام بخش‌های برنامه
-  window.MOSHKFAM_VERSION = "V1.0.65";
+  window.MOSHKFAM_VERSION = "V1.0.66";
 </script>
 
 <!--
@@ -66,6 +66,96 @@
   var state = {}, rows = {};
   STEPS.forEach(function (s) { state[s.id] = { status: "wait", t0: 0, t1: 0, note: "" }; });
   var forced = false, hidden = false, finished = false, ticker = null;
+
+  /* V1.0.66: گزارش فنی کامل — رویدادها، خطاهای جاوااسکریپت و وضعیت هر فایل جمع می‌شود
+     تا هر وقت لودر گیر کرد، با دکمهٔ «گزارش فنی» بتوان دقیقاً دید مشکل کجاست و آن را کپی و ارسال کرد. */
+  var DEBUG = false;
+  try { DEBUG = /[?&](debug|report)=1(&|$)/.test(location.search); } catch (e) {}
+  var LOG = [], ERRS = [];
+  function logEv(kind, msg) {
+    LOG.push({ t: Date.now() - T0, k: String(kind), m: String(msg === undefined ? "" : msg).slice(0, 400) });
+    if (LOG.length > 150) LOG.shift();
+  }
+  function pushErr(msg) {
+    ERRS.push({ t: Date.now() - T0, m: String(msg).slice(0, 500) });
+    if (ERRS.length > 20) ERRS.shift();
+    logEv("js-error", msg);
+  }
+  window.addEventListener("error", function (e) {
+    var where = e && e.filename ? " @ " + String(e.filename).split("/").pop() + ":" + (e.lineno || 0) : "";
+    pushErr(((e && e.message) || "script error") + where);
+  });
+  window.addEventListener("unhandledrejection", function (e) {
+    var r = e && e.reason;
+    pushErr("promise: " + ((r && (r.message || r)) || "rejected"));
+  });
+  function envName() {
+    var ua = navigator.userAgent || "";
+    if (window.__moshkfamInTelegram || /Telegram/i.test(ua)) return "Telegram";
+    if (/Android/i.test(ua) && (/; wv\)/.test(ua) || (/Version\/[\d.]+/.test(ua) && /Chrome\//.test(ua)))) return "Android WebView (APK)";
+    if (/iPhone|iPad/i.test(ua) && !/Safari\//.test(ua)) return "iOS WebView";
+    return "Browser";
+  }
+  function storageState() {
+    var r = [];
+    try { localStorage.setItem("__mf_t", "1"); localStorage.removeItem("__mf_t"); r.push("localStorage ok"); } catch (e) { r.push("localStorage BLOCKED"); }
+    try { r.push("sessionStorage " + (window.sessionStorage ? "ok" : "none")); } catch (e) { r.push("sessionStorage BLOCKED"); }
+    r.push("cacheStorage " + (window.caches ? "ok" : "none"));
+    r.push("indexedDB " + (window.indexedDB ? "ok" : "none"));
+    return r.join(", ");
+  }
+  function swState() {
+    try {
+      if (!("serviceWorker" in navigator)) return "unsupported/disabled";
+      return navigator.serviceWorker.controller ? "active" : "not controlling";
+    } catch (e) { return "error"; }
+  }
+  function sec(ms) { return (ms / 1000).toFixed(1) + "s"; }
+  function buildReport() {
+    var nav = navigator, c = nav.connection || nav.mozConnection || nav.webkitConnection || {};
+    var A = window.MoshkfamAssets, L = [], now = Date.now();
+    L.push("=== MOSHKFAM TECHNICAL REPORT ===");
+    L.push("version : " + (window.MOSHKFAM_VERSION || "?"));
+    L.push("time    : " + new Date().toISOString() + "   elapsed " + sec(now - T0));
+    L.push("url     : " + location.href);
+    L.push("env     : " + envName() + (window.__moshkfamInTelegram ? "  (telegram flag on)" : ""));
+    L.push("online  : " + nav.onLine + "   net " + (c.effectiveType || "?") + "  down " + (c.downlink === undefined ? "?" : c.downlink) + "Mbps  rtt " + (c.rtt === undefined ? "?" : c.rtt) + "ms  saveData " + (!!c.saveData));
+    L.push("screen  : " + window.innerWidth + "x" + window.innerHeight + "  dpr " + (window.devicePixelRatio || 1) + "  " + (window.innerWidth > window.innerHeight ? "landscape" : "portrait"));
+    L.push("secure  : " + (window.isSecureContext === true) + "   serviceWorker " + swState());
+    L.push("storage : " + storageState());
+    L.push("lang    : " + (nav.language || "?") + "   tz " + (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { return "?"; } })());
+    L.push("ua      : " + (nav.userAgent || "?"));
+    L.push("");
+    L.push("--- STEPS ---");
+    STEPS.forEach(function (s) {
+      var st = state[s.id], dur = st.t0 ? ((st.status === "run" ? now : (st.t1 || now)) - st.t0) : 0;
+      if (s.optional && !hasSession()) { L.push(s.id + " : skipped (no session)"); return; }
+      L.push(s.id + " : " + st.status + (st.t0 ? "  " + sec(dur) : "") + (st.note ? "  [" + st.note + "]" : ""));
+    });
+    if (A && typeof A.status === "function") {
+      var S = {};
+      try { S = A.status(); } catch (e) { S = {}; }
+      L.push("");
+      L.push("--- SITE FILES ---");
+      L.push("loader  : ver " + S.version + "  fresh " + S.fresh + "  saved-copy " + S.snapshot + "  started " + S.started + (S.source ? " from " + S.source : ""));
+      L.push("bridge  : frame " + (S.bridge && S.bridge.frame) + "  ready " + (S.bridge && S.bridge.ready));
+      Object.keys(S.files || {}).forEach(function (n) {
+        var f = S.files[n];
+        L.push(n + " : " + f.state + "  tries " + f.tries + "  fails " + f.fails + (f.bytes ? "  " + f.bytes + "B" : "") + (f.ms ? "  " + sec(f.ms) : "") + (f.via ? "  via " + f.via : "") + (f.err ? "  err: " + f.err : ""));
+      });
+    } else {
+      L.push("");
+      L.push("--- SITE FILES --- loader unavailable (plain loading mode)");
+    }
+    L.push("");
+    L.push("--- JS ERRORS (" + ERRS.length + ") ---");
+    if (!ERRS.length) L.push("none");
+    ERRS.slice(-8).forEach(function (e) { L.push("+" + sec(e.t) + "  " + e.m); });
+    L.push("");
+    L.push("--- EVENTS (last " + Math.min(LOG.length, 45) + " of " + LOG.length + ") ---");
+    LOG.slice(-45).forEach(function (e) { L.push("+" + sec(e.t) + "  " + e.k + "  " + e.m); });
+    return L.join("\n");
+  }
 
   function fa(n) { try { return Number(n).toLocaleString("fa-IR"); } catch (e) { return String(n); } }
   function hasSession() {
@@ -96,6 +186,7 @@
 
   // پیام‌های تشخیصی برنامه (bootDiag) را به مرحله‌های فهرست تبدیل می‌کند.
   function onDiag(stage, status, details) {
+    logEv("app", stage + " " + status + (details ? " | " + details : ""));
     if (hidden) return;
     var d = String(details || "");
     if ((stage === "HTML/JS" || stage === "INIT") && status === "START") { set("start", "ok"); return; }
@@ -159,11 +250,11 @@
       var cls = st.status, note = st.note || "";
       if (st.status === "run") {
         var sec = Math.floor((now - st.t0) / 1000);
-        if (sec >= 1) note = (note ? note + " · " : "") + fa(sec) + " ثانیه";
+        if (sec >= 1) note = (note ? note + " / " : "") + fa(sec) + " ثانیه";
         if (now - st.t0 >= SLOW_MS) cls += " slow";
       } else if (st.status === "ok") {
         var dur = (st.t1 - st.t0) / 1000;
-        if (dur >= 1) note = (note ? note + " · " : "") + fa(Math.round(dur)) + " ثانیه";
+        if (dur >= 1) note = (note ? note + " / " : "") + fa(Math.round(dur)) + " ثانیه";
       }
       var mark = st.status === "ok" ? "✓" : st.status === "fail" ? "✕" : "";
       if (li.className !== "boot-step " + cls) li.className = "boot-step " + cls;
@@ -173,12 +264,15 @@
     var elapsed = now - T0, showActions = failed || elapsed >= ACTIONS_MS;
     var actions = document.getElementById("bootActions"), title = document.querySelector("#bootLoader .boot-title"), hint = document.getElementById("bootHint");
     if (actions) actions.className = "boot-actions" + (showActions ? " show" : "");
+    var tools = document.getElementById("bootTools");
+    if (tools) tools.style.display = (showActions || DEBUG) ? "" : "none";
     if (title) title.textContent = (failed && !assetsPending()) ? "بارگذاری کامل نشد" : "لطفاً منتظر بمانید";
     if (hint) hint.textContent = failed
       ? (assetsPending()
           ? "اتصال ناپایدار است؛ برنامه خودکار دوباره تلاش می‌کند. لطفاً منتظر بمانید."
           : "بخشی از اطلاعات دریافت نشد؛ سایت باز می‌شود.")
       : (showActions ? "اینترنت کند است؛ لطفاً منتظر بمانید." : "");
+    if (hint && navigator.onLine === false) hint.textContent = "اینترنت گوشی قطع است؛ اتصال را بررسی کنید.";
   }
 
   function hideNow() {
@@ -230,10 +324,51 @@
   });
   ticker = setInterval(render, 500);
   document.addEventListener("DOMContentLoaded", render);
+  window.addEventListener("online", function () { logEv("net", "online"); render(); });
+  window.addEventListener("offline", function () { logEv("net", "offline"); render(); });
+
+  function copyText(text, done) {
+    function legacy() {
+      try {
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.setAttribute("readonly", "");
+        ta.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0";
+        document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+        var ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        done(!!ok);
+      } catch (e) { done(false); }
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { done(true); }, legacy);
+      else legacy();
+    } catch (e) { legacy(); }
+  }
+  function bindReport() {
+    var btn = document.getElementById("bootReportBtn"), wrap = document.getElementById("bootReportWrap"),
+        box = document.getElementById("bootReportBox"), cp = document.getElementById("bootReportCopy");
+    if (!btn || !wrap || !box || btn.__bound) return;
+    btn.__bound = true;
+    function refresh() { box.textContent = buildReport(); }
+    btn.addEventListener("click", function () {
+      if (wrap.hidden) { refresh(); wrap.hidden = false; btn.textContent = "بستن گزارش"; }
+      else { wrap.hidden = true; btn.textContent = "گزارش فنی"; }
+    });
+    if (cp) cp.addEventListener("click", function () {
+      refresh();
+      copyText(box.textContent, function (ok) {
+        cp.textContent = ok ? "کپی شد ✓" : "کپی نشد؛ متن را نگه دارید و کپی کنید";
+        setTimeout(function () { cp.textContent = "کپی گزارش"; }, 2500);
+      });
+    });
+    if (DEBUG) { refresh(); wrap.hidden = false; btn.textContent = "بستن گزارش"; }
+  }
+  document.addEventListener("DOMContentLoaded", bindReport);
 
   window.MoshkfamBoot = {
     set: set, onDiag: onDiag, finish: finish, dismiss: dismiss, retry: retry,
-    steps: function () { return JSON.parse(JSON.stringify(state)); }
+    steps: function () { return JSON.parse(JSON.stringify(state)); },
+    log: logEv, report: buildReport
   };
 })();
 </script>
@@ -283,6 +418,20 @@ try {
   function fa(n) { try { return Number(n).toLocaleString("fa-IR"); } catch (e) { return String(n); } }
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   function noop() {}
+  function elog(kind, msg) { try { var B = window.MoshkfamBoot; if (B && B.log) B.log(kind, msg); } catch (e) {} }
+  // دلیل خطا را به زبان ساده می‌گوید (در فهرست مراحل لودر و گزارش فنی دیده می‌شود)
+  function reasonFa(msg) {
+    msg = String(msg || "");
+    if (!msg) return "";
+    if (/stalled/.test(msg)) return "۲۰ ثانیه پاسخی نیامد";
+    if (/timeout/.test(msg)) return "زمان تمام شد";
+    var m = /HTTP (\d+)/.exec(msg);
+    if (m) return "خطای سرور " + fa(m[1]);
+    if (/is not code|empty/.test(msg)) return "پاسخ نامعتبر (شاید فیلتر)";
+    if (/bridge/i.test(msg)) return "پل گوگل پاسخ نداد";
+    if (/Failed to fetch|NetworkError|Load failed|network|aborted/i.test(msg)) return "اتصال قطع شد";
+    return "خطای نامشخص";
+  }
 
   /* ---------- ظاهر: دو <style> به‌ترتیب (style.css بعد از آن theme.css) ساخته می‌شود تا ترتیب cascade همیشه درست باشد ---------- */
   var styleEls = {}, cssApplied = {};
@@ -458,7 +607,8 @@ try {
   var net = {};                        // نام فایل → متن تازه‌ای که از شبکه رسیده
   var info = {};                       // نام فایل → وضعیت برای نمایش در لودر
   var wakers = [];
-  CRITICAL.concat(OPTIONAL).forEach(function (n) { info[n] = { fails: 0, state: "wait" }; });
+  CRITICAL.concat(OPTIONAL).forEach(function (n) { info[n] = { fails: 0, state: "wait", tries: 0, ms: 0, bytes: 0, via: "", err: "" }; });
+  var snapState = "checking", startSource = "";
 
   function waitOrWake(ms) {
     return new Promise(function (resolve) {
@@ -480,16 +630,20 @@ try {
       var tries = 0;
       (function next() {
         tries++;
-        inf.state = "run";
+        inf.state = "run"; inf.tries++;
         report();
         var viaBridge = inf.fails >= 2 && inf.fails % 2 === 0;   // شکست‌های ۲،۴،۶… → این بار از پل گوگل
+        var viaName = viaBridge ? "google-bridge" : "direct", tA = Date.now();
+        elog("file", name + " try " + inf.tries + " via " + viaName + " ...");
         (viaBridge ? fetchViaBridge(name) : attemptFetch(name)).then(function (text) {
-          inf.state = "ok"; inf.fails = 0;
+          inf.state = "ok"; inf.fails = 0; inf.via = viaName; inf.ms = Date.now() - tA; inf.bytes = text.length; inf.err = "";
+          elog("file", name + " OK " + inf.bytes + "B in " + inf.ms + "ms via " + viaName);
           net[name] = text;
           report();
           resolve(text);
         }, function (err) {
-          inf.fails++;
+          inf.fails++; inf.via = viaName; inf.ms = Date.now() - tA; inf.err = String((err && err.message) || err || "error");
+          elog("file", name + " FAIL (" + inf.err + ") after " + inf.ms + "ms via " + viaName);
           try { console.warn("MOSHKFAM asset:", name, err && err.message, "(try " + tries + ")"); } catch (e) {}
           if (!blocking && tries >= BG_ATTEMPTS) { inf.state = "gaveup"; report(); reject(err); return; }
           if (inf.fails >= FAIL_SHOW) inf.state = "fail";
@@ -517,19 +671,19 @@ try {
     var B = boot();
     var s = info[CSS_MAIN];
     if (s.state === "ok") B.set("style", "ok", "");
-    else if (s.state === "fail") B.set("style", "fail", "بارگذاری نشد");
-    else B.set("style", "run", s.fails ? "تلاش مجدد" : "");
+    else if (s.state === "fail") B.set("style", "fail", "بارگذاری نشد" + (s.err ? " / " + reasonFa(s.err) : ""));
+    else B.set("style", "run", s.fails ? "تلاش مجدد" + (s.err ? " / " + reasonFa(s.err) : "") : "");
 
-    var done = 0, failedName = "", retrying = false;
+    var done = 0, failedName = "", retrying = false, why = "";
     APP_PARTS.forEach(function (n) {
       var i = info[n];
       if (i.state === "ok") done++;
       else if (i.state === "fail" && !failedName) failedName = n;
-      if (i.fails) retrying = true;
+      if (i.fails) { retrying = true; if (!why && i.err) why = reasonFa(i.err); }
     });
     if (done === APP_PARTS.length) B.set("files", "ok", "");
-    else if (failedName) B.set("files", "fail", failedName + " دریافت نشد");
-    else B.set("files", "run", fa(done) + " از " + fa(APP_PARTS.length) + (retrying ? " · تلاش مجدد" : ""));
+    else if (failedName) B.set("files", "fail", failedName + " دریافت نشد" + (why ? " / " + why : ""));
+    else B.set("files", "run", fa(done) + " از " + fa(APP_PARTS.length) + (retrying ? " / تلاش مجدد" + (why ? " / " + why : "") : ""));
   }
 
   /* ---------- شروع دانلود: اول فایل‌های اصلی، بعد اختیاری‌ها ---------- */
@@ -548,7 +702,8 @@ try {
 
   function begin(texts, source) {
     if (started) return;
-    started = true; startedAt = Date.now(); blocking = false;
+    started = true; startedAt = Date.now(); blocking = false; startSource = source;
+    elog("loader", "app started from " + source);
     applyCss(CSS_MAIN, texts[CSS_MAIN]);
     if (texts[CSS_EXTRA]) applyCss(CSS_EXTRA, texts[CSS_EXTRA]);
     uiLocked = true;
@@ -577,6 +732,8 @@ try {
   readSnapshot().then(function (snap) {
     var haveSnap = !!snap && CRITICAL.every(function (n) { return typeof snap.files[n] === "string" && snap.files[n]; });
     lastFiles = haveSnap ? snap.files : null;
+    snapState = haveSnap ? "found" : "none";
+    elog("loader", "saved copy: " + snapState + ", fresh=" + FRESH + ", version=" + VER);
     if (haveSnap) {
       // نسخهٔ قبلی هست: ظاهرش فوراً اعمال می‌شود؛ تا ۳ ثانیه منتظر نسخهٔ تازهٔ شبکه می‌مانیم، وگرنه از همان نسخهٔ ذخیره‌شده شروع می‌کنیم
       applyCss(CSS_MAIN, snap.files[CSS_MAIN]);
@@ -616,7 +773,16 @@ try {
     retryNow: retryNow,
     isBridgeWindow: isBridgeWindow,
     purge: purgeSnapshot,
-    parts: APP_PARTS
+    parts: APP_PARTS,
+    status: function () {
+      var f = {};
+      Object.keys(info).forEach(function (n) {
+        var i = info[n];
+        f[n] = { state: i.state, fails: i.fails, tries: i.tries, ms: i.ms, bytes: i.bytes, via: i.via, err: i.err };
+      });
+      return { version: VER, fresh: FRESH, snapshot: snapState, source: startSource, started: started,
+               bridge: { frame: !!bridge.frame, ready: !!bridge.ready }, files: f };
+    }
   };
   report();
 })();
@@ -746,7 +912,16 @@ try {
     html body #bootLoader .boot-hint{margin-top:4px!important;font-size:11px!important;line-height:1.5!important}
     html body #bootLoader .boot-actions{margin-top:6px!important}
     html body #bootLoader .boot-btn{min-height:36px!important;padding:6px 8px!important;font-size:12.5px!important}
+    html body #bootLoader .boot-tools{margin-top:2px!important}
+    html body #bootLoader #bootReportBox{max-height:42vh!important}
   }
+  /* V1.0.66: دکمهٔ گزارش فنی و کادر گزارش */
+  html body #bootLoader .boot-tools{margin-top:8px;text-align:center}
+  html body #bootLoader .boot-link{appearance:none;-webkit-appearance:none;border:1px solid #bbf7d0;background:#f0fdf4;color:#166534;font:600 13px/1.4 inherit;font-family:inherit;padding:7px 16px;border-radius:10px;cursor:pointer}
+  html body #bootLoader .boot-report-wrap{margin-top:8px}
+  html body #bootLoader .boot-report-wrap[hidden]{display:none!important}
+  html body #bootLoader #bootReportBox{margin:0 0 8px;max-height:36vh;overflow:auto;padding:10px;border-radius:10px;background:#0f172a;color:#e2e8f0;font:11px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all;text-align:left;direction:ltr;-webkit-user-select:text;user-select:text}
+  html body #bootLoader .boot-report-wrap .boot-link{display:block;margin:0 auto}
 </style>
 </head>
 
@@ -760,6 +935,13 @@ try {
     <div class="boot-sub">در حال آماده‌سازی سامانه مشکفام فارس:</div>
     <ul id="bootSteps" class="boot-steps"></ul>
     <div id="bootHint" class="boot-hint"></div>
+    <div id="bootTools" class="boot-tools" style="display:none">
+      <button id="bootReportBtn" class="boot-link" type="button">گزارش فنی</button>
+    </div>
+    <div id="bootReportWrap" class="boot-report-wrap" hidden>
+      <pre id="bootReportBox" dir="ltr"></pre>
+      <button id="bootReportCopy" class="boot-link" type="button">کپی گزارش</button>
+    </div>
   </div>
 </div>
 
